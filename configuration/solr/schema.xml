@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<schema name="example" version="1.2">
+
+  <types>
+    <!-- Types are based on the lily example schema for solr. -->
+    <fieldType name="string" class="solr.StrField"
+                             sortMissingLast="true" omitNorms="true" indexed="true" stored="true" />
+    <fieldType name="stringlist" class="solr.StrField" multiValued="true"
+                              sortMissingLast="true" omitNorms="true" indexed="true" stored="true"/>
+
+    <!-- Default numeric field types.
+         For faster range queries, consider the tint/tfloat/tlong/tdouble types. -->
+    <fieldType name="int"   class="solr.TrieIntField" precisionStep="0"
+                            omitNorms="true" positionIncrementGap="0" indexed="true" stored="true"/>
+    <fieldType name="float" class="solr.TrieFloatField" precisionStep="0"
+                            omitNorms="true" positionIncrementGap="0" indexed="true" stored="true"/>
+    <fieldType name="long"  class="solr.TrieLongField" precisionStep="0"
+                            omitNorms="true" positionIncrementGap="0" indexed="true" stored="true"/>
+    <fieldType name="double" class="solr.TrieDoubleField" precisionStep="0"
+                            omitNorms="true" positionIncrementGap="0" indexed="true" stored="true"/>
+    <!-- Default date type. Iso 8601 with with Z suffix for UTC and optional fraction. -->
+    <fieldType name="date"  class="solr.TrieDateField" precisionStep="0"
+                            omitNorms="true" positionIncrementGap="0" indexed="true" stored="true"/>
+
+    <!-- Range-query-optimized types. -->
+    <fieldType name="tint"  class="solr.TrieIntField" precisionStep="8"
+                            omitNorms="true" positionIncrementGap="0" indexed="true" stored="true"/>
+    <fieldType name="tlong" class="solr.TrieLongField" precisionStep="8"
+                            omitNorms="true" positionIncrementGap="0" indexed="true" stored="true"/>
+    <fieldType name="tdate" class="solr.TrieDateField" precisionStep="6"
+                            omitNorms="true" positionIncrementGap="0" indexed="true" stored="true"/>
+  </types>
+
+
+  <fields>
+    <!-- Fields which are required by Lily -->
+    <field name="@@key"                         type="string"     required="true" />
+    <field name="@@id"                          type="string"     required="true" />
+    <field name="@@vtag"                        type="string"     required="true" />
+    <field name="@@versionless"                 type="string"     required="false"/>
+
+    <!-- com.mozilla.bugzilla_etl.base.Fields.Bug -->
+    <field name="bug_id"                        type="tlong"      required="true" />
+
+    <!-- com.mozilla.bugzilla_etl.base.Fields.Version -->
+    <field name="modified_by"                   type="string"     required="true" />
+    <field name="modification_date"             type="tdate"      required="true" />
+    <field name="expiration_date"               type="tdate"      required="true" />
+    <field name="annotation"                    type="string"     required="false"/>
+
+    <!-- com.mozilla.bugzilla_etl.base.Fields.Facet -->
+    <field name="assigned_to"                   type="string"     required="false"/>
+    <field name="component"                     type="string"     required="false"/>
+    <field name="flags"                         type="stringlist" required="false"/>
+    <field name="keywords"                      type="stringlist" required="false"/>
+    <field name="major_status"                  type="string"     required="false"/>
+    <field name="opsys"                         type="string"     required="false"/>
+    <field name="previous_major_status"         type="string"     required="false"/>
+    <field name="previous_status"               type="string"     required="false"/>
+    <field name="priority"                      type="string"     required="false"/>
+    <field name="product"                       type="string"     required="false"/>
+    <field name="resolution"                    type="string"     required="false"/>
+    <field name="severity"                      type="string"     required="false"/>
+    <field name="status"                        type="string"     required="false"/>
+    <field name="status_whiteboard"             type="string"     required="false"/>
+    <field name="target_milestone"              type="string"     required="false"/>
+    <field name="version"                       type="string"     required="false"/>
+
+    <!-- com.mozilla.bugzilla_etl.base.Fields.Measurement -->
+    <field name="days_in_major_status"          type="int"        required="false"/>
+    <field name="days_in_status"                type="int"        required="false"/>
+    <field name="days_in_previous_major_status" type="int"        required="false"/>
+    <field name="days_in_previous_status"       type="int"        required="false"/>
+    <field name="days_open_accumulated"         type="int"        required="false"/>
+    <field name="times_reopened"                type="int"        required="false"/>
+    <field name="number"                        type="int"        required="false"/>
+
+  </fields>
+
+  <!-- Field to use to determine and enforce document uniqueness.
+       Unless this field is marked with required="false", it will be a required field -->
+  <uniqueKey>@@key</uniqueKey>
+
+  <!-- field for the QueryParser to use when an explicit fieldname is absent -->
+  <defaultSearchField>@@key</defaultSearchField>
+
+  <solrQueryParser defaultOperator="AND"/>
+</schema>
