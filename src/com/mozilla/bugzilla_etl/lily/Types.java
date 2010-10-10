@@ -87,7 +87,7 @@ class Types {
          * @param field The enum on whose name to base the field name (will be lowercased).
          * @param scope The LilyCMS versioning scope to use for this field.
          */
-        private Params(String ns, ValueType type, Enum<?> field, Scope scope) {
+        Params(String ns, ValueType type, Enum<?> field, Scope scope) {
             Assert.nonNull(ns, type, field, scope);
             this.type = type;
             this.qname = new QName(ns, field.name().toLowerCase());

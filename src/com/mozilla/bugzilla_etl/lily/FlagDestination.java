@@ -61,6 +61,7 @@ extends AbstractLilyClient implements Destination<Flag, RepositoryException> {
         flagType = types.flagType();
     }
 
+    @Override
     public void send(Flag flag) throws RepositoryException {
 
         Assert.nonNull(flag.id(), flag.name(), flag.status());

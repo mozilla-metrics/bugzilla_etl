@@ -99,6 +99,7 @@ public class Flag {
         return type + status.indicator;
     }
 
+    @Override
     public String toString() {
         return representation();
     }

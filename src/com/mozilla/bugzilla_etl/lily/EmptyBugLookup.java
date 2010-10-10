@@ -46,6 +46,7 @@ import com.mozilla.bugzilla_etl.base.Bug;
 
 public class EmptyBugLookup implements BugLookup {
 
+    @Override
     public Bug find(Long id) throws RepositoryException { return null; }
 
 }

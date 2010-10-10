@@ -82,6 +82,7 @@ public class RebuildVersionsStep extends TransformClassBase {                   
     private com.mozilla.bugzilla_etl.di.RebuilderBugSource source;
     private com.mozilla.bugzilla_etl.lily.BugLookup lookup;
 
+    @Override
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
         if (first) {
             first = false;

@@ -173,13 +173,12 @@ public class Input {
     }
 
     /** Avoid unnecessary reflection. */
-
-    private final Map<Pair<Class<?>, String>, Object> enumCache
+    final Map<Pair<Class<?>, String>, Object> enumCache
         = new HashMap<Pair<Class<?>, String>, Object>();
 
     private final TransformClassBase step;
     private final RowSet rowSet;
-    private Helpers helpers;
+    Helpers helpers;
     private Object[] current;
     private Object[] next;
 }

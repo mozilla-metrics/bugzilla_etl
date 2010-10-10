@@ -67,9 +67,22 @@ public class Bug implements Iterable<Version> {
 
     public Long id() { return id; }
     public String reporter() { return reporter; }
-    public Iterator<Version> iterator() { return versions.iterator(); }
     public int numVersions() { return versions.size(); }
 
+    @Override
+    public Iterator<Version> iterator() { return versions.iterator(); }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + id.hashCode();
+        result = prime * result + reporter.hashCode();
+        result = prime * result + versions.hashCode();
+        return result;
+    }
+
+    @Override
     public boolean equals(final Object object) {
         if (object == this) return true;
         if (object == null) return false;
@@ -145,6 +158,7 @@ public class Bug implements Iterable<Version> {
         return versions.getFirst().persistenceState() == PersistenceState.NEW;
     }
 
+    @Override
     public String toString() {
         final StringBuilder versionsVis = new StringBuilder(versions.size());
         for (final Version version : versions) {

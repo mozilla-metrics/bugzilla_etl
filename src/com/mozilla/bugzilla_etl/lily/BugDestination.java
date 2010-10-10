@@ -87,6 +87,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
      * @throws RecordTypeNotFoundException
      * @throws RecordNotFoundException
      */
+    @Override
     public void send(Bug bug) throws RepositoryException {
 
         // Create the fake versions so all historic versions are indexed.

@@ -59,10 +59,12 @@ public class FlagSource implements Source<Flag, KettleException> {
         input = new Input(toStep, inRows);
     }
 
+    @Override
     public boolean hasMore() {
         return input.hasMore();
     }
 
+    @Override
     public Flag receive() throws KettleException {
         final Long id = input.cell(Fields.Flag.ID).longValue();
         final String typeName = input.cell(Fields.Flag.NAME).stringValue();

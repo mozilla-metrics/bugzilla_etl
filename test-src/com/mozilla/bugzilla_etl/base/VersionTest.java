@@ -237,6 +237,8 @@ public abstract class VersionTest {
         /// making it the third revision on that timestamp.
         ///
         /// Commented out because this is something we'll need to think about some more.
+        /// Fortunately we do not have this kind of crazy thing in BMO.
+        ///
         /// state.put(FLAGS, "blocking-worldchange+, ice-beam-, death-ray+");
         /// calendar.set(2010,  7,  9, 10, 23,  5);
         /// // 3)
@@ -266,7 +268,7 @@ public abstract class VersionTest {
     }
 
     protected void assertBugsEquals(Bug expected, Bug actual) {
-        Iterator<Version> as = expected.iterator(), bs = actual.iterator();
+        final Iterator<Version> as = expected.iterator(), bs = actual.iterator();
         for (int i = 1; as.hasNext() && bs.hasNext(); ++i) {
             final Version vExpected = as.next();
             final Version vActual = bs.next();
@@ -294,24 +296,23 @@ public abstract class VersionTest {
     }
 
     /** Simulate a rebuild during an incremental import. */
-    protected Bug simulateImport(Date start, Date end) {
+    protected Bug simulateImport(final Date start, final Date end) {
         System.out.format("<import \n   from=%s\n     to=%s\n",
                           iso8601.format(start), iso8601.format(end));
+
+        final ListIterator<State> iterator =
+            states.listIterator(states.size());
         Bug bug = null;
         Version leastRecentChange = null;
-        ListIterator<State> iterator =
-            states.listIterator(states.size());
 
-        boolean isFirst = true;
         while (iterator.hasPrevious()) {
             final State def = iterator.previous();
             if (def.date.after(end)) continue;
             if (def.date.before(start)) break;
-            if (isFirst) {
+            if (bug == null || leastRecentChange == null) {
                 bug = new Bug(BUG_ID, REPORTER);
                 leastRecentChange = Version.latest(bug, def.state, def.author, def.date, "first");
                 bug.prepend(leastRecentChange);
-                isFirst = false;
                 continue;
             }
             leastRecentChange = leastRecentChange.predecessor(def.state, def.author, def.date, "");

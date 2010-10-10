@@ -254,6 +254,8 @@ public class RebuildHistoryStep extends TransformClassBase {                    
     private Object[] workingState = null;
 
     private RowSet main;
+    
+    @Override
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException
     {
         if (first)
@@ -830,7 +832,7 @@ public class RebuildHistoryStep extends TransformClassBase {                    
             Fields.Out.is_latest_state.setValue(newRow, one);
         } else {
             Fields.Out.is_latest_state.setValue(newRow, zero);
-        };
+        }
 
         //debugPrintRow(0L, "bug_id|(curr|prev)_opsys", data.inputRowMeta, referenceRow);
         putRow(data.outputRowMeta, newRow);

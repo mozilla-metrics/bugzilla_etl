@@ -52,6 +52,7 @@ public class BugDestination extends AbstractDestination<Bug> {
 
     public BugDestination(TransformClassBase fromStep, RowMeta out) { super(fromStep, out); }
 
+    @Override
     public void send(Bug bug) throws KettleException {
         for (Version version : bug) {
             output.cell(Fields.Bug.ID).set(bug.id());

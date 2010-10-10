@@ -78,11 +78,11 @@ public class Output {
     public void next() throws KettleStepException {
         step.putRow(rowMeta, row);
         step.incrementLinesOutput();
-        this.row = RowDataUtil.allocateRowData(rowMeta.size());
+        row = RowDataUtil.allocateRowData(rowMeta.size());
     }
 
     private final Helpers helpers;
     private final TransformClassBase step;
     private RowMeta rowMeta;
-    private Object[] row;
+    Object[] row;
 }

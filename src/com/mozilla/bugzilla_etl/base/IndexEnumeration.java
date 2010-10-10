@@ -49,27 +49,32 @@ class IndexEnumeration<E> implements Iterable<Pair<Integer, E>> {
         this.iterable = iterable;
     }
 
+    @Override
     public Iterator<Pair<Integer, E>> iterator() {
         return new Enumerator(iterable.iterator());
     }
 
     class Enumerator implements Iterator<Pair<Integer, E>> {
-        final Iterator<E> iterator;
+        private final Iterator<E> iterator;
 
         public Enumerator(Iterator<E> iterator) {
             this.iterator = iterator;
         }
 
-        int index = -1;
+        private int index = -1;
+        
+        @Override
         public boolean hasNext() {
             return iterator.hasNext();
         }
 
+        @Override
         public Pair<Integer, E> next() {
             ++index;
             return new Pair<Integer, E>(Integer.valueOf(index), iterator.next());
         }
 
+        @Override
         public void remove() {
             iterator.remove();
         }

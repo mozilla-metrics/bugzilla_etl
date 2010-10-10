@@ -54,6 +54,7 @@ public class FlagDestination extends AbstractDestination<Flag> {
 
     public FlagDestination(TransformClassBase fromStep, RowMeta out) { super(fromStep, out); }
 
+    @Override
     public void send(Flag flag) throws KettleException {
         output.cell(Fields.Flag.ID).set(flag.id());
         output.cell(Fields.Flag.NAME).set(flag.name());

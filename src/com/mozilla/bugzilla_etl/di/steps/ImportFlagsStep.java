@@ -73,6 +73,7 @@ public class ImportFlagsStep extends TransformClassBase {                       
     private com.mozilla.bugzilla_etl.di.ImporterFlagSource source;
     private int count = 0;
 
+    @Override
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
         if (first) {
             first = false;

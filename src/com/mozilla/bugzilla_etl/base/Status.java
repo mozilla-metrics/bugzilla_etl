@@ -58,7 +58,11 @@ public enum Status {
     REOPENED(Major.OPEN),
     CLOSED(Major.CLOSED);
 
-    public enum Major { OPEN, CLOSED };
+    public enum Major { 
+        OPEN,
+        // We have this as a regular status as well, that's fine.
+        @SuppressWarnings("hiding") CLOSED 
+    }
 
     public final Major major;
     Status(Major majorStatus) { major = majorStatus; }

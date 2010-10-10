@@ -59,7 +59,7 @@ public class Fields {
     public interface Field {
         Family family();
         String columnName();
-    };
+    }
 
     /**
      * Fields to import flags into the flag record type.
@@ -75,8 +75,12 @@ public class Fields {
         NAME,
         STATUS;
 
+        @Override
         public Family family() { return Family.FLAG; }
+        
+        @Override
         public String columnName() { return columnName; }
+        
         String columnName;
         Flag() { columnName = name().toLowerCase(); }
     }
@@ -91,8 +95,13 @@ public class Fields {
         NICK;
 
         public String columnName;
+        
+        @Override
         public String columnName() { return columnName; }
+        
+        @Override
         public Family family() { return Family.USER; }
+        
         User(String name) { columnName = name; }
         User() { columnName = name().toLowerCase(); }
     }
@@ -105,8 +114,13 @@ public class Fields {
         CREATION_DATE;
 
         public String columnName;
+        
+        @Override
         public String columnName() { return columnName; }
+        
+        @Override
         public Family family() { return Family.BUG; }
+        
         Bug(String name) { columnName = name; }
         Bug() { columnName = name().toLowerCase(); }
     }
@@ -124,8 +138,13 @@ public class Fields {
         PERSISTENCE_STATE;
 
         public String columnName;
+        
+        @Override
         public String columnName() { return columnName; }
+        
+        @Override
         public Family family() { return Family.VERSION; }
+        
         Version(String name) { columnName = name; }
         Version() { columnName = name().toLowerCase(); }
     }
@@ -158,8 +177,13 @@ public class Fields {
 
         public static enum Column { LATEST, FROM, TO, RESULT }
         public final Map<Facet.Column, String> columnNames;
-        public String columnName() { return columnNames.get(Column.RESULT); };
+        
+        @Override
+        public String columnName() { return columnNames.get(Column.RESULT); }
+        
+        @Override
         public Family family() { return Family.FACET; }
+        
         public final boolean isComputed;
 
         /**
@@ -248,8 +272,13 @@ public class Fields {
         NUMBER;
 
         public String columnName;
+        
+        @Override
         public String columnName() { return columnName; }
+        
+        @Override
         public Family family() { return Family.MEASUREMENT; }
+        
         Measurement(String name) { columnName = name; }
         Measurement() { columnName = name().toLowerCase(); }
     }

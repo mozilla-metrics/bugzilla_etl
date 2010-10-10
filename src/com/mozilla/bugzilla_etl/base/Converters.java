@@ -51,10 +51,12 @@ public class Converters {
     }
 
     public static class CsvConverter implements Converter<List<String>> {
+        @Override
         public List<String> parse(String representation) {
             Assert.nonNull(representation);
             return Arrays.asList(representation.split("\\s*,\\s*"));
         }
+        @Override
         public String format(List<String> keywords) {
             final StringBuilder buffer = new StringBuilder();
             boolean first = true;
@@ -65,22 +67,25 @@ public class Converters {
             }
             return buffer.toString();
         }
-    };
+    }
 
     public static final Converter<List<String>> KEYWORDS = new CsvConverter();
 
     public static final Converter<Flag> FLAG = new Converter<Flag>(){
+        @Override
         public Flag parse(String representation) {
             Assert.nonNull(representation);
             return Flag.fromRepresentation(representation);
-        };
+        }
+        @Override
         public String format(Flag flag) {
             Assert.nonNull(flag);
             return flag.representation();
-        };
+        }
     };
 
     public static final Converter<List<Flag>> FLAGS = new Converter<List<Flag>>(){
+        @Override
         public List<Flag> parse(String representation) {
             Assert.nonNull(representation);
             final List<Flag> flags = new java.util.LinkedList<Flag>();
@@ -90,6 +95,7 @@ public class Converters {
             }
             return flags;
         }
+        @Override
         public String format(List<Flag> flags) {
             final StringBuilder buffer = new StringBuilder();
             boolean first = true;

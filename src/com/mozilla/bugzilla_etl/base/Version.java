@@ -138,10 +138,22 @@ public class Version {
                            newTo, newState);
     }
 
-    /**
-     * Compare if both versions encapsulate the same state.
-     * The fields {@link #persistenceState()} and {@link #annotation()} are ignored.
-     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + annotation.hashCode();
+        result = prime * result + author.hashCode();
+        result = prime * result + bug.hashCode();
+        result = prime * result + facets.hashCode();
+        result = prime * result + from.hashCode();
+        result = prime * result + measurements.hashCode();
+        result = prime * result + persistenceState.hashCode();
+        result = prime * result + to.hashCode();
+        return result;
+    }
+
+    @Override
     public boolean equals(Object object) {
         if (object == this) return true;
         if (object == null) return false;
@@ -163,6 +175,7 @@ public class Version {
         return true;
     }
 
+    @Override
     public String toString() {
         return String.format("{version from='%s', to='%s', persisted=%s, author=%s}",
                              format.format(from),

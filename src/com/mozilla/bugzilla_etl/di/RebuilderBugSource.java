@@ -94,6 +94,7 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
         majorStatusTable = new MajorStatusHelper(step, majorStatusLookup).table();
         // Wrap lookup to convert exception
         this.bugLookup = new Lookup<Bug, KettleStepException>() {
+            @Override
             public Bug find(Long id) throws KettleStepException {
                 try { return bugLookup.find(id); }
                 catch (Exception e) {
@@ -107,11 +108,13 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
     }
 
     /** Are there more bugs in the input? */
+    @Override
     public boolean hasMore() {
         return input.hasMore();
     }
 
     /** Assemble a versioned bug from bug state plus activities. */
+    @Override
     public Bug receive() throws KettleValueException, KettleStepException {
         return bugFromRows();
     }
@@ -197,7 +200,7 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
         Date candidateDate = null;
         do {
             final Date currentDate = input.cell(Fields.Version.MODIFICATION_DATE).dateValue();
-            if (!candidates.isEmpty() && !candidateDate.equals(currentDate)) {
+            if (!candidates.isEmpty() && !currentDate.equals(candidateDate)) {
                 // New date, process all activities with the previous (more recent) date.
                 processCandidates(bug, candidates, facetState, flagState);
                 candidates.clear();
@@ -279,7 +282,7 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
 
         LinkedList<Input.Row> activities = orderConsistently(candidates, facetState, flagState);
         if (n >= 3 || activities == null || (DEBUG_REORDER && n >= 2)) {
-            printReorderDebugInformation(bug, candidates, activities, facetState);
+            printReorderDebugInformation(bug, candidates, facetState);
         }
         if (activities == null) {
             System.out.format("REORDER ACTIVITIES: Using fallback ordering for bug %s.\n", bug);
@@ -364,6 +367,7 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
         LinkedList<Input.Row> activities = new LinkedList<Input.Row>(candidates);
         Comparator<Input.Row> comp = new Comparator<Input.Row>() {
             public static final String NOBODY = "nobody@mozilla.org";
+            @Override
             public int compare(Input.Row rowA, Input.Row rowB) {
                 String valueA = null;
                 String valueB = null;
@@ -374,7 +378,7 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
                     if (valueB.equals(NOBODY)) return 1;
                     System.out.format("REORDER ACTIVITIES: Weak result with fallback ordering.\n");
                 }
-                catch (KettleValueException vE) { Assert.unreachable(); }
+                catch (KettleValueException vE) { Assert.unreachable(); return 0; }
                 return valueA.compareTo(valueB);
             }
         };
@@ -444,7 +448,6 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
 
     private void printReorderDebugInformation(Bug bug,
                                               List<Input.Row> candidates,
-                                              List<Input.Row> activities,
                                               EnumMap<Fields.Facet, String> facetState)
     throws KettleValueException {
         System.out.format("\nREORDER ACTIVITIES (bug #%s)\n", bug.id());

@@ -63,10 +63,12 @@ public class ImporterFlagSource extends AbstractSource<Flag> {
     int nextStatus;
     final Flag.Status[] statusValues;
 
+    @Override
     public boolean hasMore() {
         return nextStatus < statusValues.length || super.hasMore();
     }
 
+    @Override
     public Flag receive() throws KettleException {
         if (nextStatus >= statusValues.length) {
             input.next();

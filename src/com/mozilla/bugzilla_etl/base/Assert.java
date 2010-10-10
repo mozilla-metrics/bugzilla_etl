@@ -68,13 +68,14 @@ public class Assert {
     }
 
     public static void unreachable() {
-        throw new IllegalStateException(prefix + "Code should be unreachable!\n");
+        throw new IllegalStateException(String.format("%s Code should be unreachable!\n",
+                                                      prefix));
     }
 
-    public static void unreachable(String message, Object... objects) {
-        message = String.format(message, objects);
-        message = String.format("%s Code should be unreachable: %s\n", prefix, message);
-        throw new IllegalStateException(message);
+    public static void unreachable(final String message, Object... objects) {
+        throw new IllegalStateException(String.format("%s Code should be unreachable: %s\n", 
+                                                      prefix, 
+                                                      String.format(message, objects)));
     }
 
 }

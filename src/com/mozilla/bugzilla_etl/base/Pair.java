@@ -48,7 +48,11 @@ public class Pair<T1, T2> {
     }
     public final T1 first() { return first; }
     public final T2 second() { return second; }
+    
+    @Override
     public int hashCode() { return first.hashCode() * second.hashCode(); }
+    
+    @Override
     public boolean equals(Object object) {
         if (object == null) return false;
         if (object == this) return true;

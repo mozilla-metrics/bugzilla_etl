@@ -73,6 +73,7 @@ public class BugSource extends AbstractSource<Bug> {
         super(toStep, inRows);
     }
 
+    @Override
     public Bug receive() throws KettleException {
         final Long bugId = input.cell(Fields.Bug.ID).longValue();
 

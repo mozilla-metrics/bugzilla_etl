@@ -56,6 +56,7 @@ abstract class AbstractSource<T> implements Source<T, KettleException> {
         input = new Input(toStep, inRows);
     }
 
+    @Override
     public boolean hasMore() {
         return input.hasMore();
     }

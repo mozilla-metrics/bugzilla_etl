@@ -71,6 +71,7 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
         csvConverter = new Converters.CsvConverter();
     }
 
+    @Override
     public Bug find(Long bugzillaId) throws RepositoryException {
         Record record;
         RecordId id = ids.forBug(bugzillaId);
