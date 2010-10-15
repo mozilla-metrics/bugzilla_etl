@@ -101,7 +101,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         Record record = null;
         if (bug.iterator().next().persistenceState() == PersistenceState.NEW) {
             record = repository.newRecord();
-            record.setRecordType(bugType.getId(), null);
+            record.setRecordType(bugType.getName(), null);
             record.setId(id);
             record.setField(types.bugParams.get(Fields.Bug.ID).qname, bug.id());
             record.setField(types.bugParams.get(Fields.Bug.REPORTED_BY).qname, bug.reporter());
@@ -122,7 +122,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
                 case DIRTY:
                     record = repository.read(id, currentVersion);
                     setVersionMutableFields(record, version);
-                    record = repository.updateMutableFields(record);
+                    record = repository.update(record, true, true);
                     log.format("Updated {bug id='%s'} (# v%d).\n", id, record.getVersion());
                     continue;
                 case NEW:
@@ -176,14 +176,12 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
             log.format("SEND historic#%s TRYING TO UPDATE %s.\n", bug.id(), version);
             Record record = null;
             record = repository.newRecord(id);
-            record.setRecordType(bugType.getId(), null);
-            record.setVersion(1L);
+            record.setRecordType(bugType.getName(), null);
             setVersionMutableFields(record, version);
-            record.setVersion(1L);
             log.format("SEND historic#%s (v: %d) EXPIRATION DATE AFTER UPDATE: %s.\n", bug.id(),
                        record.getVersion(),
                        record.getField(types.versionParams.get(Fields.Version.EXPIRATION_DATE).qname));
-            record = repository.updateMutableFields(record);
+            record = repository.update(record, true, true);
             historicCounter.increment(Counter.Item.OLD_ZERO);
             return;
         }
@@ -195,7 +193,6 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
                         version.bug().id());
         setVersionFields(record, version);
         setVersionMutableFields(record, version);
-        record.setVersion(1L);
         record.setField(types.vTagParams.get(Types.VTag.HISTORY).qname, 1L);
         try {
             record = repository.create(record);
@@ -214,7 +211,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
     }
 
     private void setVersionFields(Record record, Version version) {
-        record.setRecordType(bugType.getId(), null);
+        record.setRecordType(bugType.getName(), null);
         record.setField(types.versionParams.get(Fields.Version.MODIFIED_BY).qname,
                         version.author());
         record.setField(types.versionParams.get(Fields.Version.MODIFICATION_DATE).qname,

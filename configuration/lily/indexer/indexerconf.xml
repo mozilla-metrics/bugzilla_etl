@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<indexer>
+<indexer xmlns:betl="com.mozilla.bugzilla_etl">
   <cases>
-    <case recordType="Bug" variant="" vtags="last,history"></case>
+    <case recordType="betl:Bug" variant="" vtags="last,history"></case>
   </cases>
 
-  <indexFields xmlns:betl="com.mozilla.bugzilla_etl">
+  <indexFields>
 
     <!-- com.mozilla.bugzilla_etl.base.Fields.Bug -->
     <indexField name="bug_id">

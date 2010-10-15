@@ -77,7 +77,7 @@ extends AbstractLilyClient implements Destination<Flag, RepositoryException> {
 
         // OK, new version.
         record = repository.newRecord();
-        record.setRecordType(flagType.getId(), null);
+        record.setRecordType(flagType.getName(), null);
         record.setId(id);
         record.setField(types.flagParams.get(Fields.Flag.ID).qname, flag.id());
         record.setField(types.flagParams.get(Fields.Flag.NAME).qname, flag.name());

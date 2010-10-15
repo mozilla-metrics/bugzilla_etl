@@ -50,6 +50,8 @@ import com.mozilla.bugzilla_etl.base.Assert;
 
 abstract class AbstractLilyClient {
 
+    static final int ZK_TIMEOUT_MS = 5000;
+    
     protected final LilyClient client;
     protected final Repository repository;
     protected final PrintStream log;
@@ -60,7 +62,7 @@ abstract class AbstractLilyClient {
         Assert.nonNull(log, lilyConnection);
         this.log = log;
         try {
-            client = new LilyClient(lilyConnection);
+            client = new LilyClient(lilyConnection, ZK_TIMEOUT_MS);
             repository = client.getRepository();
         }
         catch (KeeperException zookeeperError) {

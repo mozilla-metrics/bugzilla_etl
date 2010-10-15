@@ -69,8 +69,8 @@ class Types {
 
     enum VTag { LAST, HISTORY }
 
-    static final String BUG = "Bug";
-    static final String FLAG = "Flag";
+    static final QName BUG = new QName(NS, "Bug");
+    static final QName FLAG = new QName(NS, "Flag");
 
     static final class Params {
         final ValueType type;
@@ -161,11 +161,11 @@ class Types {
 
 
     private RecordType
-    createOrGetRecordType(String typeName,
+    createOrGetRecordType(QName typeName,
                           Map<Class<? extends Enum<?>>, EnumMap<? extends Enum<?>, Params>> all)
     {
         try {
-            return typeManager.getRecordType(typeName, null);
+            return typeManager.getRecordTypeByName(typeName, null);
         }
         catch (RecordTypeNotFoundException notFound) { /* that's fine, let's create it... */ }
         catch (TypeException typeException) {
@@ -314,14 +314,14 @@ class Types {
      * Recreate record types and field types.
      * Run this to allow starting lily with a non-empty indexerxonf.
      */
-    public static void main(String[] arguments) {
+    public static void main(final String[] arguments) {
         if (arguments.length != 1 || arguments[0].equals("--help")) {
             System.err.println("Usage java " + Types.class.getName() + " lilyhost:lilyport");
             return;
         }
         LilyClient client;
         try {
-            client = new LilyClient(arguments[0]);
+            client = new LilyClient(arguments[0], AbstractLilyClient.ZK_TIMEOUT_MS);
             Repository repo = client.getRepository();
             Types types = new Types(System.out, repo);
             types.bugType();
