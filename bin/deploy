@@ -1,0 +1,25 @@
+#! /bin/bash
+source etl_env.shinclude
+
+etl_dest=mkurze@cm-hadoop23.mozilla.org:/home/mkurze/etl/bugzilla
+rsync -r --delete \
+      --exclude='**/.svn' --exclude 'logs' --exclude='build.properties' \
+      --exclude='etl_env.shinclude' --exclude='.classpath' --exclude='.project' \
+      --exclude='**/.kettle' \
+      "${ETL_HOME}"/* "${etl_dest}/"
+echo "Synced etl project (${etl_dest}).
+"
+
+solr_dest=mkurze@cm-hadoop24.mozilla.org:/home/mkurze/bugzilla_etl_dev/bugzilla_etl/configuration/solr
+rsync "${ETL_HOME}"/configuration/solr/schema.xml "${solr_dest}"
+echo "Synced solr schema (${solr_dest}).
+"
+
+cd "${ETL_HOME}"
+etl_dest_lib=mkurze@cm-hadoop23.mozilla.org:/home/mkurze/etl/pdi-ee/data-integration/libext/bugzilla_etl
+ant clean dist
+rsync -r --delete \
+      --exclude='**/.svn' \
+      "${KETTLE_LIBS}"/bugzilla_etl/ "${etl_dest_lib}"
+echo "Synced etl build (${etl_dest_lib}).
+"

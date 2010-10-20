@@ -184,12 +184,14 @@ class Types {
                 final Params params = fields.get(field);
                 // Ensure that every enum constant is handled.
                 if(params == null) {
-                    log.format("Missing params for field %s.%s -- aborting.",
-                               field.getClass().getSimpleName(),
-                               field.name());
+                    Assert.unreachable("Missing params for field %s.%s -- aborting.",
+                                       field.getClass().getSimpleName(),
+                                       field.name());
+                    break;
                 }
                 if (fields.get(field) == Params.UNUSED) continue;
-                type.addFieldTypeEntry(createOrGetFieldType(params).getId(), true);
+                type.addFieldTypeEntry(createOrGetFieldType(params).getId(), 
+                                       !NS_VTAG.equals(params.qname.getNamespace()));
             }
         }
 

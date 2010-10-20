@@ -483,8 +483,9 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
     public static void printConflictCounts() {
         System.out.print("Concurrent modifications: \n");
         for (int i = 1; i < conflictCount.length(); ++i) {
+            if (conflictCount.get(i) == 0) continue;
             System.out.format("%d simultaneous modifications: %d times", i, conflictCount.get(i));
-            System.out.format(" (%d among these needed fallback ordering)", fallbackCount.get(i));
+            System.out.format(" (%d among these needed fallback ordering)\n", fallbackCount.get(i));
         }
     }
 

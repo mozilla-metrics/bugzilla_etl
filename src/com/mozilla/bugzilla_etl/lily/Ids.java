@@ -40,14 +40,13 @@
 
 package com.mozilla.bugzilla_etl.lily;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import org.lilycms.repository.api.IdGenerator;
 import org.lilycms.repository.api.RecordId;
 import org.lilycms.repository.api.Repository;
 
+import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.base.Bug;
+import com.mozilla.bugzilla_etl.base.Fields.Measurement;
 import com.mozilla.bugzilla_etl.base.Flag;
 import com.mozilla.bugzilla_etl.base.Version;
 
@@ -55,8 +54,6 @@ import com.mozilla.bugzilla_etl.base.Version;
 class Ids {
 
     private final IdGenerator generator;
-    private static final SimpleDateFormat isoFormat
-        = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss,SSS");
 
     public Ids(Repository repository) {
         generator = repository.getIdGenerator();
@@ -64,12 +61,16 @@ class Ids {
 
     /** Generate an id for this bug (no matter if already persisted or not). */
     final RecordId id(Bug bug) {
+        Assert.nonNull(bug);
         return forBug(bug.id());
     }
 
     /** Generate id for this historic bug version record (no matter if already persisted or not). */
     final RecordId id(Version version) {
-        return forVersion(version.bug().id(), version.from());
+        Assert.nonNull(version);
+        Long bugId = version.bug().id();
+        Long versionNumber = version.measurements().get(Measurement.NUMBER);
+        return forVersion(bugId, versionNumber);
     }
 
     /** Generate an id for this flag (no matter if already persisted or not). */
@@ -81,12 +82,13 @@ class Ids {
     }
 
     final RecordId forBug(final Long bugzillaBugId) {
+        Assert.nonNull(bugzillaBugId);
         return generator.newRecordId("#" + bugzillaBugId);
     }
 
-    final RecordId forVersion(final Long bugzillaBugId, final Date modificationDate) {
-        final String isoDate = isoFormat.format(modificationDate);
-        return generator.newRecordId("#" + bugzillaBugId + " @ " + isoDate);
+    final RecordId forVersion(final Long bugzillaBugId, final Long number) {
+        Assert.nonNull(bugzillaBugId, number);
+        return generator.newRecordId("#" + bugzillaBugId + " v" + number);
     }
 
 }

@@ -1,0 +1,58 @@
+#! /bin/bash
+source etl_env.shinclude
+
+if [[ "${#}" -lt "1" ]]; then
+    echo "Need at least two arguments!" >&2
+    exit 1
+fi
+
+from=$1
+to=$2
+start_time="1901-01-01 01:01:01"
+mode="full"
+mode_param="-param:is_initial_import=true"
+if [[ "${#}" -gt "2" ]]; then
+   start_time="${3}"
+   mode_param=""
+   mode="incremental"
+fi
+
+log_dir="./log/$(date +'%Y-%m-%d')-${mode}"
+mkdir -p "${log_dir}"
+log="${log_dir}/${from}.to.${to}.at.$(date +'%H%M')"
+out_log="${log}.log"
+err_log="${log}.err"
+
+echo "[IMPORT] STARTING import from bug #${from} to #${to}, since: ${start_time}" | tee "${out_log}"
+echo "[IMPORT] STARTING import, logging to ${out_log}" | tee "${out_log}"
+echo "[IMPORT] STARTING import at $(date +'%Y%m%d %H%M')" >> "${out_log}"
+echo "" >> "${out_log}"
+
+
+JAVAMAXMEM=1024 "${KETTLE_LIBS}/../pan.sh" "/file:${ETL_HOME}/transformations/lily_update_bug_versions.ktr" \
+    -param:"OVERRIDE_START_TIME=${start_time}" \
+    -param:"BUG_IDS_PARTITION=bug_id >= ${from} and bug_id < ${to}" \
+    -param:"lily_zk_connect_string=${zookeeper_host}" \
+    ${mode_param} \
+    -level:Rowlevel \
+  <&- \
+  >> "${out_log}" 2>>"${err_log}"
+
+echo "" >> "${out_log}"
+echo "[IMPORT] Commiting Solr index:" >> "${out_log}"
+curl -s "http://${solr_host}/solr/update" -H 'Content-type:text/xml' --data-binary '<commit/>' >> "${out_log}" 2>>"${err_log}"
+
+echo "[IMPORT] DONE WITH import from bug #${from} to #${to}, time: $(date)" >> "${out_log}"
+
+
+# #! /bin/bash
+#
+# from=$1
+# to=$2
+# . hosts.shinclude
+# export KETTLE_HOME=/Users/michael/work/mozilla/lily_setup
+#
+# /Users/michael/work/pdi-ee/data-integration/pan.sh /file://Users/michael/work/mozilla/lily_setup/bugzilla_etl/transformations/lily_update_bug_versions.ktr -param:"OVERRIDE_START_TIME=1901-01-01 01:01:01" -param:"BUG_IDS_PARTITION=bug_id >= ${from} and bug_id < ${to}" -param:"lily_zk_connect_string=${zookeeper_host}"  -level:Rowlevel
+
+
+

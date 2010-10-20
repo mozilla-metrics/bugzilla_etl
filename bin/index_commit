@@ -1,0 +1,3 @@
+#! /bin/bash
+source etl_env.shinclude
+curl http://${solr_host}/solr/update -H 'Content-type:text/xml' --data-binary '<commit/>'

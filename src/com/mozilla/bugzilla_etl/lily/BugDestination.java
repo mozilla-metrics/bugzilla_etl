@@ -90,12 +90,6 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
     @Override
     public void send(Bug bug) throws RepositoryException {
 
-        // Create the fake versions so all historic versions are indexed.
-        // This should be removed once we are able to index versions without vtags.
-        for (Version version : bug) send(bug, version);
-        log.format("SEND done with historic versions {bug id='%s', versions='%d'}\n",
-                   bug.id(), bug.numVersions());
-
         // Fetch or create the record.
         final RecordId id = ids.id(bug);
         Record record = null;
@@ -153,6 +147,11 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         log.format("SEND done {bug id='%s', versions='%d', latest='%s'}\n",
                    id, currentVersion, latest);
 
+        // Create the fake versions so all historic versions are indexed.
+        // This should be removed once we are able to index versions without vtags.
+        for (Version version : bug) send(bug, version);
+        log.format("SEND done with historic versions {bug id='%s', versions='%d'}\n",
+                   bug.id(), bug.numVersions());
     }
 
     /**
@@ -163,9 +162,9 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
     private void send(Bug bug, Version version) throws RepositoryException {
 
         Assert.nonNull(bug.id(), version.from(), version.to(), version.annotation());
-        log.format("SEND historic version for #%s: %s\n", bug.id(), version);
 
         final RecordId id = ids.id(version);
+        log.format("SEND {bug historic, id='%s'}\n", id.toString());
         if (version.persistenceState() == PersistenceState.SAVED) {
             // Incremental update: we already know this version.
             log.format("SEND {bug historic, id='%s'} is already persisted. Skipping.\n", id);
@@ -175,7 +174,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
             log.format("SEND historic#%s TRYING TO UPDATE {bug historic, id='%s'}:\n", bug.id(), id);
             log.format("SEND historic#%s TRYING TO UPDATE %s.\n", bug.id(), version);
             Record record = null;
-            record = repository.newRecord(id);
+            record = repository.read(id, 1L);
             record.setRecordType(bugType.getName(), null);
             setVersionMutableFields(record, version);
             log.format("SEND historic#%s (v: %d) EXPIRATION DATE AFTER UPDATE: %s.\n", bug.id(),
@@ -189,8 +188,8 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         // OK, new version.
         Record record = repository.newRecord();
         record.setId(id);
-        record.setField(types.bugParams.get(Fields.Bug.ID).qname,
-                        version.bug().id());
+        record.setField(types.bugParams.get(Fields.Bug.ID).qname, version.bug().id());
+        record.setField(types.bugParams.get(Fields.Bug.REPORTED_BY).qname, bug.reporter());
         setVersionFields(record, version);
         setVersionMutableFields(record, version);
         record.setField(types.vTagParams.get(Types.VTag.HISTORY).qname, 1L);

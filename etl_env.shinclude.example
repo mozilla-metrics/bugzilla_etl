@@ -1,0 +1,19 @@
+#! /bin/bash
+
+# Base dir of the lily build (containing the indexer project)
+export LILY_HOME="/usr/local/bugzilla_etl/lily"
+
+# The etl-project -- contains bin/ and configuration/ 
+export ETL_HOME="/usr/local/bugzilla_etl"
+
+# The folder containing the .kettle dir
+export KETTLE_HOME="/usr/local/bugzilla_etl"
+
+# The folder where the PDI step classes and dependencies go to.
+export KETTLE_LIBS="/usr/local/pdi-ee/data-integration/libext"
+
+# Zookeeper quorum that LilyCMS is also using
+export zookeeper_host="localhost:2181"
+
+# SOLR shard that LilyCMS is also using (one for now)
+export solr_host="localhost:8983"

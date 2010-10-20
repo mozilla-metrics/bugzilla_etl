@@ -102,15 +102,23 @@ public class Bug implements Iterable<Version> {
     public void baseUpon(final Bug existingBug) {
         Assert.check(id.equals(existingBug.id()));
         final LinkedList<Version> existingVersions = existingBug.versions;
+        
+        if (DEBUG_INCREMENTAL_UPDATE) {
+            System.out.print("\n");
+            System.out.format("[REBASE  ] Checking bug #%d\n", id);
+        }
 
-        if (existingBug.versions.getLast().from().after(versions.getLast().from())) {
+        final Version mostRecentExistingVersion = existingVersions.getLast();
+        if (!versions.getLast().from().after(mostRecentExistingVersion.from())) {
             System.out.format("Persistent version of bug #%d newer than version to import.\n", id);
+            System.out.format("Can happen when only untracked fields changed since last update.\n");
         }
 
         // Tell me a ton about this so I can make sure it works
         if (DEBUG_INCREMENTAL_UPDATE) {
-            System.out.format("[REBASE  ] %s\n     UPON  %s\n", this, existingBug);
+            System.out.format("[REBASE >] %s\n", this);
             for (Version version : this) System.out.format("[NEW     ] %s\n", version);
+            System.out.format("[UPON >>>] %s\n", existingBug);
             for (Version version : existingBug) System.out.format("[EXISTING] %s\n", version);
         }
 
@@ -118,7 +126,6 @@ public class Bug implements Iterable<Version> {
         // this can happen if an incremental update is run for a start time that was already
         // included in a (incremental) import.
         //
-        final Version mostRecentExistingVersion = existingVersions.getLast();
         while (!versions.isEmpty() &&
                !versions.getFirst().from().after(mostRecentExistingVersion.from())) {
             if (DEBUG_INCREMENTAL_UPDATE) System.out.format("[.DELETE ] %s\n", versions.getFirst());

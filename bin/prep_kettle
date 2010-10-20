@@ -1,0 +1,5 @@
+#! /bin/bash
+source etl_env.shinclude
+
+./bin/install
+open /Users/michael/work/pdi-ee/data-integration/Data\ Integration\ 64-bit.app

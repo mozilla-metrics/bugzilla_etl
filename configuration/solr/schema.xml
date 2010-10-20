@@ -42,6 +42,7 @@
 
     <!-- com.mozilla.bugzilla_etl.base.Fields.Bug -->
     <field name="bug_id"                        type="tlong"      required="true" />
+    <field name="reported_by"                   type="string"     required="true" />
 
     <!-- com.mozilla.bugzilla_etl.base.Fields.Version -->
     <field name="modified_by"                   type="string"     required="true" />

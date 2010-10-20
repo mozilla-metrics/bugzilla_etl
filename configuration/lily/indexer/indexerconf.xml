@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <indexer xmlns:betl="com.mozilla.bugzilla_etl">
   <cases>
-    <case recordType="betl:Bug" variant="" vtags="last,history"></case>
+    <case recordType="betl:Bug" variant="" vtags="history" indexVersionless="false"></case>
   </cases>
 
   <indexFields>
@@ -9,6 +9,10 @@
     <!-- com.mozilla.bugzilla_etl.base.Fields.Bug -->
     <indexField name="bug_id">
       <value ><field name="betl:id"/></value>
+    </indexField>
+
+    <indexField name="reported_by">
+      <value ><field name="betl:reported_by"/></value>
     </indexField>
 
     <!-- com.mozilla.bugzilla_etl.base.Fields.Version -->

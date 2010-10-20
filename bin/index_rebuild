@@ -1,0 +1,19 @@
+#! /bin/bash
+source etl_env.shinclude
+
+index_name=bmo_v1
+
+indexerconf="${ETL_HOME}/configuration/lily/indexer/indexerconf.xml"
+
+cd "${LILY_HOME}/indexer/admin-cli"
+
+echo "Disabling lily index."
+./target/lily-update-index --zookeeper "${zookeeper_host}" -n "${index_name}" -b BUILD_REQUESTED
+
+# echo "Truncating SOLR index."
+# curl http://${solr_host}/solr/update -H 'Content-type:text/xml' --data-binary '<commit/>'
+# curl http://${solr_host}/solr/update -H 'Content-type:text/xml' --data-binary '<delete><query>*:*</query></delete>'
+# curl http://${solr_host}/solr/update -H 'Content-type:text/xml' --data-binary '<optimize/>'
+
+
+echo "Done."
