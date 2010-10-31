@@ -36,7 +36,7 @@ JAVAMAXMEM=1024 "${KETTLE_LIBS}/../pan.sh" "/file:${ETL_HOME}/transformations/li
     ${mode_param} \
     -level:Rowlevel \
   <&- \
-  >> "${out_log}" 2>>"${err_log}"
+  >> "${out_log}" 2>>"${err_log}" || exit 1
 
 echo "" >> "${out_log}"
 echo "[IMPORT] Commiting Solr index:" >> "${out_log}"

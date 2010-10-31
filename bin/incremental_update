@@ -1,0 +1,20 @@
+#! /bin/bash
+
+# Get the iso date where to start the import (now -61 minutes, 1 minute before the last update).
+function yesterday {
+    python -c \
+     "from datetime import datetime, timedelta; print(str(datetime.now()-timedelta(days=1))[:-7])"
+}
+
+project_dir=$(dirname "${0}")/..
+cd "${project_dir}"
+
+echo "Working from ${project_dir}"
+
+from_date=$(yesterday)
+today=$(date +'%Y-%m-%d')
+err_message="Bugzilla ETL update at failed! From: ${from_date} until ${today}."
+
+./bin/import 1 700001 "'$from_date'" || echo "${message}" | mail -s "IMPORT FAILED (${today})" mkurze@mozilla.com
+
+./bin/index_commit

@@ -131,7 +131,12 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
         final String creationStateAuthor = input.cell(Fields.Bug.REPORTED_BY).stringValue();
         final Long bugId = input.cell(Fields.Bug.ID).longValue();
 
-        if (bugId == null) Assert.unreachable("bug id of null should be impossible!");
+        if (bugId == null) {
+            System.out.format("[BUG_ID OF NULL ENCOUNTERED UNEXPETEDLY");
+            throw new KettleStepException("bug id of null should be impossible!");
+        }
+        System.out.format("[BUG_ID FROM BUG     ] %s ==========================================\n", 
+                          input.cell(Fields.Bug.ID).longValue());
         if (creationStateAuthor == null) Assert.unreachable("Author for bug %s is null!", bugId);
         final Bug bug = new Bug(bugId, creationStateAuthor);
 
@@ -141,6 +146,8 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
         final EnumMap<Fields.Facet, String> facetState = state.first();
         final Map<String, Flag> flagState = state.second();
 
+        System.out.format("[BUG_ID FROM ACTIVITY] %s ------------------------------------------\n", 
+                          input.cell(Fields.Version.BUG_ID).longValue());
         if (input.cell(Fields.Version.BUG_ID).longValue() == null) {
             // No activities (yet). Advance to the next bug and use this bug as-is (initial state).
             // This should always be the first and latest version of a bug.

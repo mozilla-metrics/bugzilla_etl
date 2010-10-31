@@ -17,3 +17,6 @@ export zookeeper_host="localhost:2181"
 
 # SOLR shard that LilyCMS is also using (one for now)
 export solr_host="localhost:8983"
+
+# HDFS host (for backup)
+export hdfs_host="localhost:8020"

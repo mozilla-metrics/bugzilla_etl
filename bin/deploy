@@ -3,7 +3,7 @@ source etl_env.shinclude
 
 etl_dest=mkurze@cm-hadoop23.mozilla.org:/home/mkurze/etl/bugzilla
 rsync -r --delete \
-      --exclude='**/.svn' --exclude 'logs' --exclude='build.properties' \
+      --exclude='**/.svn' --exclude 'log' --exclude='build.properties' \
       --exclude='etl_env.shinclude' --exclude='.classpath' --exclude='.project' \
       --exclude='**/.kettle' \
       "${ETL_HOME}"/* "${etl_dest}/"

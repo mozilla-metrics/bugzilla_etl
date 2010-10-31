@@ -212,8 +212,29 @@ public class Bug implements Iterable<Version> {
 
             final Map<Fields.Measurement, Long> measurements = version.measurements();
             final Map<Fields.Facet, String> facets = version.facets();
-            final String status = facets.get(Facet.STATUS);
-            final String majorStatus = majorStatusTable.get(status);
+            String status = facets.get(Facet.STATUS);
+            String majorStatus = majorStatusTable.get(status);
+            if (majorStatus == null) {
+                // This happens for five very old bugs, so we just handle them hard-coded
+                // :BMO: This needs to go to a configuration file so as not to be mozilla-only
+                int bugId = (int)id.longValue();
+                switch (bugId) {
+                    case 11720: 
+                    case 11721: 
+                    case 20015: 
+                        status = Status.NEW.name(); 
+                        majorStatus = Status.Major.OPEN.name(); 
+                    break;
+                    case 19936: 
+                    case 19952: 
+                        status = Status.CLOSED.name(); 
+                        majorStatus = Status.Major.CLOSED.name(); 
+                    break;
+                    default: 
+                        Assert.unreachable("Status must be set always for every bug!");
+                        return;
+                }
+            }
 
             long previousStatusDays = -1;
             long previousMajorStatusDays = -1;
@@ -230,7 +251,8 @@ public class Bug implements Iterable<Version> {
             final long duration = version.to().getTime() - version.from().getTime();
             msInStatus += duration;
             msInMajorStatus += duration;
-            if (!isLatest && Status.Major.OPEN == Status.Major.valueOf(majorStatus)) {
+            if (!isLatest && majorStatus != null 
+                    && Status.Major.OPEN == Status.Major.valueOf(majorStatus)) {
                 msOpenAccumulated += duration;
             }
 
