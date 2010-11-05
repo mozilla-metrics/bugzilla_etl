@@ -95,7 +95,7 @@ public class WriteBugsToLilyStep extends TransformClassBase {                   
             destination.send(source.receive());
             incrementLinesWritten();
         }
-        catch (org.lilycms.repository.api.RepositoryException error) {
+        catch (org.lilyproject.repository.api.RepositoryException error) {
             error.printStackTrace(System.out);
             System.out.format("Repository Error (%s) (see stack trace above),",
                               new Object[] { error.getClass().getSimpleName() });

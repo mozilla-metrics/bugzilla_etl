@@ -47,11 +47,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.lilycms.repository.api.QName;
-import org.lilycms.repository.api.Record;
-import org.lilycms.repository.api.RecordId;
-import org.lilycms.repository.api.RecordNotFoundException;
-import org.lilycms.repository.api.RepositoryException;
+import org.lilyproject.repository.api.QName;
+import org.lilyproject.repository.api.Record;
+import org.lilyproject.repository.api.RecordId;
+import org.lilyproject.repository.api.RecordNotFoundException;
+import org.lilyproject.repository.api.RepositoryException;
 
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.base.Bug;

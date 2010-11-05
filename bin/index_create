@@ -1,0 +1,8 @@
+#! /bin/bash
+source etl_env.shinclude
+source bin/etl_config.shinclude
+
+cd "${LILY_HOME}"
+
+./bin/lily-add-index --zookeeper "${zookeeper_host}" -n "${index_name}" --solr-shards "shard_1:http://${solr_host}/solr/" --indexer-config "${indexerconf}"
+

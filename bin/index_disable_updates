@@ -1,0 +1,11 @@
+#! /bin/bash
+source etl_env.shinclude
+source bin/etl_config.shinclude
+
+cd "${LILY_HOME}"
+
+echo "Disabling lily index."
+./bin/lily-update-index --zookeeper "${zookeeper_host}" -n "${index_name}" --update-state "DO_NOT_SUBSCRIBE"
+
+echo "Live updates to the index ${index_name} should be disabled now."
+

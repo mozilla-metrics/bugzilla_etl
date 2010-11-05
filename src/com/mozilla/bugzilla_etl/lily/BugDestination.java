@@ -45,17 +45,17 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.joda.time.DateTime;
-import org.lilycms.repository.api.FieldTypeNotFoundException;
-import org.lilycms.repository.api.Record;
-import org.lilycms.repository.api.RecordException;
-import org.lilycms.repository.api.RecordExistsException;
-import org.lilycms.repository.api.RecordId;
-import org.lilycms.repository.api.RecordNotFoundException;
-import org.lilycms.repository.api.RecordType;
-import org.lilycms.repository.api.RecordTypeNotFoundException;
-import org.lilycms.repository.api.RepositoryException;
-import org.lilycms.repository.api.TypeException;
-import org.lilycms.repository.api.VersionNotFoundException;
+import org.lilyproject.repository.api.FieldTypeNotFoundException;
+import org.lilyproject.repository.api.Record;
+import org.lilyproject.repository.api.RecordException;
+import org.lilyproject.repository.api.RecordExistsException;
+import org.lilyproject.repository.api.RecordId;
+import org.lilyproject.repository.api.RecordNotFoundException;
+import org.lilyproject.repository.api.RecordType;
+import org.lilyproject.repository.api.RecordTypeNotFoundException;
+import org.lilyproject.repository.api.RepositoryException;
+import org.lilyproject.repository.api.TypeException;
+import org.lilyproject.repository.api.VersionNotFoundException;
 
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.base.Bug;

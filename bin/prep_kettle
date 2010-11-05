@@ -2,4 +2,5 @@
 source etl_env.shinclude
 
 ./bin/install
+cp $KETTLE_HOME/.kettle/kettle.properties $HOME/.kettle/kettle.properties
 open /Users/michael/work/pdi-ee/data-integration/Data\ Integration\ 64-bit.app

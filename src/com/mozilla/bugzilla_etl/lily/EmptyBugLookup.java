@@ -40,7 +40,7 @@
 
 package com.mozilla.bugzilla_etl.lily;
 
-import org.lilycms.repository.api.RepositoryException;
+import org.lilyproject.repository.api.RepositoryException;
 
 import com.mozilla.bugzilla_etl.base.Bug;
 

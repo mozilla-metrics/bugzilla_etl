@@ -45,18 +45,18 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.lilycms.client.LilyClient;
-import org.lilycms.repository.api.FieldType;
-import org.lilycms.repository.api.FieldTypeExistsException;
-import org.lilycms.repository.api.FieldTypeNotFoundException;
-import org.lilycms.repository.api.QName;
-import org.lilycms.repository.api.RecordType;
-import org.lilycms.repository.api.RecordTypeNotFoundException;
-import org.lilycms.repository.api.Repository;
-import org.lilycms.repository.api.Scope;
-import org.lilycms.repository.api.TypeException;
-import org.lilycms.repository.api.TypeManager;
-import org.lilycms.repository.api.ValueType;
+import org.lilyproject.client.LilyClient;
+import org.lilyproject.repository.api.FieldType;
+import org.lilyproject.repository.api.FieldTypeExistsException;
+import org.lilyproject.repository.api.FieldTypeNotFoundException;
+import org.lilyproject.repository.api.QName;
+import org.lilyproject.repository.api.RecordType;
+import org.lilyproject.repository.api.RecordTypeNotFoundException;
+import org.lilyproject.repository.api.Repository;
+import org.lilyproject.repository.api.Scope;
+import org.lilyproject.repository.api.TypeException;
+import org.lilyproject.repository.api.TypeManager;
+import org.lilyproject.repository.api.ValueType;
 
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.base.Fields;
@@ -65,7 +65,7 @@ import com.mozilla.bugzilla_etl.base.Fields;
 class Types {
 
     static final String NS = "com.mozilla.bugzilla_etl";
-    static final String NS_VTAG = "org.lilycms.vtag";
+    static final String NS_VTAG = "org.lilyproject.vtag";
 
     enum VTag { LAST, HISTORY }
 
@@ -190,7 +190,7 @@ class Types {
                     break;
                 }
                 if (fields.get(field) == Params.UNUSED) continue;
-                type.addFieldTypeEntry(createOrGetFieldType(params).getId(), 
+                type.addFieldTypeEntry(createOrGetFieldType(params).getId(),
                                        !NS_VTAG.equals(params.qname.getNamespace()));
             }
         }

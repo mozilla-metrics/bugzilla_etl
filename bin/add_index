@@ -1,9 +1,0 @@
-#! /bin/bash
-source etl_env.shinclude
-
-indexerconf="${ETL_HOME}/configuration/lily/indexer/indexerconf.xml"
-
-cd "${LILY_HOME}/indexer/admin-cli"
-
-./target/lily-add-index --zookeeper "${zookeeper_host}" -n bmo_v1 --solr-shards "shard_1:http://${solr_host}/solr/" --indexer-config "${indexerconf}"
-

@@ -1,7 +1,0 @@
-#! /bin/bash
-source etl_env.shinclude
-
-# YMMV
-export HADOOP_CLASSPATH="/usr/lib/hbase/lib/guava-r05.jar:/usr/lib/hbase/lib/zookeeper.jar:$HADOOP_CLASSPATH"
-
-tables="

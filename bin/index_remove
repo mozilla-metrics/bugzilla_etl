@@ -1,23 +1,15 @@
 #! /bin/bash
 source etl_env.shinclude
-
-index_name=bmo_v1
+source bin/etl_config.shinclude
 
 echo "Are you sure that you want to destroy the index ${index_name}?"
-echo "The index on SOLR host ${solr_host} will be destroyed as well. Type 'Yes' to confirm."
-read confirmation
-if [[ "${confirmation}" != "Yes" ]]; 
-then
-    echo "Aborted."
-    exit 0
-fi
+echo "The index on SOLR host ${solr_host} will be destroyed as well."
+need_confirm
 
-indexerconf="${ETL_HOME}/configuration/lily/indexer/indexerconf.xml"
-
-cd "${LILY_HOME}/indexer/admin-cli"
+cd "${LILY_HOME}"
 
 echo "Disabling lily index."
-./target/lily-update-index --zookeeper "${zookeeper_host}" -n "${index_name}" --state DELETE_REQUESTED
+./bin/lily-update-index --zookeeper "${zookeeper_host}" -n "${index_name}" --state DELETE_REQUESTED
 
 echo "Truncating SOLR index."
 curl http://${solr_host}/solr/update -H 'Content-type:text/xml' --data-binary '<commit/>'

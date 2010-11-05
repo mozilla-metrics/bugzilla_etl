@@ -1,9 +1,8 @@
 #! /bin/bash
 source etl_env.shinclude
+source bin/etl_config.shinclude
 
-indexerconf="${ETL_HOME}/configuration/lily/indexer/indexerconf.xml"
+cd "${LILY_HOME}"
 
-cd "${LILY_HOME}/indexer/admin-cli"
-
-./target/lily-list-indexes --zookeeper "${zookeeper_host}" 
+./bin/lily-list-indexes --zookeeper "${zookeeper_host}"
 

@@ -27,7 +27,7 @@
         <parameter>
             <name>lily_zk_connect_string</name>
             <default_value>cm-hadoop23:2181</default_value>
-            <description>zookeeper quorum that manages our LilyCMS instance</description>
+            <description>zookeeper quorum that manages our Lily Server instance</description>
         </parameter>
     </parameters>
     <log>
@@ -62,10 +62,10 @@
       <offset>0.0</offset>
       <maxdiff>0.0</maxdiff>
     </maxdate>
-    <size_rowset>10000</size_rowset>
+    <size_rowset>100000</size_rowset>
     <sleep_time_empty>50</sleep_time_empty>
     <sleep_time_full>50</sleep_time_full>
-    <unique_connections>N</unique_connections>
+    <unique_connections>Y</unique_connections>
     <feedback_shown>Y</feedback_shown>
     <feedback_size>50000</feedback_size>
     <using_thread_priorities>Y</using_thread_priorities>
@@ -86,10 +86,10 @@
   </info>
   <notepads>
     <notepad>
-      <note>:TODO: Get latest import date from LilyCMS</note>
+      <note>:TODO: Get latest import date from Lily Server</note>
       <xloc>298</xloc>
       <yloc>156</yloc>
-      <width>221</width>
+      <width>234</width>
       <heigth>23</heigth>
       <fontname>Ariel</fontname>
       <fontsize>10</fontsize>
@@ -231,9 +231,6 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
 var bugIDsPartition = getVariable(&quot;BUG_IDS_PARTITION&quot;, &quot;1 = 1&quot;);
 var overrideStartTime = getVariable(&quot;OVERRIDE_START_TIME&quot;, &quot;&quot;);
 
-endDateTime = new Date();
-endDateTime.setMilliseconds(0);
-
 if (overrideStartTime.length == 19) {
 	startDateTime = str2date(overrideStartTime, &quot;yyyy-MM-dd HH:mm:ss&quot;);
 } else {
@@ -255,12 +252,6 @@ writeToLog(&quot;m&quot;, &quot;Updating FACT_bug_states &quot;+bugIDsPartition+
 </jsScript_script>
       </jsScript>    </jsScripts>    <fields>      <field>        <name>startDateTime</name>
         <rename>START_DATE_RANGE</rename>
-        <type>Date</type>
-        <length>-1</length>
-        <precision>-1</precision>
-        <replace>N</replace>
-      </field>      <field>        <name>endDateTime</name>
-        <rename>END_DATE_RANGE</rename>
         <type>Date</type>
         <length>-1</length>
         <precision>-1</precision>
@@ -775,7 +766,7 @@ writeToLog(&quot;m&quot;, &quot;Updating FACT_bug_states &quot;+bugIDsPartition+
 , &apos;flag&apos; as field_name
 FROM flags as f JOIN flagtypes as type on f.type_id = type.id
 WHERE type.target_type = &apos;b&apos; 
-and modification_date &gt; ? and modification_date &lt;= ?
+and modification_date &gt; ?
 AND ${BUG_IDS_PARTITION}
 ORDER BY bug_id ASC</sql>
     <limit>0</limit>
@@ -821,7 +812,7 @@ ORDER BY bug_id ASC</sql>
 FROM sanitized_bugs_activity sba
 JOIN fielddefs fd ON sba.fieldid = fd.id
 JOIN profiles modifier ON who = modifier.userid
-WHERE bug_when &gt; ? and bug_when &lt;= ?
+WHERE bug_when &gt; ?
 AND ${BUG_IDS_PARTITION}
 AND name IN (&apos;assigned_to&apos;, &apos;bug_severity&apos;, &apos;bug_status&apos;, &apos;component&apos;, &apos;flagtypes.name&apos;, &apos;keywords&apos;, &apos;op_sys&apos;, &apos;priority&apos;, &apos;product&apos;, &apos;resolution&apos;, &apos;status_whiteboard&apos;, &apos;target_milestone&apos;, &apos;version&apos;)
 AND attach_id is null
@@ -875,7 +866,7 @@ JOIN profiles assignee ON assignee.userid = bugs.assigned_to
 JOIN profiles reporter ON reporter.userid = bugs.reporter
 JOIN products prod ON prod.id = product_id
 JOIN components comp ON comp.id = component_id
-WHERE delta_ts &gt; ? and delta_ts &lt;= ?
+WHERE delta_ts &gt; ?
 AND ${BUG_IDS_PARTITION}
 ORDER BY bug_id ASC</sql>
     <limit>0</limit>
@@ -1749,7 +1740,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
             RowSet input = (RowSet)this.getInputRowSets().get(0);
             source = new com.mozilla.bugzilla_etl.di.BugSource(this, input);
             final String lilyConnectString = getParameter("lily_zk_connect_string");
-            System.out.print("Connecting to LilyCMS (zookeeper at '" + lilyConnectString + "')\n");
+            System.out.print("Connecting to Lily Server (zookeeper at '" + lilyConnectString + "')\n");
             destination = new com.mozilla.bugzilla_etl.lily.BugDestination(System.out,
                                                                            lilyConnectString);
         }
@@ -1764,7 +1755,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
             destination.send(source.receive());
             incrementLinesWritten();
         }
-        catch (org.lilycms.repository.api.RepositoryException error) {
+        catch (org.lilyproject.repository.api.RepositoryException error) {
             error.printStackTrace(System.out);
             System.out.format("Repository Error (%s) (see stack trace above),",
                               new Object[] { error.getClass().getSimpleName() });
@@ -1784,6 +1775,63 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>245</xloc>
       <yloc>906</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>HTTP Post</name>
+    <type>HTTPPOST</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <postafile>N</postafile>
+    <encoding/>
+    <url/>
+    <urlInField>N</urlInField>
+    <urlField/>
+    <requestEntity/>
+    <httpLogin/>
+    <httpPassword/>
+    <proxyHost/>
+    <proxyPort/>
+    <lookup>
+      </lookup>
+    <result>
+      <name>result</name>
+      <code/>
+      </result>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>741</xloc>
+      <yloc>195</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Execute a process</name>
+    <type>ExecProcess</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <processfield/>
+    <resultfieldname>Result output</resultfieldname>
+    <errorfieldname>Error output</errorfieldname>
+    <exitvaluefieldname>Exit value</exitvaluefieldname>
+    <failwhennotsuccess>N</failwhennotsuccess>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>890</xloc>
+      <yloc>356</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

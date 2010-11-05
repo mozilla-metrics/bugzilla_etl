@@ -61,7 +61,7 @@ def delete_bug(lily_host, bug_id):
         print("[Bug #%s] deleted slave/version records" % bug_id)
 
         delete(con, master_path)
-        print("[Bug #%s] deleted master record.")
+        print("[Bug #%s] deleted master record." % bug_id)
 
     except HTTPException, e:
         print("HTTP connection error")
@@ -89,8 +89,9 @@ def main(arguments):
         delete_bug(lily_host, id)
         print("")
 
-    print("Run 'bin/index_commit' to make index changes visible.")
-    print("Run 'bin/import %s %s' to re-import the bugs you deleted." % (from_id, to_id))
+    print("You should run:                     echo \"major_compact 'recordTable' | hbase shell\"")
+    print("To make index changes visible, run: bin/index_commit .")
+    print("To re-import (after compaction):    bin/import %s %s" % (from_id, to_id))
 
 
 

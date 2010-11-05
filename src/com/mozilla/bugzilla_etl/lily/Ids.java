@@ -40,9 +40,9 @@
 
 package com.mozilla.bugzilla_etl.lily;
 
-import org.lilycms.repository.api.IdGenerator;
-import org.lilycms.repository.api.RecordId;
-import org.lilycms.repository.api.Repository;
+import org.lilyproject.repository.api.IdGenerator;
+import org.lilyproject.repository.api.RecordId;
+import org.lilyproject.repository.api.Repository;
 
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.base.Bug;

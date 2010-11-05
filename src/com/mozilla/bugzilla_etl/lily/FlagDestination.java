@@ -42,11 +42,11 @@ package com.mozilla.bugzilla_etl.lily;
 
 import java.io.PrintStream;
 
-import org.lilycms.repository.api.Record;
-import org.lilycms.repository.api.RecordId;
-import org.lilycms.repository.api.RecordNotFoundException;
-import org.lilycms.repository.api.RecordType;
-import org.lilycms.repository.api.RepositoryException;
+import org.lilyproject.repository.api.Record;
+import org.lilyproject.repository.api.RecordId;
+import org.lilyproject.repository.api.RecordNotFoundException;
+import org.lilyproject.repository.api.RecordType;
+import org.lilyproject.repository.api.RepositoryException;
 
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.base.Destination;

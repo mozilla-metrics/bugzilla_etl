@@ -43,15 +43,15 @@ package com.mozilla.bugzilla_etl.lily;
 import java.io.PrintStream;
 
 import org.apache.zookeeper.KeeperException;
-import org.lilycms.client.LilyClient;
-import org.lilycms.repository.api.Repository;
+import org.lilyproject.client.LilyClient;
+import org.lilyproject.repository.api.Repository;
 
 import com.mozilla.bugzilla_etl.base.Assert;
 
 abstract class AbstractLilyClient {
 
     static final int ZK_TIMEOUT_MS = 5000;
-    
+
     protected final LilyClient client;
     protected final Repository repository;
     protected final PrintStream log;

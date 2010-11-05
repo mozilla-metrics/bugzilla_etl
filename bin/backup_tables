@@ -1,22 +1,21 @@
 #! /bin/bash
 source etl_env.shinclude
+source bin/etl_config.shinclude
 
 # Modify the classpath -- YMMV
 # Fortunately the classpath is transmitted to the actual task nodes.
 
-hbase_home="/usr/lib/hbase"
-
 # Get hbase conf on there (e.g. for zk quorum location)
 export HADOOP_CLASSPATH="/etc/hbase/conf/:$HADOOP_CLASSPATH"
 # Get zookeeper on there (hadoop does not know about zk, but hbase export needs it)
-export HADOOP_CLASSPATH="${hbase_home}/lib/zookeeper.jar:$HADOOP_CLASSPATH"
+export HADOOP_CLASSPATH="${HBASE_HOME}/lib/zookeeper.jar:$HADOOP_CLASSPATH"
 # Google collections API is used by the export task
-export HADOOP_CLASSPATH="${hbase_home}/lib/guava-r05.jar:$HADOOP_CLASSPATH"
+export HADOOP_CLASSPATH="${HBASE_HOME}/lib/guava-r05.jar:$HADOOP_CLASSPATH"
 
-tables="typeTable recordTable indexmeta"
 date_prefix="$(date +'%Y%m%d_%H%M')"
-for tableName in $tables; do
-    dest="hdfs://${hdfs_host}/user/${USER}/lily_backup/${date_prefix}_${tableName}"
+for tableName in $tables;
+do
+   dest="hdfs://${hdfs_host}/user/${USER}/lily_backup/${date_prefix}_${tableName}"
     echo "major_compact '$tableName'" | hbase shell
-    hadoop jar "${hbase_home}/hbase.jar" export "${tableName}" "${dest}"
+    hadoop jar "${HBASE_HOME}/hbase.jar" export "${tableName}" "${dest}"
 done
