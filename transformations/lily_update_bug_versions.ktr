@@ -11,7 +11,7 @@
     <parameters>
         <parameter>
             <name>BUG_IDS_PARTITION</name>
-            <default_value>bug_id &gt; 555144 and bug_id &lt; 555145</default_value>
+            <default_value>bug_id &gt;= 313529 and bug_id &lt; 313530</default_value>
             <description>Partitioning to reduce memory and process time for big batch processing</description>
         </parameter>
         <parameter>
@@ -1775,63 +1775,6 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>245</xloc>
       <yloc>906</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>HTTP Post</name>
-    <type>HTTPPOST</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <postafile>N</postafile>
-    <encoding/>
-    <url/>
-    <urlInField>N</urlInField>
-    <urlField/>
-    <requestEntity/>
-    <httpLogin/>
-    <httpPassword/>
-    <proxyHost/>
-    <proxyPort/>
-    <lookup>
-      </lookup>
-    <result>
-      <name>result</name>
-      <code/>
-      </result>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>741</xloc>
-      <yloc>195</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Execute a process</name>
-    <type>ExecProcess</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <processfield/>
-    <resultfieldname>Result output</resultfieldname>
-    <errorfieldname>Error output</errorfieldname>
-    <exitvaluefieldname>Exit value</exitvaluefieldname>
-    <failwhennotsuccess>N</failwhennotsuccess>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>890</xloc>
-      <yloc>356</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

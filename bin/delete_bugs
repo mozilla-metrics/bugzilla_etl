@@ -37,19 +37,19 @@ def delete_bug(lily_host, bug_id):
         con = HTTPConnection(lily_host)
         print("[Bug #%s] getting master bug record versions" % bug_id)
         master_id = "USER.#%s" % bug_id
-        master_path = "/record/%s" % quote(master_id)
+        master_path = "/repository/record/%s" % quote(master_id)
         try:
             master = get(con, master_path)
         except Http404:
             print("[Bug #%s] 404 does not exists. skipping" % bug_id)
             return
         num_versions = master["version"]
-        print("[Bug #%s] OK got bug '%r' (%s versions)" % (bug_id, master["id"], num_versions))
+        print("[Bug #%s] OK got bug '%s' (%s versions)" % (bug_id, master["id"], num_versions))
 
         print("[Bug #%s] getting slave/version record ids" % bug_id)
         for v in xrange(num_versions, 0, -1):
             slave_id = "%s v%s" % (master_id, v)
-            slave_path = "/record/%s" % quote(slave_id)
+            slave_path = "/repository/record/%s" % quote(slave_id)
             try:
                 slave = get(con, slave_path)
                 print("[Bug #%s] ... v%s OK got slave record %r" % (bug_id, v, slave["id"]))
@@ -89,7 +89,7 @@ def main(arguments):
         delete_bug(lily_host, id)
         print("")
 
-    print("You should run:                     echo \"major_compact 'recordTable' | hbase shell\"")
+    print("You should run:                     echo \"major_compact 'record' | hbase shell\"")
     print("To make index changes visible, run: bin/index_commit .")
     print("To re-import (after compaction):    bin/import %s %s" % (from_id, to_id))
 
