@@ -85,8 +85,8 @@ public class Input {
         return current != null;
     }
 
-    public boolean hasMore() {
-        return next != null;
+    public boolean empty() {
+        return current == null;
     }
 
     /** Allows to keep a handle to a row. */

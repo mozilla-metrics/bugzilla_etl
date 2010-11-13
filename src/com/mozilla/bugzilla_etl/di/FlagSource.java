@@ -61,7 +61,7 @@ public class FlagSource implements Source<Flag, KettleException> {
 
     @Override
     public boolean hasMore() {
-        return input.hasMore();
+        return !input.empty();
     }
 
     @Override

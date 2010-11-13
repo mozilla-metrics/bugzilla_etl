@@ -56,9 +56,11 @@ public class Flag {
                 case '?': return REQUESTED;
                 case '+': return APPROVED;
                 case '-': return DENIED;
+                default: 
+                    throw new IllegalArgumentException(
+                        "Unknown status indicator '" + indicator + "' on flag."
+                    );
             }
-            Assert.unreachable("Unknown status indicator '%s' on flag.", indicator);
-            return null;
         }
         Status(char indicator) { this.indicator = indicator; }
     }
@@ -77,8 +79,15 @@ public class Flag {
         if (requesteePos != -1) representation = representation.substring(0, requesteePos);
         final int indicatorPos = representation.length() -1;
         Assert.check(indicatorPos > 0);
-        return new Flag(representation.substring(0, indicatorPos),
-                        Status.forIndicator(representation.charAt(indicatorPos)));
+        try {
+            return new Flag(representation.substring(0, indicatorPos),
+                            Status.forIndicator(representation.charAt(indicatorPos)));
+        }
+        catch (IllegalArgumentException exception) {
+            // :BMO: There is a field overflow in Bug 448640, flag-spam as Beltzner puts it. 
+            if (!representation.equals("in-testsu")) Assert.unreachable(exception.getMessage());
+            return new Flag("in-testsuite", Status.REQUESTED);
+        }
     }
 
     public Flag(final String flagType, final Status status) {

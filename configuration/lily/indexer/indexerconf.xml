@@ -15,6 +15,10 @@
       <value ><field name="betl:reported_by"/></value>
     </indexField>
 
+    <indexField name="creation_date">
+      <value ><field name="betl:creation_date"/></value>
+    </indexField>
+    
     <!-- com.mozilla.bugzilla_etl.base.Fields.Version -->
     <indexField name="modified_by">
       <value ><field name="betl:modified_by"/></value>
@@ -53,6 +57,14 @@
       <value ><field name="betl:major_status"/></value>
     </indexField>
 
+    <indexField name="major_status_last_changed_date">
+      <value ><field name="betl:major_status_last_changed_date"/></value>
+    </indexField>
+    
+    <indexField name="modified_fields">
+      <value ><field name="betl:modified_fields"/></value>
+    </indexField>
+
     <indexField name="opsys">
       <value ><field name="betl:opsys"/></value>
     </indexField>
@@ -83,6 +95,10 @@
 
     <indexField name="status">
       <value ><field name="betl:status"/></value>
+    </indexField>
+
+    <indexField name="status_last_changed_date">
+      <value ><field name="betl:status_last_changed_date"/></value>
     </indexField>
 
     <indexField name="status_whiteboard">

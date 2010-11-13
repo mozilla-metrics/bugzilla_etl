@@ -43,6 +43,7 @@ package com.mozilla.bugzilla_etl.base;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
@@ -52,10 +53,11 @@ import com.mozilla.bugzilla_etl.base.Fields.Measurement;
 /** A bug with its invariant properties and all of its versions. */
 public class Bug implements Iterable<Version> {
 
-    public Bug(Long id, String reporter) {
+    public Bug(Long id, String reporter, Date creationDate) {
         Assert.nonNull(id, reporter);
         this.id = id;
         this.reporter = reporter;
+        this.creationDate = creationDate;
         versions = new LinkedList<Version>();
     }
 
@@ -63,10 +65,12 @@ public class Bug implements Iterable<Version> {
     private boolean DEBUG_INCREMENTAL_UPDATE = true;
     private final Long id;
     private final String reporter;
+    private final Date creationDate;
     private final LinkedList<Version> versions;
 
     public Long id() { return id; }
     public String reporter() { return reporter; }
+    public Date creationDate() { return creationDate; }
     public int numVersions() { return versions.size(); }
 
     @Override
@@ -151,13 +155,13 @@ public class Bug implements Iterable<Version> {
 
     public void prepend(Version earlierVersion) {
         Assert.nonNull(earlierVersion);
-        Assert.check(versions.isEmpty() || versions.peek().from().after(earlierVersion.to()));
+        Assert.check(versions.isEmpty() || !versions.peek().from().before(earlierVersion.to()));
         versions.addFirst(earlierVersion);
     }
 
     public void append(Version laterVersion) {
         Assert.nonNull(laterVersion);
-        Assert.check(versions.isEmpty() || versions.getLast().to().before(laterVersion.from()));
+        Assert.check(versions.isEmpty() || !versions.getLast().to().after(laterVersion.from()));
         versions.addLast(laterVersion);
     }
 
@@ -186,7 +190,6 @@ public class Bug implements Iterable<Version> {
      *
      * Flags are changed from their incremental representation to their full representation.
      *
-     * :TODO: Implement incremental update.
      * @param majorStatusTable A mapping from status names to major status names.
      */
     public void updateFacetsAndMeasurements(final Map<String, String> majorStatusTable,
@@ -199,8 +202,9 @@ public class Bug implements Iterable<Version> {
         // and no change for days_open_accumulated
         boolean isLatest;
 
-        String previousStatus = null;
-        String previousMajorStatus = null;
+        Map<Fields.Facet, String> previousFacets = Version.createFacets();
+        Date statusLastChanged = null;
+        Date majorStatusLastChanged = null;
         long msInStatus = 0;
         long msInMajorStatus = 0;
         long msOpenAccumulated = 0;
@@ -210,23 +214,21 @@ public class Bug implements Iterable<Version> {
 
             isLatest = version.to().after(now);
 
-            final Map<Fields.Measurement, Long> measurements = version.measurements();
             final Map<Fields.Facet, String> facets = version.facets();
+            final Map<Fields.Measurement, Long> measurements = version.measurements();
+            
             String status = facets.get(Facet.STATUS);
             String majorStatus = majorStatusTable.get(status);
             if (majorStatus == null) {
-                // This happens for five very old bugs, so we just handle them hard-coded
-                // :BMO: This needs to go to a configuration file so as not to be mozilla-only
+                // :BMO: This should go to a configuration file so as not to be mozilla-only.
+                // This happens for five very old bugs, so we just handle them hard-coded.
                 int bugId = (int)id.longValue();
                 switch (bugId) {
-                    case 11720: 
-                    case 11721: 
-                    case 20015: 
+                    case 11720: case 11721: case 20015: 
                         status = Status.NEW.name(); 
                         majorStatus = Status.Major.OPEN.name(); 
                     break;
-                    case 19936: 
-                    case 19952: 
+                    case 19936: case 19952: 
                         status = Status.CLOSED.name(); 
                         majorStatus = Status.Major.CLOSED.name(); 
                     break;
@@ -236,15 +238,22 @@ public class Bug implements Iterable<Version> {
                 }
             }
 
+            facets.put(Facet.STATUS_LAST_CHANGED_DATE, 
+                       Converters.DATE.format(statusLastChanged));
+            facets.put(Facet.MAJOR_STATUS_LAST_CHANGED_DATE, 
+                       Converters.DATE.format(majorStatusLastChanged));
+            
             long previousStatusDays = -1;
             long previousMajorStatusDays = -1;
-            if (number > 1 && !status.equals(previousStatus)) {
+            if (number > 1 && !status.equals(previousFacets.get(Facet.STATUS))) {
                 previousStatusDays = msInStatus/day;
                 msInStatus = 0;
-                if (!majorStatus.equals(previousMajorStatus)) {
+                statusLastChanged = version.from();
+                if (!majorStatus.equals(previousFacets.get(Facet.MAJOR_STATUS))) {
                     if (Status.valueOf(status) == Status.REOPENED) ++reopened;
                     previousMajorStatusDays = msInMajorStatus/day;
                     msInMajorStatus = 0;
+                    majorStatusLastChanged = version.from();
                 }
             }
 
@@ -257,8 +266,24 @@ public class Bug implements Iterable<Version> {
             }
 
             facets.put(Facet.MAJOR_STATUS, majorStatus);
-            facets.put(Facet.PREVIOUS_STATUS, previousStatus);
-            facets.put(Facet.PREVIOUS_MAJOR_STATUS, previousMajorStatus);
+            facets.put(Facet.PREVIOUS_STATUS, previousFacets.get(Facet.STATUS));
+            facets.put(Facet.PREVIOUS_MAJOR_STATUS, previousFacets.get(Facet.MAJOR_STATUS));
+
+            final List<String> fieldsModified = new java.util.LinkedList<String>();
+            for (Facet facet : Facet.values()) {
+                if (facet.isComputed) continue;
+                boolean changed = false;
+                if (previousFacets.get(facet) == null) {
+                    changed = facets.get(facet) != null;  
+                }
+                else {
+                    changed = !previousFacets.get(facet).equals(facets.get(facet)); 
+                }
+                if (changed) fieldsModified.add(facet.name().toLowerCase());
+            }
+            facets.put(Facet.MODIFIED_FIELDS, Converters.FIELDS_MODIFIED.format(fieldsModified));
+            
+            
             measurements.put(Measurement.DAYS_IN_PREVIOUS_STATUS,
                              Long.valueOf(previousStatusDays));
             measurements.put(Measurement.DAYS_IN_PREVIOUS_MAJOR_STATUS,
@@ -274,11 +299,11 @@ public class Bug implements Iterable<Version> {
             measurements.put(Measurement.NUMBER,
                              Long.valueOf(number));
 
-            previousStatus = status;
-            previousMajorStatus = majorStatus;
+            previousFacets = facets;
             ++number;
         }
 
     }
+
 }
 

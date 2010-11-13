@@ -43,6 +43,7 @@ package com.mozilla.bugzilla_etl.lily;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Date;
 
 import org.joda.time.DateTime;
 import org.lilyproject.repository.api.FieldTypeNotFoundException;
@@ -94,11 +95,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         final RecordId id = ids.id(bug);
         Record record = null;
         if (bug.iterator().next().persistenceState() == PersistenceState.NEW) {
-            record = repository.newRecord();
-            record.setRecordType(bugType.getName(), null);
-            record.setId(id);
-            record.setField(types.bugParams.get(Fields.Bug.ID).qname, bug.id());
-            record.setField(types.bugParams.get(Fields.Bug.REPORTED_BY).qname, bug.reporter());
+            record = newBugRecord(bug, id);           
             log.format("SEND {bug id='%s'} is new.\n", id);
         }
         else {
@@ -186,22 +183,55 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         }
 
         // OK, new version.
-        Record record = repository.newRecord();
-        record.setId(id);
-        record.setField(types.bugParams.get(Fields.Bug.ID).qname, version.bug().id());
-        record.setField(types.bugParams.get(Fields.Bug.REPORTED_BY).qname, bug.reporter());
+        Record record = newBugRecord(bug, id);
         setVersionFields(record, version);
         setVersionMutableFields(record, version);
         record.setField(types.vTagParams.get(Types.VTag.HISTORY).qname, 1L);
-        try {
-            record = repository.create(record);
-            historicCounter.increment(Counter.Item.NEW_ZERO);
-        }
-        catch (RecordExistsException exists) {
-            log.format("SEND {bug historic, id='%s'} already exists! Previous run cancelled?\n", id);
+        createWithRetry(record, String.format("{bug historic, id='%s'}", id));
+    }
+    
+    private void createWithRetry(Record record, String description) throws RepositoryException {
+        final int MAX_RETRIES = 20;
+        final int WAIT_MS = 500;
+        int retries = MAX_RETRIES;
+        while (retries > 0) {
+            try {
+                record = repository.create(record);
+                retries = 0;
+                historicCounter.increment(Counter.Item.NEW_ZERO);
+            }
+            catch (RecordExistsException exists) {
+                log.format("SEND %s exists! Previous run cancelled?\n", description);
+            }
+            catch (RecordException exception) {                
+                if (retries == 0) {
+                    log.format("SEND %s -- RecordException: Retries exhausted.\n", description);
+                    throw exception;
+                }
+                log.format("SEND %s RecordException (see below): Retrying.\n", description);
+                exception.printStackTrace(log);
+                --retries;
+                try {
+                    wait(WAIT_MS);
+                } catch (InterruptedException e) { }
+            }
         }
     }
 
+    private Record newBugRecord(final Bug bug, final RecordId id) {
+        Record record = repository.newRecord();
+        record.setId(id);
+        record.setRecordType(bugType.getName(), null);
+        record.setField(types.bugParams.get(Fields.Bug.ID).qname, bug.id());
+        record.setField(types.bugParams.get(Fields.Bug.REPORTED_BY).qname, bug.reporter());
+        Assert.nonNull(types.bugParams.get(Fields.Bug.CREATION_DATE),
+                       types.bugParams.get(Fields.Bug.CREATION_DATE).qname,
+                       bug.creationDate());
+        record.setField(types.bugParams.get(Fields.Bug.CREATION_DATE).qname, 
+                        new DateTime(bug.creationDate().getTime()));
+        return record;
+    }
+    
     private void setVersionMutableFields(Record record, Version version) {
         record.setField(types.versionParams.get(Fields.Version.EXPIRATION_DATE).qname,
                         new DateTime(version.to().getTime()));
@@ -218,14 +248,22 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         for (final Entry<Fields.Facet, String> entry : version.facets().entrySet()) {
             final Fields.Facet facet = entry.getKey();
             final Params params = types.facetParams.get(facet);
+            if (params.type == types.strings) {
+                String value = entry.getValue();
+                if (value == null) value = "<none>";
+                record.setField(params.qname, value);
+                continue;
+            }
             if (params.type == types.stringlists) {
                 List<String> values = csvConverter.parse(entry.getValue());
                 record.setField(params.qname, values);
                 continue;
             }
-            String value = entry.getValue();
-            if (value == null) value = "<none>";
-            record.setField(params.qname, value);
+            if (params.type == types.dates) {
+                Date value = Converters.DATE.parse(entry.getValue());
+                if (value != null) record.setField(params.qname, new DateTime(value.getTime()));
+                continue;
+            }
         }
         for (final Entry<Fields.Measurement, Long> entry : version.measurements().entrySet()) {
             Long value = entry.getValue();

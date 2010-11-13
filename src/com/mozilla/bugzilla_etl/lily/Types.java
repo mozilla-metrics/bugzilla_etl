@@ -64,18 +64,19 @@ import com.mozilla.bugzilla_etl.base.Fields;
 /** Building on {@link Fields} the lily record types are defined herein. */
 class Types {
 
-    static final String NS = "com.mozilla.bugzilla_etl";
+    static final String NS_BETL = "com.mozilla.bugzilla_etl";
     static final String NS_VTAG = "org.lilyproject.vtag";
 
     enum VTag { LAST, HISTORY }
 
-    static final QName BUG = new QName(NS, "Bug");
-    static final QName FLAG = new QName(NS, "Flag");
+    static final QName BUG = new QName(NS_BETL, "Bug");
+    static final QName FLAG = new QName(NS_BETL, "Flag");
 
     static final class Params {
         final ValueType type;
         final QName qname;
         final Scope scope;
+        final boolean mandatory;
 
         /**
          * Creates parameters that can be used to create a Lily field type.
@@ -86,18 +87,21 @@ class Types {
          * @param type  One of the primitive Lily value-types.
          * @param field The enum on whose name to base the field name (will be lowercased).
          * @param scope The LilyCMS versioning scope to use for this field.
+         * @param mandatory Are values for this field mandatory (or optional)?
          */
-        Params(String ns, ValueType type, Enum<?> field, Scope scope) {
+        Params(String ns, ValueType type, Enum<?> field, Scope scope, boolean mandatory) {
             Assert.nonNull(ns, type, field, scope);
             this.type = type;
             this.qname = new QName(ns, field.name().toLowerCase());
             this.scope = scope;
+            this.mandatory = mandatory;
         }
 
         private Params() {
             type = null;
             qname = null;
             scope = null;
+            mandatory = false;
         }
 
         /** These special params indicate no Lily field-type should be created. */
@@ -190,8 +194,8 @@ class Types {
                     break;
                 }
                 if (fields.get(field) == Params.UNUSED) continue;
-                type.addFieldTypeEntry(createOrGetFieldType(params).getId(),
-                                       !NS_VTAG.equals(params.qname.getNamespace()));
+                type.addFieldTypeEntry(createOrGetFieldType(params).getId(), 
+                                       params.mandatory);
             }
         }
 
@@ -230,11 +234,14 @@ class Types {
     }
 
     private void add(EnumMap<VTag, Params> map, VTag field, ValueType type, Scope scope) {
-        map.put(field, new Params(NS_VTAG, type, field, scope));
+        map.put(field, new Params(NS_VTAG, type, field, scope, false));
     }
 
-    private <T extends Enum<T>> void add(EnumMap<T, Params> map, T field, ValueType type, Scope scope) {
-        map.put(field, new Params(NS, type, field, scope));
+    private <T extends Enum<T>> void add(EnumMap<T, Params> map, 
+                                         T field, ValueType type, 
+                                         Scope scope, 
+                                         boolean mandatory) {
+        map.put(field, new Params(NS_BETL, type, field, scope, mandatory));
     }
 
 
@@ -250,9 +257,9 @@ class Types {
     private EnumMap<Fields.Bug, Params> bugParams() {
         final EnumMap<Fields.Bug, Params> bugParams =
             new EnumMap<Fields.Bug, Params>(Fields.Bug.class);
-        bugParams.put(Fields.Bug.CREATION_DATE, Params.UNUSED);
-        add(bugParams, Fields.Bug.ID, longs, Scope.NON_VERSIONED);
-        add(bugParams, Fields.Bug.REPORTED_BY, strings, Scope.NON_VERSIONED);
+        add(bugParams, Fields.Bug.ID,            longs,   Scope.NON_VERSIONED, true);
+        add(bugParams, Fields.Bug.REPORTED_BY,   strings, Scope.NON_VERSIONED, true);
+        add(bugParams, Fields.Bug.CREATION_DATE, dates, Scope.NON_VERSIONED, true);
         return bugParams;
     }
 
@@ -261,21 +268,25 @@ class Types {
             new EnumMap<Fields.Version, Params>(Fields.Version.class);
         versionParams.put(Fields.Version.BUG_ID, Params.UNUSED);
         versionParams.put(Fields.Version.PERSISTENCE_STATE, Params.UNUSED);
-        add(versionParams, Fields.Version.ANNOTATION,        strings, Scope.VERSIONED_MUTABLE);
-        add(versionParams, Fields.Version.MODIFIED_BY,       strings, Scope.VERSIONED);
-        add(versionParams, Fields.Version.MODIFICATION_DATE, dates,   Scope.VERSIONED);
-        add(versionParams, Fields.Version.EXPIRATION_DATE,   dates,   Scope.VERSIONED_MUTABLE);
+        add(versionParams, Fields.Version.ANNOTATION,        strings, Scope.VERSIONED_MUTABLE, false);
+        add(versionParams, Fields.Version.MODIFIED_BY,       strings, Scope.VERSIONED, true);
+        add(versionParams, Fields.Version.MODIFICATION_DATE, dates,   Scope.VERSIONED, true);
+        add(versionParams, Fields.Version.EXPIRATION_DATE,   dates,   Scope.VERSIONED_MUTABLE, true);
         return versionParams;
     }
 
     private EnumMap<Fields.Facet, Params> createFacetParams() {
         final EnumMap<Fields.Facet, Params> facetParams =
             new EnumMap<Fields.Facet, Params>(Fields.Facet.class);
-        add(facetParams, Fields.Facet.KEYWORDS, stringlists, Scope.VERSIONED);
-        add(facetParams, Fields.Facet.FLAGS,    stringlists,   Scope.VERSIONED);
+        add(facetParams, Fields.Facet.KEYWORDS,                       stringlists, Scope.VERSIONED, false);
+        add(facetParams, Fields.Facet.FLAGS,                          stringlists, Scope.VERSIONED, false);
+        add(facetParams, Fields.Facet.MODIFIED_FIELDS,                stringlists, Scope.VERSIONED, false);
+        add(facetParams, Fields.Facet.MAJOR_STATUS_LAST_CHANGED_DATE, dates,       Scope.VERSIONED, false);
+        add(facetParams, Fields.Facet.STATUS_LAST_CHANGED_DATE,       dates,       Scope.VERSIONED, false);
+        // The others are strings:
         for (Fields.Facet field : Fields.Facet.values()) {
             if (facetParams.containsKey(field)) continue;
-            add(facetParams, field, strings, Scope.VERSIONED);
+            add(facetParams, field, strings, Scope.VERSIONED, false);
         }
         return facetParams;
     }
@@ -284,7 +295,7 @@ class Types {
         final EnumMap<Fields.Measurement, Params> measurementParams =
             new EnumMap<Fields.Measurement, Params>(Fields.Measurement.class);
         for (Fields.Measurement field : Fields.Measurement.values()) {
-            add(measurementParams, field, longs, Scope.VERSIONED_MUTABLE);
+            add(measurementParams, field, longs, Scope.VERSIONED_MUTABLE, false);
         }
         return measurementParams;
     }
@@ -294,9 +305,9 @@ class Types {
     private EnumMap<Fields.Flag, Params> flagParams() {
         final EnumMap<Fields.Flag, Params> flagParams =
             new EnumMap<Fields.Flag, Params>(Fields.Flag.class);
-        add(flagParams, Fields.Flag.ID, longs, Scope.NON_VERSIONED);
-        add(flagParams, Fields.Flag.NAME, strings, Scope.VERSIONED);
-        add(flagParams, Fields.Flag.STATUS, strings, Scope.NON_VERSIONED);
+        add(flagParams, Fields.Flag.ID,     longs,   Scope.NON_VERSIONED, true);
+        add(flagParams, Fields.Flag.NAME,   strings, Scope.VERSIONED, true);
+        add(flagParams, Fields.Flag.STATUS, strings, Scope.NON_VERSIONED, true);
         return flagParams;
     }
 
@@ -304,10 +315,10 @@ class Types {
     private EnumMap<Fields.User, Params> userParams() {
         final EnumMap<Fields.User, Params> userParams;
         userParams = new EnumMap<Fields.User, Params>(Fields.User.class);
-        add(userParams, Fields.User.ID,            longs,   Scope.NON_VERSIONED);
-        add(userParams, Fields.User.CREATION_DATE, longs,   Scope.NON_VERSIONED);
-        add(userParams, Fields.User.EMAIL,         strings, Scope.VERSIONED);
-        add(userParams, Fields.User.NICK,          strings, Scope.VERSIONED);
+        add(userParams, Fields.User.ID,            longs,   Scope.NON_VERSIONED, true);
+        add(userParams, Fields.User.CREATION_DATE, longs,   Scope.NON_VERSIONED, true);
+        add(userParams, Fields.User.EMAIL,         strings, Scope.VERSIONED, true);
+        add(userParams, Fields.User.NICK,          strings, Scope.VERSIONED, false);
         return userParams;
     }
 

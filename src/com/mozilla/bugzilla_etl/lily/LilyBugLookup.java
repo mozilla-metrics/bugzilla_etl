@@ -52,6 +52,7 @@ import org.lilyproject.repository.api.Record;
 import org.lilyproject.repository.api.RecordId;
 import org.lilyproject.repository.api.RecordNotFoundException;
 import org.lilyproject.repository.api.RepositoryException;
+import org.lilyproject.repository.api.ValueType;
 
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.base.Bug;
@@ -101,23 +102,34 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
     }
 
     /** Map a bunch of lily bug records back to a Bug entity. */
-    private Bug reconstruct(List<Record> versionRecords) {
-        Map<QName, Object> bugFields = versionRecords.get(0).getFields();
+    private Bug reconstruct(final List<Record> versionRecords) {
+        final Map<QName, Object> bugFields = versionRecords.get(0).getFields();
         final Bug bug = new Bug(
             (Long) bugFields.get(types.bugParams.get(Fields.Bug.ID).qname),
-            (String) bugFields.get(types.bugParams.get(Fields.Bug.REPORTED_BY).qname)
+            (String) bugFields.get(types.bugParams.get(Fields.Bug.REPORTED_BY).qname),
+            getDate(bugFields, types.versionParams.get(Fields.Bug.CREATION_DATE))
         );
 
-        for (Record versionRecord : versionRecords) {
+        for (final Record versionRecord : versionRecords) {
             final Map<QName, Object> fields = versionRecord.getFields();
 
             final EnumMap<Fields.Facet, String> facets = Version.createFacets();
             for (Fields.Facet facet : Fields.Facet.values()) {
-                if (types.facetParams.get(facet).type == types.stringlists) {
+                ValueType valueType = types.facetParams.get(facet).type;  
+                if (types.facetParams.get(facet).type == types.strings) {
+                    facets.put(facet, getString(fields, types.facetParams.get(facet)));
+                    continue;
+                }
+                if (valueType == types.stringlists) {
                     facets.put(facet, getCsv(fields, types.facetParams.get(facet)));
                     continue;
                 }
-                facets.put(facet, getString(fields, types.facetParams.get(facet)));
+                if (valueType == types.dates) {
+                    final Date dateValue = getDate(fields, types.facetParams.get(facet));
+                    facets.put(facet, Converters.DATE.format(dateValue));
+                    continue;
+                }
+                Assert.unreachable("Unhandled valueType in used for facet: %s", valueType);
             }
 
             final EnumMap<Fields.Measurement, Long> measurements = Version.createMeasurements();

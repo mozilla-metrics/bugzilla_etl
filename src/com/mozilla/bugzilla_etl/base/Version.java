@@ -105,7 +105,7 @@ public class Version {
 
     /**
      * @const
-     * Create a new version that is valid until one second before this version becomes valid.
+     * Create a new version that is valid until this version becomes valid.
      * Measurements, computed facets and flags will still have to be computed by
      * {@link Bug#updateFacetsAndMeasurements(java.util.Map, Date)}.
      */

@@ -57,6 +57,7 @@ public class BugDestination extends AbstractDestination<Bug> {
         for (Version version : bug) {
             output.cell(Fields.Bug.ID).set(bug.id());
             output.cell(Fields.Bug.REPORTED_BY).set(bug.reporter());
+            output.cell(Fields.Bug.CREATION_DATE).set(bug.creationDate());
             output.cell(Fields.Version.MODIFICATION_DATE).set(version.from());
             output.cell(Fields.Version.EXPIRATION_DATE).set(version.to());
             output.cell(Fields.Version.ANNOTATION).set(version.annotation());

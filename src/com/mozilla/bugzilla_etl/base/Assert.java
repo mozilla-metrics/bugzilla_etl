@@ -57,9 +57,9 @@ public class Assert {
 
     public static void check(boolean... values) {
         int i = 0;
-        for (Object value : values) {
+        for (boolean value : values) {
             ++i;
-            if (value == null) {
+            if (!value) {
                 throw new IllegalArgumentException(
                         prefix + "Check " + i + "/" + values.length + " failed."
                 );

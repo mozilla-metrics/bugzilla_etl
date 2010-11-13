@@ -93,7 +93,8 @@ public class RebuildVersionsStep extends TransformClassBase {                   
 
             lookup = new com.mozilla.bugzilla_etl.lily.EmptyBugLookup();
             if (!"true".equals(getParameter("is_initial_import"))) {
-                lookup = new com.mozilla.bugzilla_etl.lily.LilyBugLookup(System.out, lilyConnectString);
+                lookup = new com.mozilla.bugzilla_etl.lily.LilyBugLookup(System.out, 
+                                                                         lilyConnectString);
             }
             else {
                 System.out.println("Skipping lily lookup (initial_import)");

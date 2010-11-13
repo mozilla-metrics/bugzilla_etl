@@ -11,7 +11,7 @@
     <parameters>
         <parameter>
             <name>BUG_IDS_PARTITION</name>
-            <default_value>bug_id &gt;= 313529 and bug_id &lt; 313530</default_value>
+            <default_value>bug_id &gt;= 249635 and bug_id &lt; 249636</default_value>
             <description>Partitioning to reduce memory and process time for big batch processing</description>
         </parameter>
         <parameter>
@@ -21,12 +21,12 @@
         </parameter>
         <parameter>
             <name>is_initial_import</name>
-            <default_value>false</default_value>
+            <default_value>true</default_value>
             <description>Will skip check for incremental update if &quot;true&quot;.</description>
         </parameter>
         <parameter>
             <name>lily_zk_connect_string</name>
-            <default_value>cm-hadoop23:2181</default_value>
+            <default_value>zk.local:2181</default_value>
             <description>zookeeper quorum that manages our Lily Server instance</description>
         </parameter>
     </parameters>
@@ -1365,6 +1365,16 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 
         </field>
         <field>
+        <field_name>creation_date</field_name>
+
+        <field_type>Date</field_type>
+
+        <field_length>-1</field_length>
+
+        <field_precision>-1</field_precision>
+
+        </field>
+        <field>
         <field_name>modification_date</field_name>
 
         <field_type>Date</field_type>
@@ -1465,6 +1475,26 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 
         </field>
         <field>
+        <field_name>major_status_last_changed_date</field_name>
+
+        <field_type>String</field_type>
+
+        <field_length>-1</field_length>
+
+        <field_precision>-1</field_precision>
+
+        </field>
+        <field>
+        <field_name>modified_fields</field_name>
+
+        <field_type>String</field_type>
+
+        <field_length>-1</field_length>
+
+        <field_precision>-1</field_precision>
+
+        </field>
+        <field>
         <field_name>previous_major_status</field_name>
 
         <field_type>String</field_type>
@@ -1526,6 +1556,16 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
         </field>
         <field>
         <field_name>status</field_name>
+
+        <field_type>String</field_type>
+
+        <field_length>-1</field_length>
+
+        <field_precision>-1</field_precision>
+
+        </field>
+        <field>
+        <field_name>status_last_changed_date</field_name>
 
         <field_type>String</field_type>
 
@@ -1722,8 +1762,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 
         <class_name>Processor</class_name>
 
-        <class_source><![CDATA[
-    /**
+        <class_source><![CDATA[    /**
      * source: {@link com.mozilla.bugzilla_etl.di.steps.WriteBugsToLilyStep}
      *
      * Input step(s):

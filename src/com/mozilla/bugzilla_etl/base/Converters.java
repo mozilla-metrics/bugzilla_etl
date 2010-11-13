@@ -42,6 +42,7 @@ package com.mozilla.bugzilla_etl.base;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Date;
 
 public class Converters {
 
@@ -69,6 +70,7 @@ public class Converters {
         }
     }
 
+    public static final Converter<List<String>> FIELDS_MODIFIED = new CsvConverter();
     public static final Converter<List<String>> KEYWORDS = new CsvConverter();
 
     public static final Converter<Flag> FLAG = new Converter<Flag>(){
@@ -105,6 +107,19 @@ public class Converters {
                 first = false;
             }
             return buffer.toString();
+        }
+    };
+    
+    public static final Converter<Date> DATE = new Converter<Date>() {
+        @Override
+        public Date parse(String representation) {
+            if (representation == null || representation.length() == 0) return null;
+            return new Date(Long.parseLong(representation));
+        }
+        @Override
+        public String format(Date date) {
+            if (date == null) return null;
+            return Long.valueOf(date.getTime()).toString();
         }
     };
 

@@ -23,8 +23,9 @@ log="${log_dir}/${from}.to.${to}.at.$(date +'%H%M')"
 out_log="${log}.log"
 err_log="${log}.err"
 
-echo "[IMPORT] STARTING import from bug #${from} to #${to}, since: ${start_time}" | tee "${out_log}"
-echo "[IMPORT] STARTING import, logging to ${out_log}" | tee "${out_log}"
+#echo "[IMPORT] STARTING import from bug #${from} to #${to}, since: ${start_time}" | tee "${out_log}"
+#echo "[IMPORT] STARTING import, logging to ${out_log}" | tee "${out_log}"
+echo "${out_log}"
 echo "[IMPORT] STARTING import at $(date +'%Y%m%d %H%M')" >> "${out_log}"
 echo "" >> "${out_log}"
 

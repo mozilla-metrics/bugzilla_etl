@@ -62,9 +62,6 @@ import com.mozilla.bugzilla_etl.base.Fields.Facet;
 import static com.mozilla.bugzilla_etl.base.Fields.Facet.*;
 import static org.junit.Assert.*;
 
-/**
- * @author michael
- */
 public abstract class VersionTest {
 
     private static final TimeZone pacificTimeZone = TimeZone.getTimeZone("America/Los_Angeles");
@@ -101,6 +98,9 @@ public abstract class VersionTest {
     private final Long BUG_ID = 4711L;
     /** The bug reporter as "extracted" from a record in the bugs table. */
     private final String REPORTER = Cast.BILLY.name();
+    /** The bug creation date as "extracted" from a record in the bugs table. */
+    private final Date CREATION_DATE;
+    
 
     /** Describes the states either found looking at the bugs table, or rebuilding activities. */
     protected final List<State> states;
@@ -126,11 +126,15 @@ public abstract class VersionTest {
      * Prepare the test with a lot of predefined ready-to-use history information.
      */
     public VersionTest() {
+        
         final Calendar calendar = Calendar.getInstance(pacificTimeZone);
         calendar.set(1971,  1,  1,  0,  0,  0);
         calendar.clear(Calendar.MILLISECOND);
         longAgo = calendar.getTime();
 
+        calendar.set(2010,  7,  1, 22, 22, 22);
+        CREATION_DATE = calendar.getTime();
+        
         majorStatusTable.put("UNCONFIRMED", "OPEN");
         majorStatusTable.put("NEW",         "OPEN");
         majorStatusTable.put("ASSIGNED",    "OPEN");
@@ -310,7 +314,7 @@ public abstract class VersionTest {
             if (def.date.after(end)) continue;
             if (def.date.before(start)) break;
             if (bug == null || leastRecentChange == null) {
-                bug = new Bug(BUG_ID, REPORTER);
+                bug = new Bug(BUG_ID, REPORTER, CREATION_DATE);
                 leastRecentChange = Version.latest(bug, def.state, def.author, def.date, "first");
                 bug.prepend(leastRecentChange);
                 continue;

@@ -77,7 +77,9 @@ public class BugSource extends AbstractSource<Bug> {
     public Bug receive() throws KettleException {
         final Long bugId = input.cell(Fields.Bug.ID).longValue();
 
-        final Bug bug = new Bug(bugId, input.cell(Fields.Bug.REPORTED_BY).stringValue());
+        final Bug bug = new Bug(bugId, 
+                                input.cell(Fields.Bug.REPORTED_BY).stringValue(),
+                                input.cell(Fields.Bug.CREATION_DATE).dateValue());
 
         bug.append(versionFromRow(bug));
         while (input.next() && bugId.equals(input.cell(Fields.Bug.ID).longValue())) {
