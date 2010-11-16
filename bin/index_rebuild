@@ -4,13 +4,7 @@ source bin/etl_config.shinclude
 
 cd "${LILY_HOME}"
 
-echo "Disabling lily index."
+echo "Requesting rebuild for SOLR index '${index_name}'."
 ./bin/lily-update-index --zookeeper "${zookeeper_host}" -n "${index_name}"  --build-state "BUILD_REQUESTED"
-
-# echo "Truncating SOLR index."
-# curl http://${solr_host}/solr/update -H 'Content-type:text/xml' --data-binary '<commit/>'
-# curl http://${solr_host}/solr/update -H 'Content-type:text/xml' --data-binary '<delete><query>*:*</query></delete>'
-# curl http://${solr_host}/solr/update -H 'Content-type:text/xml' --data-binary '<optimize/>'
-
 
 echo "Index ${index_name} is being rebuilt."

@@ -94,12 +94,14 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         // Fetch or create the record.
         final RecordId id = ids.id(bug);
         Record record = null;
+        log.format("LilyBugDestination: Sending bug %s (record: [bug id='%s']).\n", bug.id(), id);
+        
         if (bug.iterator().next().persistenceState() == PersistenceState.NEW) {
             record = newBugRecord(bug, id);           
-            log.format("SEND {bug id='%s'} is new.\n", id);
+            log.format("SEND [bug id='%s'] is new.\n", id);
         }
         else {
-            log.format("SEND {bug id='%s'} has already been created -> incremental.\n", id);
+            log.format("SEND [bug id='%s'] has already been created -> incremental.\n", id);
         }
 
         // Create the (new) versions.
@@ -114,7 +116,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
                     record = repository.read(id, currentVersion);
                     setVersionMutableFields(record, version);
                     record = repository.update(record, true, true);
-                    log.format("Updated {bug id='%s'} (# v%d).\n", id, record.getVersion());
+                    log.format("Updated [bug id='%s'] (# v%d).\n", id, record.getVersion());
                     continue;
                 case NEW:
                     if (record == null ||
@@ -125,11 +127,11 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
                     setVersionMutableFields(record, version);
                     if (currentVersion == 1) {
                         record = repository.create(record);
-                        log.format("Created {bug id='%s'} (* v%d).\n", id, record.getVersion());
+                        log.format("Created [bug id='%s'] (* v%d).\n", id, record.getVersion());
                     }
                     else {
                         record = repository.update(record);
-                        log.format("Updated {bug id='%s'} (* v%d).\n", id, record.getVersion());
+                        log.format("Updated [bug id='%s'] (* v%d).\n", id, record.getVersion());
                     }
                     continue;
                 default:
@@ -141,13 +143,13 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         if (record != null && record.getVersion() != null) {
             latest = record.getVersion().toString();
         }
-        log.format("SEND done {bug id='%s', versions='%d', latest='%s'}\n",
+        log.format("SEND DONE [bug id='%s', versions='%d', latest='%s']\n",
                    id, currentVersion, latest);
 
         // Create the fake versions so all historic versions are indexed.
         // This should be removed once we are able to index versions without vtags.
         for (Version version : bug) send(bug, version);
-        log.format("SEND done with historic versions {bug id='%s', versions='%d'}\n",
+        log.format("SEND DONE with historic versions {bug id='%s', versions='%d'}\n",
                    bug.id(), bug.numVersions());
     }
 
@@ -161,14 +163,14 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         Assert.nonNull(bug.id(), version.from(), version.to(), version.annotation());
 
         final RecordId id = ids.id(version);
-        log.format("SEND {bug historic, id='%s'}\n", id.toString());
+        log.format("SEND [bug historic, id='%s']\n", id.toString());
         if (version.persistenceState() == PersistenceState.SAVED) {
             // Incremental update: we already know this version.
-            log.format("SEND {bug historic, id='%s'} is already persisted. Skipping.\n", id);
+            log.format("SEND [bug historic, id='%s'] is already persisted. Skipping.\n", id);
             return;
         }
         if (version.persistenceState() == PersistenceState.DIRTY) {
-            log.format("SEND historic#%s TRYING TO UPDATE {bug historic, id='%s'}:\n", bug.id(), id);
+            log.format("SEND historic#%s TRYING TO UPDATE [bug historic, id='%s']:\n", bug.id(), id);
             log.format("SEND historic#%s TRYING TO UPDATE %s.\n", bug.id(), version);
             Record record = null;
             record = repository.read(id, 1L);
@@ -187,21 +189,26 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         setVersionFields(record, version);
         setVersionMutableFields(record, version);
         record.setField(types.vTagParams.get(Types.VTag.HISTORY).qname, 1L);
-        createWithRetry(record, String.format("{bug historic, id='%s'}", id));
+        saveWithRetry(record, String.format("[bug historic, id='%s']", id), true);
     }
     
-    private void createWithRetry(Record record, String description) throws RepositoryException {
+    private void saveWithRetry(Record record, String description, boolean doCreate) 
+    throws RepositoryException {
         final int MAX_RETRIES = 20;
         final int WAIT_MS = 500;
         int retries = MAX_RETRIES;
         while (retries > 0) {
             try {
-                record = repository.create(record);
+                try { 
+                    record = doCreate ? repository.create(record) : repository.update(record);
+                }
+                catch (RecordExistsException exists) {
+                    log.format("SEND %s exists! Item deleted or previous run cancelled? Updating\n", 
+                               description);
+                    repository.update(record);
+                }
                 retries = 0;
                 historicCounter.increment(Counter.Item.NEW_ZERO);
-            }
-            catch (RecordExistsException exists) {
-                log.format("SEND %s exists! Previous run cancelled?\n", description);
             }
             catch (RecordException exception) {                
                 if (retries == 0) {
@@ -212,7 +219,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
                 exception.printStackTrace(log);
                 --retries;
                 try {
-                    wait(WAIT_MS);
+                    record.wait(WAIT_MS);
                 } catch (InterruptedException e) { }
             }
         }

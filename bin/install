@@ -3,5 +3,3 @@ source etl_env.shinclude
 
 ant clean dist
 
-# PDI pan is OK with subfolders in libext, but PDI spoon wants jars top level
-cd "${KETTLE_LIBS}/bugzilla_etl" && mmv -dv ';*.jar' '../#2.jar'

@@ -166,7 +166,6 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
                     // First modification has same date. Adjust creation date.
                     adjustedDate = new Date(creationStateDate.getTime() - deltaMs);
                 }
-                System.out.format("!!! Adding creation version for %s\n", bug);
                 bug.prepend(successor.predecessor(facetState, creationStateAuthor, adjustedDate,
                                                   annotation("initial")));
             }
@@ -281,8 +280,6 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
                                    final Map<String, Flag> flagState)
     throws KettleValueException
     {
-        System.out.format("!!! Process candidates called for bug %s\n", bug);
-        
         final int n = candidates.size();
         Assert.check(n > 0);
         final Date modificationDate
@@ -321,16 +318,13 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
             if (bug.numVersions() == 0) {
                 // Special case: appending the first (most recent) activity.
                 details.append("most recent version");
-                System.out.format("!!! Appending vN for bug %s\n", bug);
                 v = Version.latest(bug, facetState, author, date, annotation(details));
             }
             else {
                 // Append version as predecessor to a more recent version.
-                System.out.format("!!! Appending v<N for bug %s\n", bug);
                 v = bug.iterator().next().predecessor(facetState, author, date, annotation(details));
             }
             bug.prepend(v);
-            System.out.format("!!! Calling invertActivity for bug %s\n", bug);
             invertActivity(activity, facetState, flagState);
             --i;
         }
@@ -437,7 +431,7 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
                     if (!flagState.containsKey(toFlag.name())) {
                         isConsistent = false;
                         System.out.format("Inconsistent change on bug %s: set flag missing: '%s'\n", 
-                                          activity.cell(Fields.Version.BUG_ID), toFlag);
+                                          activity.cell(Fields.Version.BUG_ID).longValue(), toFlag);
                     }
                     else {
                         flagState.remove(toFlag.name());
@@ -447,7 +441,7 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
                 for (Flag fromFlag : Converters.FLAGS.parse(fromValue)) {
                     if (flagState.containsKey(fromFlag.name())) {
                         System.out.format("Inconsistent change on bug %s: flag unwarranted: '%s'\n", 
-                                          activity.cell(Fields.Version.BUG_ID), fromFlag);                                    
+                                          activity.cell(Fields.Version.BUG_ID).longValue(), fromFlag);                                    
                         isConsistent = false;
                     }
                     flagState.put(fromFlag.name(), fromFlag);
@@ -460,9 +454,9 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
             if (!toValue.equals(facetState.get(facet))) {
                 isConsistent = false;
                 System.out.format(
-                    "Inconsistent change on bug %s field %s: expected %s (but got %s)\n", 
-                    activity.cell(Fields.Version.BUG_ID), facet.name().toLowerCase(), 
-                    facetState.get(facet), fromValue
+                    "Inconsistent change on bug %s field %s: expected '%s' (but got '%s')\n", 
+                    activity.cell(Fields.Version.BUG_ID).longValue(), facet.name().toLowerCase(), 
+                    facetState.get(facet), toValue
                 );
             }
             facetState.put(facet, fromValue);

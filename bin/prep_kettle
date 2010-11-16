@@ -2,5 +2,8 @@
 source etl_env.shinclude
 
 ./bin/install
+# PDI pan is OK with subfolders in libext, but PDI spoon wants jars top level
+( cd "${KETTLE_LIBS}/bugzilla_etl" && mmv -dv ';*.jar' '../#2.jar' )
 cp $KETTLE_HOME/.kettle/kettle.properties $HOME/.kettle/kettle.properties
 open /Users/michael/work/pdi-ee/data-integration/Data\ Integration\ 64-bit.app
+

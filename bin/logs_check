@@ -1,0 +1,5 @@
+#!/bin/bash
+for log in log/*/*.log; do
+    echo
+    echo "$(hostname) CHECKING LOG FILE: $log..."; cat $log | grep -5 '.java:'
+done

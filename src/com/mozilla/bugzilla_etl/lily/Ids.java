@@ -46,7 +46,6 @@ import org.lilyproject.repository.api.Repository;
 
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.base.Bug;
-import com.mozilla.bugzilla_etl.base.Fields.Measurement;
 import com.mozilla.bugzilla_etl.base.Flag;
 import com.mozilla.bugzilla_etl.base.Version;
 
@@ -69,8 +68,7 @@ class Ids {
     final RecordId id(Version version) {
         Assert.nonNull(version);
         Long bugId = version.bug().id();
-        Long versionNumber = version.measurements().get(Measurement.NUMBER);
-        return forVersion(bugId, versionNumber);
+        return forVersion(bugId, version.from().getTime());
     }
 
     /** Generate an id for this flag (no matter if already persisted or not). */
@@ -81,14 +79,24 @@ class Ids {
                                            .append(flag.id()).toString());
     }
 
+    private String id(final Long bugId, final Long versionIdentifier) {
+        final String prefix = String.format("%06d", bugId);
+        final String suffix = (versionIdentifier != null) ? versionIdentifier.toString() : "";
+        final StringBuilder dest = new StringBuilder(prefix.length() + 1 + suffix.length());
+        for (int i = prefix.length() - 1; i >= 0; i--) dest.append(prefix.charAt(i));
+        dest.append('#');
+        dest.append(suffix);
+        return dest.toString();
+      }
+    
     final RecordId forBug(final Long bugzillaBugId) {
         Assert.nonNull(bugzillaBugId);
-        return generator.newRecordId("#" + bugzillaBugId);
+        return generator.newRecordId(id(bugzillaBugId, null));
     }
 
-    final RecordId forVersion(final Long bugzillaBugId, final Long number) {
-        Assert.nonNull(bugzillaBugId, number);
-        return generator.newRecordId("#" + bugzillaBugId + " v" + number);
+    private final RecordId forVersion(final Long bugzillaBugId, final Long versionIdentifier) {
+        Assert.nonNull(bugzillaBugId, versionIdentifier);
+        return generator.newRecordId(id(bugzillaBugId, versionIdentifier));
     }
 
 }

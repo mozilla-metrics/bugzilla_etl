@@ -13,9 +13,13 @@ export HADOOP_CLASSPATH="${HBASE_HOME}/lib/zookeeper.jar:$HADOOP_CLASSPATH"
 export HADOOP_CLASSPATH="${HBASE_HOME}/lib/guava-r05.jar:$HADOOP_CLASSPATH"
 
 date_prefix="$(date +'%Y%m%d_%H%M')"
+hadoop fs -mkdir hdfs://${hdfs_host}/user/${USER}/lily_backup/${date_prefix}/
 for tableName in $tables;
 do
-   dest="hdfs://${hdfs_host}/user/${USER}/lily_backup/${date_prefix}_${tableName}"
+    dest="hdfs://${hdfs_host}/user/${USER}/lily_backup/${date_prefix}/${tableName}"
+    echo "DEST: $dest"
+    echo "HADOOP_CLASSPATH: $HADOOP_CLASSPATH"
+    echo
     echo "major_compact '$tableName'" | hbase shell
     hadoop jar "${HBASE_HOME}/hbase.jar" export "${tableName}" "${dest}"
 done
