@@ -45,6 +45,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.TimeZone;
 
 import org.apache.commons.lang.time.DateUtils;
 
@@ -57,6 +58,13 @@ import com.mozilla.bugzilla_etl.base.Fields.Measurement;
  * {@link Bug#updateFacetsAndMeasurements()}.
  */
 public class Version {
+    
+    // :BMO:
+    // There is (or was?) a timezone bug in bugzilla and I am not sure if it affects all 
+    // installations at the same time zone.
+    // Apparently, although all times in BMO are Pacific, the timezone bug is aligned with
+    // DST transition on CEST (!), so it is probably independent of the installation configuration.
+    final TimeZone buggyTZ = TimeZone.getTimeZone("Europe/Berlin");
 
     /** Given a bug, create a new "latest" version for that bug. */
     public static Version latest(final Bug bug,
@@ -91,7 +99,20 @@ public class Version {
                    final Date to,
                    final PersistenceState persistenceState) {
         Assert.nonNull(bug, facets, measurements, author, from, to, persistenceState);
-        Assert.check(from.before(to));
+        if (!from.before(to)) {
+            final Date oneHourLater = DateUtils.addHours(from, 2);
+            if (buggyTZ.inDaylightTime(from) && !buggyTZ.inDaylightTime(oneHourLater)) {
+                final Date oneHourEarlier = DateUtils.addHours(from, -1);
+                from.setTime(oneHourEarlier.getTime());
+                System.out.format("TimeZone: Moved creation back in time.\n");
+            }
+        }
+        if (!from.before(to)) {
+            DateFormat format = DateFormat.getInstance();
+            format.setTimeZone(buggyTZ);
+            Assert.unreachable("TimeZone: Faulty expiration range on bug %s! From: %s, to: %s", 
+                               bug, from, to);
+        }
         if (maybeAnnotation == null) maybeAnnotation = "";
         this.bug = bug;
         this.facets = facets.clone();

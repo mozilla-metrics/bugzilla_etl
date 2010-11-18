@@ -21,7 +21,7 @@
         </parameter>
         <parameter>
             <name>is_initial_import</name>
-            <default_value>true</default_value>
+            <default_value>false</default_value>
             <description>Will skip check for incremental update if &quot;true&quot;.</description>
         </parameter>
         <parameter>

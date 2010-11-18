@@ -4,7 +4,7 @@ source bin/etl_config.shinclude
 
 cd "${LILY_HOME}"
 
-echo "Disabling lily index."
+echo "Enabling lily index updates."
 ./bin/lily-update-index --zookeeper "${zookeeper_host}" -n "${index_name}" --update-state "SUBSCRIBE_AND_LISTEN"
 
 echo "Live updates to the index ${index_name} should be enabled now."

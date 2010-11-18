@@ -16,6 +16,7 @@ if [[ "${#}" -gt "2" ]]; then
    mode_param=""
    mode="incremental"
 fi
+echo "Using mode $mode_param"
 
 log_dir="./log/$(date +'%Y-%m-%d')-${mode}"
 mkdir -p "${log_dir}"

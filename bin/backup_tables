@@ -12,6 +12,8 @@ export HADOOP_CLASSPATH="${HBASE_HOME}/lib/zookeeper.jar:$HADOOP_CLASSPATH"
 # Google collections API is used by the export task
 export HADOOP_CLASSPATH="${HBASE_HOME}/lib/guava-r05.jar:$HADOOP_CLASSPATH"
 
+MAX_INT=2147483647
+
 date_prefix="$(date +'%Y%m%d_%H%M')"
 hadoop fs -mkdir hdfs://${hdfs_host}/user/${USER}/lily_backup/${date_prefix}/
 for tableName in $tables;
@@ -20,6 +22,5 @@ do
     echo "DEST: $dest"
     echo "HADOOP_CLASSPATH: $HADOOP_CLASSPATH"
     echo
-    echo "major_compact '$tableName'" | hbase shell
-    hadoop jar "${HBASE_HOME}/hbase.jar" export "${tableName}" "${dest}"
+    hadoop jar "${HBASE_HOME}/hbase.jar" export "${tableName}" "${dest}" "${MAX_INT}"
 done

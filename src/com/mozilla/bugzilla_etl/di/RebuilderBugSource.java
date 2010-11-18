@@ -98,9 +98,11 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
             public Bug find(Long id) throws KettleStepException {
                 try { return bugLookup.find(id); }
                 catch (Exception e) {
-                    String message = "Trouble looking up bug.";
-                    System.out.format("%s\n", message);
-                    e.printStackTrace();
+                    String message = String.format("Trouble looking up bug %s: %s \n",
+                                                   id,
+                                                   e.getClass().getSimpleName());
+                    System.out.print(message);
+                    e.printStackTrace(System.out);
                     throw new KettleStepException(message, e);
                 }
             }

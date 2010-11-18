@@ -5,7 +5,7 @@ source etl_env.shinclude
 
 JAVAMAXMEM=2048 "${KETTLE_LIBS}/../kitchen.sh" \
         -file "${ETL_HOME}/jobs/incremental_update.kjb" \
-        -param:"lily_zk_connect_string=${zookeeper_host}" \
+        -param:"ZOOKEEPER_HOST=${zookeeper_host}" \
     > "${ETL_HOME}/log/incremental/stdout_$(date +%Y%m%d_%H%M%S)" \
     2> "${ETL_HOME}/log/incremental/stderr_$(date +%Y%m%d_%H%M%S)"
 

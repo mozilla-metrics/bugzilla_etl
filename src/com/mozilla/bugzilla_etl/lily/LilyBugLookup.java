@@ -66,6 +66,7 @@ import com.mozilla.bugzilla_etl.lily.Types.Params;
 public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
 
     private Converter<List<String>> csvConverter;
+    final List<QName> emptyList = new LinkedList<QName>();
 
     public LilyBugLookup(final PrintStream log, final String lilyConnection) {
         super(log, lilyConnection);
@@ -76,13 +77,27 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
     public Bug find(Long bugzillaId) throws RepositoryException {
         Record record;
         RecordId id = ids.forBug(bugzillaId);
+        log.format("LOOKUP: Looking up bug %s using bug id %s\n", bugzillaId, id);
         try {
             record = repository.read(id);
         }
         catch (RecordNotFoundException e) {
             return null;
         }
+        catch (Throwable e) {
+            log.format("LOOKUP: Unexpected Error Trying to read bug %s using bug id %s\n", 
+                       bugzillaId, id);
+            do {
+                e.printStackTrace(log);
+                e = e.getCause();
+            } while (e != null);
+            return null;
+        }
 
+        final List<Record> versionRecords = repository.readVersions(id, new Long(1), record.getVersion(), emptyList);
+        
+
+        /*
         final LinkedList<Record> versionRecords = new LinkedList<Record>();
         versionRecords.addFirst(record);
         long version = record.getVersion() - 1;
@@ -92,44 +107,59 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
                 versionRecords.addFirst(repository.read(id, version));
             }
             catch (RecordNotFoundException bigTrouble) {
-                System.out.format("Gap in the lily version numbers for bug #%s\n", bugzillaId);
+                System.out.format("LOOKUP: Gap in the lily version numbers for bug #%s\n", bugzillaId);
                 throw bigTrouble;
+            }
+            catch (VersionNotFoundException versionNotFound) {
+                System.out.format("LOOKUP: Could not find version %s for bug #%s\n", version, bugzillaId);
+                throw versionNotFound;
+            }
+            catch (RuntimeException e) {
+                System.out.format("LOOKUP: RuntimeException during lookup. Logging and reraising.");
+                e.printStackTrace(log);
+                throw e;
             }
             --version;
         }
+        */
 
+        log.format("LOOKUP: Reconstructing\n");
         return reconstruct(versionRecords);
     }
 
     /** Map a bunch of lily bug records back to a Bug entity. */
     private Bug reconstruct(final List<Record> versionRecords) {
         final Map<QName, Object> bugFields = versionRecords.get(0).getFields();
+        
+        log.format("LOOKUP: Creating base bug...\n");
         final Bug bug = new Bug(
             (Long) bugFields.get(types.bugParams.get(Fields.Bug.ID).qname),
             (String) bugFields.get(types.bugParams.get(Fields.Bug.REPORTED_BY).qname),
-            getDate(bugFields, types.versionParams.get(Fields.Bug.CREATION_DATE))
+            getDate(bugFields, types.bugParams.get(Fields.Bug.CREATION_DATE))
         );
+        log.format("LOOKUP: Created bug %s\n", bug.id());
 
         for (final Record versionRecord : versionRecords) {
             final Map<QName, Object> fields = versionRecord.getFields();
 
             final EnumMap<Fields.Facet, String> facets = Version.createFacets();
             for (Fields.Facet facet : Fields.Facet.values()) {
-                ValueType valueType = types.facetParams.get(facet).type;  
+                Params facetParams = types.facetParams.get(facet);
+                ValueType valueType = facetParams.type;  
                 if (types.facetParams.get(facet).type == types.strings) {
-                    facets.put(facet, getString(fields, types.facetParams.get(facet)));
+                    facets.put(facet, getString(fields, facetParams));
                     continue;
                 }
                 if (valueType == types.stringlists) {
-                    facets.put(facet, getCsv(fields, types.facetParams.get(facet)));
+                    facets.put(facet, getCsv(fields, facetParams));
                     continue;
                 }
                 if (valueType == types.dates) {
-                    final Date dateValue = getDate(fields, types.facetParams.get(facet));
+                    final Date dateValue = getDate(fields, facetParams);
                     facets.put(facet, Converters.DATE.format(dateValue));
                     continue;
                 }
-                Assert.unreachable("Unhandled valueType in used for facet: %s", valueType);
+                Assert.unreachable("Unhandled valueType %s used for facet: %s", valueType, facet);
             }
 
             final EnumMap<Fields.Measurement, Long> measurements = Version.createMeasurements();
@@ -152,19 +182,22 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
         return bug;
     }
 
-    private Date getDate(Map<QName, Object> fields, Params fieldParams) {
-        Assert.check(fieldParams.type == types.dates);
-        return ((org.joda.time.DateTime) fields.get(fieldParams.qname)).toDate();
+    private Date getDate(Map<QName, Object> fields, Params params) {
+        Assert.check(params.type == types.dates);
+        if (!fields.containsKey(params.qname) || fields.get(params.qname) == null) return null;
+        return ((org.joda.time.DateTime) fields.get(params.qname)).toDate();
     }
 
-    private String getString(Map<QName, Object> fields, Params fieldParams) {
-        Assert.check(fieldParams.type == types.strings);
-        return (String) fields.get(fieldParams.qname);
+    private String getString(Map<QName, Object> fields, Params params) {
+        Assert.check(params.type == types.strings);
+        if (!fields.containsKey(params.qname) || fields.get(params.qname) == null) return null;
+        return (String) fields.get(params.qname);
     }
 
-    private Long getLong(Map<QName, Object> fields, Params fieldParams) {
-        Assert.check(fieldParams.type == types.longs);
-        return (Long) fields.get(fieldParams.qname);
+    private Long getLong(Map<QName, Object> fields, Params params) {
+        Assert.check(params.type == types.longs);
+        if (!fields.containsKey(params.qname) || fields.get(params.qname) == null) return null;
+        return (Long) fields.get(params.qname);
     }
 
     /** Flatten string list to csv. The cast is guarded by the check on the lily value type. */

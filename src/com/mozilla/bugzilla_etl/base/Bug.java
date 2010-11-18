@@ -271,7 +271,7 @@ public class Bug implements Iterable<Version> {
 
             final List<String> fieldsModified = new java.util.LinkedList<String>();
             for (Facet facet : Facet.values()) {
-                if (facet.isComputed) continue;
+                if (facet == Facet.MODIFIED_FIELDS) continue;
                 boolean changed = false;
                 if (previousFacets.get(facet) == null) {
                     changed = facets.get(facet) != null;  

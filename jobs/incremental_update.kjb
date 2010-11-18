@@ -16,6 +16,11 @@
             <default_value>${Internal.Job.Filename.Directory}&#47;..&#47;log&#47;incremental</default_value>
             <description/>
         </parameter>
+        <parameter>
+            <name>ZOOKEEPER_HOST</name>
+            <default_value>localhost:2181</default_value>
+            <description/>
+        </parameter>
     </parameters>
     <slaveservers>
     </slaveservers>
@@ -70,10 +75,13 @@
             <value>bug_id &gt;= 1 AND bug_id &lt; 900900900</value>
             </parameter>            <parameter>            <name>OVERRIDE_START_TIME</name>
             <stream_name/>
-            <value>2010-11-14 01:01:01</value>
+            <value>2010-11-16 10:01:01</value>
             </parameter>            <parameter>            <name>lily_zk_connect_string</name>
             <stream_name/>
-            <value>${lily_zk_connect_string}</value>
+            <value>${ZOOKEEPER_HOST}</value>
+            </parameter>            <parameter>            <name>is_initial_import</name>
+            <stream_name/>
+            <value>false</value>
             </parameter>      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>

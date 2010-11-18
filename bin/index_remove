@@ -2,19 +2,13 @@
 source etl_env.shinclude
 source bin/etl_config.shinclude
 
-echo "Are you sure that you want to destroy the index ${index_name}?"
-echo "The index on SOLR host ${solr_host} will be destroyed as well."
+echo "Are you sure that you want to remove the index configuration for ${index_name}?"
+echo "The index on SOLR host ${solr_host} will remain."
 need_confirm
 
 cd "${LILY_HOME}"
 
 echo "Disabling lily index."
 ./bin/lily-update-index --zookeeper "${zookeeper_host}" -n "${index_name}" --state DELETE_REQUESTED
-
-echo "Truncating SOLR index."
-curl http://${solr_host}/solr/update -H 'Content-type:text/xml' --data-binary '<commit/>'
-curl http://${solr_host}/solr/update -H 'Content-type:text/xml' --data-binary '<delete><query>*:*</query></delete>'
-curl http://${solr_host}/solr/update -H 'Content-type:text/xml' --data-binary '<optimize/>'
-
 
 echo "Done."
