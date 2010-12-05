@@ -72,6 +72,8 @@ import com.mozilla.bugzilla_etl.lily.Types.Params;
 public class BugDestination
 extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
 
+    final Object waitLock = new Object();
+
     public BugDestination(PrintStream log, String lilyConnection) {
         super(log, lilyConnection);
         bugType = types.bugType();
@@ -197,30 +199,32 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         final int MAX_RETRIES = 20;
         final int WAIT_MS = 500;
         int retries = MAX_RETRIES;
-        while (retries > 0) {
-            try {
-                try { 
-                    record = doCreate ? repository.create(record) : repository.update(record);
-                }
-                catch (RecordExistsException exists) {
-                    log.format("SEND %s exists! Item deleted or previous run cancelled? Updating\n", 
-                               description);
-                    repository.update(record);
-                }
-                retries = 0;
-                historicCounter.increment(Counter.Item.NEW_ZERO);
-            }
-            catch (RecordException exception) {                
-                if (retries == 0) {
-                    log.format("SEND %s -- RecordException: Retries exhausted.\n", description);
-                    throw exception;
-                }
-                log.format("SEND %s RecordException (see below): Retrying.\n", description);
-                exception.printStackTrace(log);
-                --retries;
+        synchronized (waitLock) {
+            while (retries > 0) {
                 try {
-                    record.wait(WAIT_MS);
-                } catch (InterruptedException e) { }
+                    try { 
+                        record = doCreate ? repository.create(record) : repository.update(record);
+                    }
+                    catch (RecordExistsException exists) {
+                        log.format("SEND %s exists! Item deleted or previous run cancelled? Updating\n", 
+                                   description);
+                        repository.update(record);
+                    }
+                    retries = 0;
+                    historicCounter.increment(Counter.Item.NEW_ZERO);
+                }
+                catch (RecordException exception) {                
+                    if (retries == 0) {
+                        log.format("SEND %s -- RecordException: Retries exhausted.\n", description);
+                        throw exception;
+                    }
+                    log.format("SEND %s RecordException (see below): Retrying.\n", description);
+                    exception.printStackTrace(log);
+                    --retries;
+                    try {
+                        waitLock.wait(WAIT_MS);
+                    } catch (InterruptedException e) { }
+                }
             }
         }
     }

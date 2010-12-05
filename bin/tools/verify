@@ -1,0 +1,45 @@
+#! /usr/bin/env python
+# Verifies randomly chosen bugs for constistency of bmo, lily and SOLR index
+
+import sys
+
+from bzapi import BzapiRepo
+from lily import LilyRepo
+from solr import SolrRepo
+
+
+def check_bug(bug_id, *repositories):
+    bugs = []
+    for repo in repositories:
+        bugs.append(repo.get(bug_id))
+
+    for i, repo in enumerate(repositories):
+        if not bugs[0] == bugs[i]:
+            print("Bug mismatch for bug id %s..." % bug_id)
+            print("...bug for reference repo %r:  %r" % (repositories[0], bugs[0]))
+            print("...bug for repo %r:  %r" % (repositories[i], bugs[i]))
+            return i
+
+    return 0
+
+
+def main(arguments):
+
+    if len(arguments) < 4:
+        print("usage: %s BUGZILLA_API LILY_url SOLR_url [BUG_ID]" % arguments[0])
+        sys.exit(1)
+
+    bz_url, lily_url, solr_url = arguments[1:4]
+
+    if len(arguments) > 4:
+        bug_id = int(arguments[4])
+    else:
+        # chosen by fair dice roll
+        # :TODO: choose random bug, but get available range first
+        bug_id = 124812
+
+    check_bug(bug_id, BzapiRepo(bz_url), LilyRepo(lily_url), SolrRepo(solr_url))
+
+
+if __name__ == "__main__":
+    main(sys.argv)

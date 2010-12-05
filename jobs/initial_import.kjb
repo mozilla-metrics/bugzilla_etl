@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <job>
-  <name>incremental_update</name>
+  <name>initial_import</name>
     <description/>
     <extended_description/>
     <job_version/>
@@ -12,8 +12,18 @@
   <modified_date>2010&#47;11&#47;10 15:40:31.486</modified_date>
     <parameters>
         <parameter>
+            <name>FROM_ID</name>
+            <default_value>600002</default_value>
+            <description/>
+        </parameter>
+        <parameter>
             <name>LOGS_DIR</name>
-            <default_value>${Internal.Job.Filename.Directory}&#47;..&#47;log&#47;incremental</default_value>
+            <default_value>${Internal.Job.Filename.Directory}&#47;..&#47;log&#47;initial</default_value>
+            <description/>
+        </parameter>
+        <parameter>
+            <name>TO_ID</name>
+            <default_value>600010</default_value>
             <description/>
         </parameter>
         <parameter>
@@ -45,7 +55,7 @@
    <shared_objects_file/>
   <entries>
     <entry>
-      <name>Load bug activity since last run</name>
+      <name>Load bugs</name>
       <description/>
       <type>TRANS</type>
       <specification_method>filename</specification_method>
@@ -72,16 +82,13 @@
       <parameters>        <pass_all_parameters>Y</pass_all_parameters>
             <parameter>            <name>BUG_IDS_PARTITION</name>
             <stream_name/>
-            <value>bug_id &gt;= 1 AND bug_id &lt; 900900900</value>
-            </parameter>            <parameter>            <name>OVERRIDE_START_TIME</name>
-            <stream_name/>
-            <value>2010-11-30 01:01:01</value>
+            <value>bug_id &gt;= ${FROM_ID} AND bug_id &lt; ${TO_ID}</value>
             </parameter>            <parameter>            <name>lily_zk_connect_string</name>
             <stream_name/>
             <value>${ZOOKEEPER_HOST}</value>
             </parameter>            <parameter>            <name>is_initial_import</name>
             <stream_name/>
-            <value>false</value>
+            <value>true</value>
             </parameter>      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
@@ -145,7 +152,7 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>29</xloc>
+      <xloc>208</xloc>
       <yloc>216</yloc>
       </entry>
     <entry>
@@ -163,7 +170,7 @@
       <add_date>N</add_date>
       <add_time>N</add_time>
       <insertScript>Y</insertScript>
-      <script>rename current_run_ &apos;&apos; bugzilla_incremental_current_run*.log
+      <script>rename current_run_ &apos;&apos; bugzilla_initial_current_run*.log
 </script>
       <loglevel>Nothing</loglevel>
       <parallel>N</parallel>
@@ -192,117 +199,6 @@
       <yloc>119</yloc>
       </entry>
     <entry>
-      <name>Is current_run Log still young?</name>
-      <description>Shell</description>
-      <type>SHELL</type>
-      <filename/>
-      <work_directory>${LOGS_DIR}</work_directory>
-      <arg_from_previous>N</arg_from_previous>
-      <exec_per_row>N</exec_per_row>
-      <set_logfile>N</set_logfile>
-      <logfile/>
-      <set_append_logfile>N</set_append_logfile>
-      <logext/>
-      <add_date>N</add_date>
-      <add_time>N</add_time>
-      <insertScript>Y</insertScript>
-      <script>NOW=`date +%s`
-FILE=`stat -c %Z bugzilla_incremental_current_run_*.log`
-AGE=`expr \( $NOW - $FILE \) &#47; 60 &#47; 60`
-exit $AGE</script>
-      <loglevel>Nothing</loglevel>
-      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>581</xloc>
-      <yloc>373</yloc>
-      </entry>
-    <entry>
-      <name>Send mail for lingering run</name>
-      <description>Mail</description>
-      <type>MAIL</type>
-      <server>localhost</server>
-      <port>25</port>
-      <destination>mkurze@mozilla.com</destination>
-      <destinationCc/>
-      <destinationBCc/>
-      <replyto>metrics@mozilla.com</replyto>
-      <replytoname>Metrics Bugzilla ETL</replytoname>
-      <subject>Metrics ETL log processor delay</subject>
-      <include_date>N</include_date>
-      <contact_person>Michael Kurze</contact_person>
-      <contact_phone/>
-      <comment>There is a log file from a previous run of the log processor that is more than one hour old.
-Please check the attached log for indication of an error or hang and correct the problem.
-To resume processing, run: cd &#47;opt&#47;pentaho&#47;kettle; .&#47;kitchen.sh -file &#47;etl&#47;timestamped_log_manager&#47;archive_log.kjb</comment>
-      <include_files>Y</include_files>
-      <zip_files>N</zip_files>
-      <zip_name/>
-      <use_auth>N</use_auth>
-      <use_secure_auth>N</use_secure_auth>
-      <auth_user/>
-      <auth_password>Encrypted </auth_password>
-      <only_comment>Y</only_comment>
-      <use_HTML>N</use_HTML>
-      <use_Priority>N</use_Priority>
-      <encoding>UTF-8</encoding>
-      <priority>normal</priority>
-      <importance>normal</importance>
-      <secureconnectiontype>SSL</secureconnectiontype>
-      <replyToAddresses/>
-      <filetypes>        <filetype>GENERAL</filetype>
-      </filetypes>      <embeddedimages>
-      </embeddedimages>
-      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>581</xloc>
-      <yloc>601</yloc>
-      </entry>
-    <entry>
-      <name>Get unfinished log</name>
-      <description>Add filenames to result</description>
-      <type>ADD_RESULT_FILENAMES</type>
-      <arg_from_previous>N</arg_from_previous>
-      <include_subfolders>N</include_subfolders>
-      <delete_all_before>Y</delete_all_before>
-      <fields>
-        <field>
-          <name>${LOGS_DIR}</name>
-          <filemask>bugzilla_incremental_current_run_.*\.log</filemask>
-        </field>
-      </fields>
-      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>581</xloc>
-      <yloc>495</yloc>
-      </entry>
-    <entry>
-      <name>Existing current_run Log?</name>
-      <description>Shell</description>
-      <type>SHELL</type>
-      <filename/>
-      <work_directory>${LOGS_DIR}</work_directory>
-      <arg_from_previous>N</arg_from_previous>
-      <exec_per_row>N</exec_per_row>
-      <set_logfile>N</set_logfile>
-      <logfile/>
-      <set_append_logfile>N</set_append_logfile>
-      <logext/>
-      <add_date>N</add_date>
-      <add_time>N</add_time>
-      <insertScript>Y</insertScript>
-      <script>ls -l &quot;bugzilla_incremental_current_run*.log&quot; 2&gt;&amp;1
-exit $?</script>
-      <loglevel>Nothing</loglevel>
-      <parallel>N</parallel>
-      <draw>Y</draw>
-      <nr>0</nr>
-      <xloc>190</xloc>
-      <yloc>216</yloc>
-      </entry>
-    <entry>
       <name>Success</name>
       <description/>
       <type>SUCCESS</type>
@@ -313,7 +209,7 @@ exit $?</script>
       <yloc>217</yloc>
       </entry>
     <entry>
-      <name>Get Custom Field Flags</name>
+      <name>Get Custom Flags</name>
       <description/>
       <type>TRANS</type>
       <specification_method>filename</specification_method>
@@ -347,7 +243,7 @@ exit $?</script>
   </entries>
   <hops>
     <hop>
-      <from>Load bug activity since last run</from>
+      <from>Load bugs</from>
       <to>Rename current_log</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
@@ -356,7 +252,7 @@ exit $?</script>
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Load bug activity since last run</from>
+      <from>Load bugs</from>
       <to>Get log</to>
       <from_nr>0</from_nr>
       <to_nr>1</to_nr>
@@ -374,42 +270,6 @@ exit $?</script>
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Existing current_run Log?</from>
-      <to>Is current_run Log still young?</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Is current_run Log still young?</from>
-      <to>Get unfinished log</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>N</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Get unfinished log</from>
-      <to>Send mail for lingering run</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Is current_run Log still young?</from>
-      <to>Success</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
       <from>Rename current_log</from>
       <to>Success</to>
       <from_nr>0</from_nr>
@@ -419,54 +279,24 @@ exit $?</script>
       <unconditional>N</unconditional>
     </hop>
     <hop>
+      <from>Get Custom Flags</from>
+      <to>Load bugs</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
       <from>START</from>
-      <to>Existing current_run Log?</to>
+      <to>Get Custom Flags</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
       <evaluation>Y</evaluation>
       <unconditional>Y</unconditional>
     </hop>
-    <hop>
-      <from>Existing current_run Log?</from>
-      <to>Get Custom Field Flags</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>N</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Get Custom Field Flags</from>
-      <to>Load bug activity since last run</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
   </hops>
   <notepads>
-    <notepad>
-      <note>&lt;--- Happy Lane</note>
-      <xloc>973</xloc>
-      <yloc>217</yloc>
-      <width>94</width>
-      <heigth>23</heigth>
-      <fontname>Ariel</fontname>
-      <fontsize>10</fontsize>
-      <fontbold>N</fontbold>
-      <fontitalic>N</fontitalic>
-      <fontcolorred>0</fontcolorred>
-      <fontcolorgreen>0</fontcolorgreen>
-      <fontcolorblue>0</fontcolorblue>
-      <backgroundcolorred>255</backgroundcolorred>
-      <backgroundcolorgreen>255</backgroundcolorgreen>
-      <backgroundcolorblue>0</backgroundcolorblue>
-      <bordercolorred>100</bordercolorred>
-      <bordercolorgreen>100</bordercolorgreen>
-      <bordercolorblue>100</bordercolorblue>
-      <drawshadow>Y</drawshadow>
-    </notepad>
   </notepads>
 </job>

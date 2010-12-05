@@ -10,5 +10,5 @@ JAVAMAXMEM=2048 "${KETTLE_LIBS}/../kitchen.sh" \
     2> "${ETL_HOME}/log/incremental/stderr_$(date +%Y%m%d_%H%M%S)"
 
 # Give Lily some time for indexing before comitting the index to SOLR
-sleep 5
+sleep 10
 ./bin/index_commit

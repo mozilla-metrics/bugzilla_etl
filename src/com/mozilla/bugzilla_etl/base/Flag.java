@@ -49,17 +49,17 @@ public class Flag {
     public enum Status {
         REQUESTED('?'),
         APPROVED('+'),
-        DENIED('-');
+        DENIED('-'),
+        
+        // Example: "...-needed" flags for maintainance releases in BMO
+        NA('/');
         public final char indicator;
         public static Status forIndicator(char indicator) {
             switch (indicator) {
                 case '?': return REQUESTED;
                 case '+': return APPROVED;
                 case '-': return DENIED;
-                default: 
-                    throw new IllegalArgumentException(
-                        "Unknown status indicator '" + indicator + "' on flag."
-                    );
+                default: return NA;
             }
         }
         Status(char indicator) { this.indicator = indicator; }
@@ -77,17 +77,18 @@ public class Flag {
         // Strip any requestee, currently not used.
         final int requesteePos = representation.indexOf('(');
         if (requesteePos != -1) representation = representation.substring(0, requesteePos);
+        
         final int indicatorPos = representation.length() -1;
-        Assert.check(indicatorPos > 0);
-        try {
-            return new Flag(representation.substring(0, indicatorPos),
-                            Status.forIndicator(representation.charAt(indicatorPos)));
+        Assert.check(indicatorPos > 0);        
+        final Status status = Status.forIndicator(representation.charAt(indicatorPos));
+
+        if (status == Status.NA) {
+            // :BMO: Special case: There is a field overflow in Bug 448640 ("flag-spam").
+            if(representation.equals("in-testsu")) return new Flag("in-testsuite", Status.REQUESTED);
+            return new Flag(representation, status);
         }
-        catch (IllegalArgumentException exception) {
-            // :BMO: There is a field overflow in Bug 448640, flag-spam as Beltzner puts it. 
-            if (!representation.equals("in-testsu")) Assert.unreachable(exception.getMessage());
-            return new Flag("in-testsuite", Status.REQUESTED);
-        }
+        
+        return new Flag(representation.substring(0, indicatorPos), status);
     }
 
     public Flag(final String flagType, final Status status) {
@@ -105,7 +106,7 @@ public class Flag {
     }
 
     public String representation() {
-        return type + status.indicator;
+        return status == Status.NA ? type : type + status.indicator;
     }
 
     @Override
