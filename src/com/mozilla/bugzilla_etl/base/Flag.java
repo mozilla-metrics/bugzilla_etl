@@ -78,9 +78,9 @@ public class Flag {
         final int requesteePos = representation.indexOf('(');
         if (requesteePos != -1) representation = representation.substring(0, requesteePos);
         
-        final int indicatorPos = representation.length() -1;
-        Assert.check(indicatorPos > 0);        
-        final Status status = Status.forIndicator(representation.charAt(indicatorPos));
+        final int lastPos = representation.length() -1;
+        Assert.check(lastPos > 0);        
+        final Status status = Status.forIndicator(representation.charAt(lastPos));
 
         if (status == Status.NA) {
             // :BMO: Special case: There is a field overflow in Bug 448640 ("flag-spam").
@@ -88,7 +88,7 @@ public class Flag {
             return new Flag(representation, status);
         }
         
-        return new Flag(representation.substring(0, indicatorPos), status);
+        return new Flag(representation.substring(0, lastPos), status);
     }
 
     public Flag(final String flagType, final Status status) {
@@ -106,7 +106,7 @@ public class Flag {
     }
 
     public String representation() {
-        return status == Status.NA ? type : type + status.indicator;
+        return (status == Status.NA) ? type : (type + status.indicator);
     }
 
     @Override

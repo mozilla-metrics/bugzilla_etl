@@ -11,7 +11,7 @@
     <parameters>
         <parameter>
             <name>BUG_IDS_PARTITION</name>
-            <default_value>bug_id &gt;= 601001 and bug_id &lt; 602001</default_value>
+            <default_value>bug_id &gt;= 596081 and bug_id &lt; 596101</default_value>
             <description>Partitioning to reduce memory and process time for big batch processing</description>
         </parameter>
         <parameter>
@@ -826,8 +826,8 @@ ORDER BY bug_id ASC</sql>
         WHEN `name` IN (&apos;resolution&apos;, &apos;status_whiteboard&apos;, &apos;target_milestone&apos;) AND `added` = &apos;&apos;     THEN &apos;&lt;empty&gt;&apos;
         WHEN `name` IN (&apos;flags&apos;, &apos;keywords&apos;)                                   AND `added` IS NULL  THEN &apos;&apos;
         WHEN `name` LIKE &apos;cf_blocking_%&apos;                                       AND `added` = &apos;---&apos; THEN &apos;&apos;
-        WHEN `name` LIKE &apos;cf_blocking_%&apos; AND LENGTH(activity.`removed`) = 1   AND `added` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`,      `added`)
-        WHEN `name` LIKE &apos;cf_blocking_%&apos; AND LENGTH(activity.`removed`) &gt; 1   AND `added` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`, &apos;-&apos;, `added`)
+        WHEN `name` LIKE &apos;cf_blocking_%&apos; AND LENGTH(activity.`added`) = 1   AND `added` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`,      `added`)
+        WHEN `name` LIKE &apos;cf_blocking_%&apos; AND LENGTH(activity.`added`) &gt; 1   AND `added` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`, &apos;-&apos;, `added`)
         ELSE NULLIF(`added`, &apos;&apos;)
     END AS added,
     `attach_id`,
