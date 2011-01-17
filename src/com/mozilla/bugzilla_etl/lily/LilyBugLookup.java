@@ -41,6 +41,8 @@
 package com.mozilla.bugzilla_etl.lily;
 
 import java.io.PrintStream;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.LinkedList;
@@ -66,6 +68,22 @@ import com.mozilla.bugzilla_etl.lily.Types.Params;
 public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
 
     private Converter<List<String>> csvConverter;
+
+    private Comparator<Record> versionComparator = new Comparator<Record>() {
+        public int compare(Record a, Record b) {
+            return a.getVersion().compareTo(b.getVersion());
+        }
+    };
+
+    /*
+    private Comparator<Record> stampComparator = new Comparator<Record>() {
+        public int compare(Record a, Record b) {
+            final Types.Params stamp = types.versionParams.get(Fields.Version.MODIFICATION_DATE);
+            return getDate(a.getFields(), stamp).compareTo(getDate(b.getFields(), stamp));
+        }
+    };
+    */
+
     final List<QName> emptyList = new LinkedList<QName>();
 
     public LilyBugLookup(final PrintStream log, final String lilyConnection) {
@@ -85,7 +103,7 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
             return null;
         }
         catch (Throwable e) {
-            log.format("LOOKUP: Unexpected Error Trying to read bug %s using bug id %s\n", 
+            log.format("LOOKUP: Unexpected Error Trying to read bug %s using bug id %s\n",
                        bugzillaId, id);
             do {
                 e.printStackTrace(log);
@@ -95,42 +113,34 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
         }
 
         final List<Record> versionRecords = repository.readVersions(id, new Long(1), record.getVersion(), emptyList);
-        
 
-        /*
-        final LinkedList<Record> versionRecords = new LinkedList<Record>();
-        versionRecords.addFirst(record);
-        long version = record.getVersion() - 1;
-
-        while (version > 0) {
-            try {
-                versionRecords.addFirst(repository.read(id, version));
+        // Ugly workaround: when deleting and then re-creating a record, lily restores the previous
+        //                  versions, even after an hbase compaction! We are only interested in the
+        //                  latest versions though.
+        Collections.sort(versionRecords, versionComparator);
+        List<Record> versionsToUse = new java.util.ArrayList<Record>(versionRecords.size());
+        final Types.Params numberParams = types.measurementParams.get(Fields.Measurement.NUMBER);
+        int maxNumber = 1;
+        for (Record r : versionRecords) {
+            final int number = ((Long) r.getField(numberParams.qname)).intValue();
+            if (versionsToUse.size() < number) {
+                versionsToUse.add(number - 1, r);
             }
-            catch (RecordNotFoundException bigTrouble) {
-                System.out.format("LOOKUP: Gap in the lily version numbers for bug #%s\n", bugzillaId);
-                throw bigTrouble;
+            else {
+                versionsToUse.set(number - 1, r);
             }
-            catch (VersionNotFoundException versionNotFound) {
-                System.out.format("LOOKUP: Could not find version %s for bug #%s\n", version, bugzillaId);
-                throw versionNotFound;
-            }
-            catch (RuntimeException e) {
-                System.out.format("LOOKUP: RuntimeException during lookup. Logging and reraising.");
-                e.printStackTrace(log);
-                throw e;
-            }
-            --version;
+            maxNumber = Math.max(maxNumber, number);
         }
-        */
+        versionsToUse = versionsToUse.subList(0, maxNumber);
 
-        log.format("LOOKUP: Reconstructing\n");
-        return reconstruct(versionRecords);
+        log.format("LOOKUP: Reconstructing %s/%s\n", versionsToUse.size(), versionRecords.size());
+        return reconstruct(versionsToUse);
     }
 
     /** Map a bunch of lily bug records back to a Bug entity. */
     private Bug reconstruct(final List<Record> versionRecords) {
         final Map<QName, Object> bugFields = versionRecords.get(0).getFields();
-        
+
         log.format("LOOKUP: Creating base bug...\n");
         final Bug bug = new Bug(
             (Long) bugFields.get(types.bugParams.get(Fields.Bug.ID).qname),
@@ -145,7 +155,7 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
             final EnumMap<Fields.Facet, String> facets = Version.createFacets();
             for (Fields.Facet facet : Fields.Facet.values()) {
                 Params facetParams = types.facetParams.get(facet);
-                ValueType valueType = facetParams.type;  
+                ValueType valueType = facetParams.type;
                 if (types.facetParams.get(facet).type == types.strings) {
                     facets.put(facet, getString(fields, facetParams));
                     continue;

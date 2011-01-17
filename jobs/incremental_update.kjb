@@ -75,7 +75,7 @@
             <value>bug_id &gt;= 1 AND bug_id &lt; 900900900</value>
             </parameter>            <parameter>            <name>OVERRIDE_START_TIME</name>
             <stream_name/>
-            <value>2010-12-08 01:01:01</value>
+            <value>2011-01-15 01:01:01</value>
             </parameter>            <parameter>            <name>lily_zk_connect_string</name>
             <stream_name/>
             <value>${ZOOKEEPER_HOST}</value>

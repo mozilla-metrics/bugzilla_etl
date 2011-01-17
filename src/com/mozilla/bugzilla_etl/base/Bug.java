@@ -106,7 +106,7 @@ public class Bug implements Iterable<Version> {
     public void baseUpon(final Bug existingBug) {
         Assert.check(id.equals(existingBug.id()));
         final LinkedList<Version> existingVersions = existingBug.versions;
-        
+
         if (DEBUG_INCREMENTAL_UPDATE) {
             System.out.print("\n");
             System.out.format("[REBASE  ] Checking bug #%d\n", id);
@@ -216,7 +216,7 @@ public class Bug implements Iterable<Version> {
 
             final Map<Fields.Facet, String> facets = version.facets();
             final Map<Fields.Measurement, Long> measurements = version.measurements();
-            
+
             String status = facets.get(Facet.STATUS);
             String majorStatus = majorStatusTable.get(status);
             if (majorStatus == null) {
@@ -224,25 +224,25 @@ public class Bug implements Iterable<Version> {
                 // This happens for five very old bugs, so we just handle them hard-coded.
                 int bugId = (int)id.longValue();
                 switch (bugId) {
-                    case 11720: case 11721: case 20015: 
-                        status = Status.NEW.name(); 
-                        majorStatus = Status.Major.OPEN.name(); 
+                    case 11720: case 11721: case 20015:
+                        status = Status.NEW.name();
+                        majorStatus = Status.Major.OPEN.name();
                     break;
-                    case 19936: case 19952: 
-                        status = Status.CLOSED.name(); 
-                        majorStatus = Status.Major.CLOSED.name(); 
+                    case 19936: case 19952:
+                        status = Status.CLOSED.name();
+                        majorStatus = Status.Major.CLOSED.name();
                     break;
-                    default: 
+                    default:
                         Assert.unreachable("Status must be set always for every bug!");
                         return;
                 }
             }
 
-            facets.put(Facet.STATUS_LAST_CHANGED_DATE, 
+            facets.put(Facet.STATUS_LAST_CHANGED_DATE,
                        Converters.DATE.format(statusLastChanged));
-            facets.put(Facet.MAJOR_STATUS_LAST_CHANGED_DATE, 
+            facets.put(Facet.MAJOR_STATUS_LAST_CHANGED_DATE,
                        Converters.DATE.format(majorStatusLastChanged));
-            
+
             long previousStatusDays = -1;
             long previousMajorStatusDays = -1;
             if (number > 1 && !status.equals(previousFacets.get(Facet.STATUS))) {
@@ -260,7 +260,7 @@ public class Bug implements Iterable<Version> {
             final long duration = version.to().getTime() - version.from().getTime();
             msInStatus += duration;
             msInMajorStatus += duration;
-            if (!isLatest && majorStatus != null 
+            if (!isLatest && majorStatus != null
                     && Status.Major.OPEN == Status.Major.valueOf(majorStatus)) {
                 msOpenAccumulated += duration;
             }
@@ -274,16 +274,16 @@ public class Bug implements Iterable<Version> {
                 if (facet == Facet.MODIFIED_FIELDS) continue;
                 boolean changed = false;
                 if (previousFacets.get(facet) == null) {
-                    changed = facets.get(facet) != null;  
+                    changed = facets.get(facet) != null;
                 }
                 else {
-                    changed = !previousFacets.get(facet).equals(facets.get(facet)); 
+                    changed = !previousFacets.get(facet).equals(facets.get(facet));
                 }
                 if (changed) fieldsModified.add(facet.name().toLowerCase());
             }
             facets.put(Facet.MODIFIED_FIELDS, Converters.FIELDS_MODIFIED.format(fieldsModified));
-            
-            
+
+
             measurements.put(Measurement.DAYS_IN_PREVIOUS_STATUS,
                              Long.valueOf(previousStatusDays));
             measurements.put(Measurement.DAYS_IN_PREVIOUS_MAJOR_STATUS,
