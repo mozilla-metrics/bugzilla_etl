@@ -41,12 +41,14 @@
 package com.mozilla.bugzilla_etl.lily;
 
 import java.io.PrintStream;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Date;
 
 import org.joda.time.DateTime;
 import org.lilyproject.repository.api.FieldTypeNotFoundException;
+import org.lilyproject.repository.api.QName;
 import org.lilyproject.repository.api.Record;
 import org.lilyproject.repository.api.RecordException;
 import org.lilyproject.repository.api.RecordExistsException;
@@ -74,6 +76,8 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
 
     final Object waitLock = new Object();
 
+    final List<QName> emptyList = new LinkedList<QName>();
+
     public BugDestination(PrintStream log, String lilyConnection) {
         super(log, lilyConnection);
         bugType = types.bugType();
@@ -82,7 +86,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
 
     /**
      * Save this bug into the repository.
-     * :TODO: Only use LilyCMS versioning when indexing becomes available independently from vtags.
+     * :TODO: Use only LilyCMS versioning when indexing becomes available independently from vtags.
      * @throws TypeException
      * @throws VersionNotFoundException
      * @throws RecordException
@@ -97,9 +101,9 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         final RecordId id = ids.id(bug);
         Record record = null;
         log.format("LilyBugDestination: Sending bug %s (record: [bug id='%s']).\n", bug.id(), id);
-        
+
         if (bug.iterator().next().persistenceState() == PersistenceState.NEW) {
-            record = newBugRecord(bug, id);           
+            record = newBugRecord(bug, id);
             log.format("SEND [bug id='%s'] is new.\n", id);
         }
         else {
@@ -115,7 +119,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
                 case SAVED:
                     continue;
                 case DIRTY:
-                    record = repository.read(id, currentVersion);
+                    record = bugAtNumber(id, currentVersion);
                     setVersionMutableFields(record, version);
                     record = repository.update(record, true, true);
                     log.format("Updated [bug id='%s'] (# v%d).\n", id, record.getVersion());
@@ -175,7 +179,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
             log.format("SEND historic#%s TRYING TO UPDATE [bug historic, id='%s']:\n", bug.id(), id);
             log.format("SEND historic#%s TRYING TO UPDATE %s.\n", bug.id(), version);
             Record record = null;
-            record = repository.read(id, 1L);
+            record = repository.read(id);
             record.setRecordType(bugType.getName(), null);
             setVersionMutableFields(record, version);
             log.format("SEND historic#%s (v: %d) EXPIRATION DATE AFTER UPDATE: %s.\n", bug.id(),
@@ -193,8 +197,8 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         record.setField(types.vTagParams.get(Types.VTag.HISTORY).qname, 1L);
         saveWithRetry(record, String.format("[bug historic, id='%s']", id), true);
     }
-    
-    private void saveWithRetry(Record record, String description, boolean doCreate) 
+
+    private void saveWithRetry(Record record, String description, boolean doCreate)
     throws RepositoryException {
         final int MAX_RETRIES = 20;
         final int WAIT_MS = 500;
@@ -202,18 +206,18 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         synchronized (waitLock) {
             while (retries > 0) {
                 try {
-                    try { 
+                    try {
                         record = doCreate ? repository.create(record) : repository.update(record);
                     }
                     catch (RecordExistsException exists) {
-                        log.format("SEND %s exists! Item deleted or previous run cancelled? Updating\n", 
+                        log.format("SEND %s exists! Item deleted or previous run cancelled? Updating\n",
                                    description);
                         repository.update(record);
                     }
                     retries = 0;
                     historicCounter.increment(Counter.Item.NEW_ZERO);
                 }
-                catch (RecordException exception) {                
+                catch (RecordException exception) {
                     if (retries == 0) {
                         log.format("SEND %s -- RecordException: Retries exhausted.\n", description);
                         throw exception;
@@ -238,11 +242,11 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         Assert.nonNull(types.bugParams.get(Fields.Bug.CREATION_DATE),
                        types.bugParams.get(Fields.Bug.CREATION_DATE).qname,
                        bug.creationDate());
-        record.setField(types.bugParams.get(Fields.Bug.CREATION_DATE).qname, 
+        record.setField(types.bugParams.get(Fields.Bug.CREATION_DATE).qname,
                         new DateTime(bug.creationDate().getTime()));
         return record;
     }
-    
+
     private void setVersionMutableFields(Record record, Version version) {
         record.setField(types.versionParams.get(Fields.Version.EXPIRATION_DATE).qname,
                         new DateTime(version.to().getTime()));
@@ -281,6 +285,32 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
             Assert.nonNull(value);
             record.setField(types.measurementParams.get(entry.getKey()).qname, value);
         }
+    }
+
+    /**
+     * Workaround:
+     * Due to Lily’s delete behavior (no versions are actually deleted), there can be multiple
+     * lily-versions with the same bugzilla version-number.
+     *
+     * Retrieve all records and return the latest version with the given number.
+     *
+     * This is needed to update the correct DIRTY version after a bug record has been recreated.
+     */
+    private Record bugAtNumber(final RecordId id, final long number)
+    throws RepositoryException {
+        Record latest = repository.read(id);
+        List<Record> all = repository.readVersions(id, number, latest.getVersion(), emptyList);
+        long recordNumber;
+        int i = all.size();
+        QName numberOName = types.measurementParams.get(Fields.Measurement.NUMBER).qname;
+        do {
+            --i;
+            final Record record = all.get(i);
+            recordNumber = (Long) record.getField(numberOName);
+            if (recordNumber == number) return record;
+        } while (i > 0);
+        Assert.unreachable("The version %d for record %s does not exist.", number, id);
+        return null;
     }
 
     public static final Counter counter = new Counter("Bugs");

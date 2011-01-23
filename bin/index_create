@@ -1,8 +1,19 @@
 #! /bin/bash
-source etl_env.shinclude
-source bin/etl_config.shinclude
+source settings.shinclude
+source bin/management.shinclude
 
 cd "${LILY_HOME}"
 
-./bin/lily-add-index --zookeeper "${zookeeper_host}" -n "${index_name}" --solr-shards "shard_1:http://${solr_host}/solr/" --indexer-config "${indexerconf}"
+for index in $INDEXES; do
+    name="${index%%:*}"
+    host="${index#*:}"
 
+    echo "Creating index ${name} on host ${host}..."
+    
+    ./bin/lily-add-index \
+        --zookeeper "${ZOOKEEPER_HOST}" \
+        --name "${name}" \
+        --solr-shards "${name}_1:http://${host}/solr/" \
+        --indexer-config "${INDEXER_CONF}"
+
+done

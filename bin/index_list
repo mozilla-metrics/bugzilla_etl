@@ -1,8 +1,6 @@
 #! /bin/bash
-source etl_env.shinclude
-source bin/etl_config.shinclude
+source settings.shinclude
 
 cd "${LILY_HOME}"
 
-./bin/lily-list-indexes --zookeeper "${zookeeper_host}"
-
+./bin/lily-list-indexes --zookeeper "${ZOOKEEPER_HOST}"

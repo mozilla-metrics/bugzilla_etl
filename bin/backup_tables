@@ -1,26 +1,27 @@
 #! /bin/bash
-source etl_env.shinclude
-source bin/etl_config.shinclude
+source settings.shinclude
+source bin/management.shinclude
 
-# Modify the classpath -- YMMV
-# Fortunately the classpath is transmitted to the actual task nodes.
-
-# Get hbase conf on there (e.g. for zk quorum location)
+# Modify the classpath (YMMV):
+# Get hbase conf out there (e.g. for zk quorum location)
 export HADOOP_CLASSPATH="/etc/hbase/conf/:$HADOOP_CLASSPATH"
-# Get zookeeper on there (hadoop does not know about zk, but hbase export needs it)
+# Get zk out there (hadoop does not know about zk, but hbase export needs it)
 export HADOOP_CLASSPATH="${HBASE_HOME}/lib/zookeeper.jar:$HADOOP_CLASSPATH"
 # Google collections API is used by the export task
 export HADOOP_CLASSPATH="${HBASE_HOME}/lib/guava-r05.jar:$HADOOP_CLASSPATH"
 
-MAX_INT=2147483647
+# Export all versions
+MAX=2147483647
 
 date_prefix="$(date +'%Y%m%d_%H%M')"
-hadoop fs -mkdir hdfs://${hdfs_host}/user/${USER}/lily_backup/${date_prefix}/
-for tableName in $tables;
+backup_directory=hdfs://${HDFS_HOST}/user/${USER}/lily_backup/${date_prefix}
+hadoop fs -mkdir "${backup_directory}"
+
+for source in $tables;
 do
-    dest="hdfs://${hdfs_host}/user/${USER}/lily_backup/${date_prefix}/${tableName}"
+    dest="${backup_directory}/${tableName}"
     echo "DEST: $dest"
     echo "HADOOP_CLASSPATH: $HADOOP_CLASSPATH"
     echo
-    hadoop jar "${HBASE_HOME}/hbase.jar" export "${tableName}" "${dest}" "${MAX_INT}"
+    hadoop jar "${HBASE_HOME}/hbase.jar" export "${source}" "${dest}" "${MAX}"
 done

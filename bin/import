@@ -1,5 +1,5 @@
 #! /bin/bash
-source etl_env.shinclude
+source settings.shinclude
 
 if [[ "${#}" -lt "2" ]]; then
     echo "Need at least two arguments!" >&2
@@ -9,16 +9,16 @@ fi
 from=$1
 to=$2
 
-now=$(date +'%Y-%m-%d')
+start_date=$(date +'%Y-%m-%d')
 
-log_dir="./log/initial/${now}"
+log_dir="./log/initial/${start_date}"
 mkdir -p "${log_dir}"
 log="${log_dir}/${from}.to.${to}.at.$(date +'%H%M')"
 out_log="${log}.log"
 err_log="${log}.err"
 
 # Printed to command line:
-echo "${out_log}"
+echo "less ${out_log}"
 
 
 echo "[IMPORT] STARTING import at $(date +'%Y%m%d %H%M')" >> "${out_log}"
@@ -26,7 +26,7 @@ echo "" >> "${out_log}"
 
 cmd='"${KETTLE_LIBS}/../kitchen.sh" \
     -file "${ETL_HOME}/jobs/initial_import.kjb" \
-    -param:"ZOOKEEPER_HOST=${zookeeper_host}" \
+    -param:"ZOOKEEPER_HOST=${ZOOKEEPER_HOST}" \
     -param:"FROM_ID=${from}" \
     -param:"TO_ID=${to}" $mode_param \
     -level:Rowlevel'
@@ -39,7 +39,7 @@ if [[ "${#}" -gt "2" ]]; then
     cmd='"${KETTLE_LIBS}/../pan.sh" "/file:${ETL_HOME}/transformations/lily_update_bug_versions.ktr" \
         -param:"OVERRIDE_START_TIME=${start_time}" \
         -param:"BUG_IDS_PARTITION=bug_id >= ${from} and bug_id < ${to}" \
-        -param:"lily_zk_connect_string=${zookeeper_host}" \
+        -param:"lily_zk_connect_string=${ZOOKEEPER_HOST}" \
         ${mode_param} \
         -level:Rowlevel'
 fi
@@ -48,9 +48,8 @@ echo "CMD: $cmd"
 # do it
 JAVAMAXMEM=2048 eval $cmd <&- >> "${out_log}" 2>>"${err_log}" || exit 1
 
+end_date=$(date +'%Y-%m-%d')
+echo -n "[IMPORT] DONE! From #${from} to #${to} " >> "${out_log}"
+echo    "(start=${start_date}, end=${end_date})") >> "${out_log}"
 
-echo "" >> "${out_log}"
-echo "[IMPORT] Commiting Solr index:" >> "${out_log}"
-curl -s "http://${solr_host}/solr/update" -H 'Content-type:text/xml' --data-binary '<commit/>' >> "${out_log}" 2>>"${err_log}"
-
-echo "[IMPORT] DONE WITH import from bug #${from} to #${to}, time: $(date)" >> "${out_log}"
+bin/index_commit >> "${out_log}"

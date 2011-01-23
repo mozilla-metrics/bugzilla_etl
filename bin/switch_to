@@ -1,5 +1,5 @@
 #! /bin/bash
-source etl_env.shinclude
+source settings.shinclude
 
 usage="usage: ${0} CONFIGURATION
 Select the kettle configuration (kettle.properties) to be used, where

@@ -69,6 +69,7 @@
     <field name="status"                         type="string"     required="false"/>
     <field name="status_last_changed_date"       type="tdate"      required="false"/>
     <field name="status_whiteboard"              type="string"     required="false"/>
+    <field name="status_whiteboard_items"        type="stringlist" required="false"/>
     <field name="target_milestone"               type="string"     required="false"/>
     <field name="version"                        type="string"     required="false"/>
 

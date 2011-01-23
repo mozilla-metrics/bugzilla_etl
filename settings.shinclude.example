@@ -13,10 +13,13 @@ export KETTLE_HOME="/usr/local/bugzilla_etl"
 export KETTLE_LIBS="/usr/local/pdi-ee/data-integration/libext"
 
 # Zookeeper quorum that LilyCMS is also using
-export zookeeper_host="localhost:2181"
+export ZOOKEEPER_HOST="localhost:2181"
 
-# SOLR shard that LilyCMS is also using (one for now)
-export solr_host="localhost:8983"
+# HDFS host (for hbase table backups)
+export HDFS_HOST="localhost:8020"
 
-# HDFS host (for backup)
-export hdfs_host="localhost:8020"
+# SOLR instances to use:
+export INDEXES="development:host.example.com:1337 production:host.example.com"
+
+# Point to hbase libs so hadoop can backup tables to hdfs
+export HBASE_HOME="/usr/lib/hbase"

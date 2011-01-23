@@ -71,13 +71,14 @@ import com.mozilla.bugzilla_etl.di.io.Input.Row;
 
 
 /**
- * This is allow to implement the rebuild history step.
+ * Does the work for the Rebuild-History Step.
+ *
  * Incoming Bugs are represented by a table that contains current bug status on the left side,
- * and incremental changes on the right side. From those incremental changes, bug versions are
- * constructed. Usually, changed fields replace fields in their predecessor version.
+ * and incremental changes on the right side (by date desc). From those incremental changes, bug
+ * versions are constructed. Changed fields replace fields in their predecessor version.
  *
  * There is some special treatment for flags: In the activity table, incremental changes for
- * flags are logged per flag. This means that we have to reconstruct the set of effective flags
+ * flags are logged per flag. This means that we also have to reconstruct the set of effective flags
  * in reverse order.
  */
 public class RebuilderBugSource extends AbstractSource<Bug> {
@@ -134,14 +135,14 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
         final Long bugId = input.cell(Fields.Bug.ID).longValue();
 
         if (bugId == null) {
-            Assert.unreachable("Cannot have bug_id of NULL encountered in fields from bugs table.");
+            Assert.unreachable("Cannot have bug_id of NULL. Encountered in fields from bugs table.");
         }
         if (creationStateAuthor == null) {
-            Assert.unreachable("Author for bug %s is null!", bugId);
+            Assert.unreachable("Author from bugs table for bug %s is null!", bugId);
         }
-        
+
         System.out.format("Rebuilder: processing bug %s\n", bugId);
-        
+
         final Bug bug = new Bug(bugId, creationStateAuthor, creationStateDate);
 
         // Keep current facet state and mutate it while walking the revisions.
@@ -200,8 +201,8 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
         return new Pair<EnumMap<Fields.Facet, String>, Map<String, Flag>>(facetState, flagState);
     }
 
-    /** 
-     * Initialize bug versions (except creation) from the bug activities table. 
+    /**
+     * Initialize bug versions (except creation) from the bug activities table.
      * Facet state and flag state are manipulated in place.
      */
     private void processActivitiesRows(final Bug bug,
@@ -432,7 +433,7 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
                 for (Flag toFlag : Converters.FLAGS.parse(toValue)) {
                     if (!flagState.containsKey(toFlag.name())) {
                         isConsistent = false;
-                        System.out.format("Inconsistent change on bug %s: set flag missing: '%s'\n", 
+                        System.out.format("Inconsistent change on bug %s: set flag missing: '%s'\n",
                                           activity.cell(Fields.Version.BUG_ID).longValue(), toFlag);
                     }
                     else {
@@ -442,8 +443,8 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
 
                 for (Flag fromFlag : Converters.FLAGS.parse(fromValue)) {
                     if (flagState.containsKey(fromFlag.name())) {
-                        System.out.format("Inconsistent change on bug %s: flag unwarranted: '%s'\n", 
-                                          activity.cell(Fields.Version.BUG_ID).longValue(), fromFlag);                                    
+                        System.out.format("Inconsistent change on bug %s: flag unwarranted: '%s'\n",
+                                          activity.cell(Fields.Version.BUG_ID).longValue(), fromFlag);
                         isConsistent = false;
                     }
                     flagState.put(fromFlag.name(), fromFlag);
@@ -456,8 +457,8 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
             if (!toValue.equals(facetState.get(facet))) {
                 isConsistent = false;
                 System.out.format(
-                    "Inconsistent change on bug %s field %s: expected '%s' (but got '%s')\n", 
-                    activity.cell(Fields.Version.BUG_ID).longValue(), facet.name().toLowerCase(), 
+                    "Inconsistent change on bug %s field %s: expected '%s' (but got '%s')\n",
+                    activity.cell(Fields.Version.BUG_ID).longValue(), facet.name().toLowerCase(),
                     facetState.get(facet), toValue
                 );
             }

@@ -1,14 +1,26 @@
 #! /bin/bash
-source etl_env.shinclude
-source bin/etl_config.shinclude
+source settings.shinclude
+source bin/management.shinclude
 
-echo "Are you sure that you want to remove the index configuration for ${index_name}?"
-echo "The index on SOLR host ${solr_host} will remain."
+echo "Removing the index configuration for:"
+echo "${INDEXES}"
+echo "Proceed? Indexes on the listed Solr hosts will not be deleted."
+
 need_confirm
 
 cd "${LILY_HOME}"
 
-echo "Disabling lily index."
-./bin/lily-update-index --zookeeper "${zookeeper_host}" -n "${index_name}" --state DELETE_REQUESTED
+for index in $INDEXES; do
+    name="${index%%:*}"
+    host="${index#*:}"
 
-echo "Done."
+    echo "Removing index '${name}' (host: ${host})?"
+    
+    ./bin/lily-update-index \
+        --zookeeper "${ZOOKEEPER_HOST}" \
+        --name "${name}" \
+        --state "DELETE_REQUESTED"
+    
+    echo "Done."
+
+done

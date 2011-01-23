@@ -166,8 +166,7 @@ class Types {
 
     private RecordType
     createOrGetRecordType(QName typeName,
-                          Map<Class<? extends Enum<?>>, EnumMap<? extends Enum<?>, Params>> all)
-    {
+                          Map<Class<? extends Enum<?>>, EnumMap<? extends Enum<?>, Params>> all) {
         try {
             return typeManager.getRecordTypeByName(typeName, null);
         }
@@ -194,7 +193,7 @@ class Types {
                     break;
                 }
                 if (fields.get(field) == Params.UNUSED) continue;
-                type.addFieldTypeEntry(createOrGetFieldType(params).getId(), 
+                type.addFieldTypeEntry(createOrGetFieldType(params).getId(),
                                        params.mandatory);
             }
         }
@@ -237,9 +236,9 @@ class Types {
         map.put(field, new Params(NS_VTAG, type, field, scope, false));
     }
 
-    private <T extends Enum<T>> void add(EnumMap<T, Params> map, 
-                                         T field, ValueType type, 
-                                         Scope scope, 
+    private <T extends Enum<T>> void add(EnumMap<T, Params> map,
+                                         T field, ValueType type,
+                                         Scope scope,
                                          boolean mandatory) {
         map.put(field, new Params(NS_BETL, type, field, scope, mandatory));
     }
@@ -281,6 +280,7 @@ class Types {
         add(facetParams, Fields.Facet.KEYWORDS,                       stringlists, Scope.VERSIONED, false);
         add(facetParams, Fields.Facet.FLAGS,                          stringlists, Scope.VERSIONED, false);
         add(facetParams, Fields.Facet.MODIFIED_FIELDS,                stringlists, Scope.VERSIONED, false);
+        add(facetParams, Fields.Facet.STATUS_WHITEBOARD_ITEMS,        stringlists, Scope.VERSIONED, false);
         add(facetParams, Fields.Facet.MAJOR_STATUS_LAST_CHANGED_DATE, dates,       Scope.VERSIONED, false);
         add(facetParams, Fields.Facet.STATUS_LAST_CHANGED_DATE,       dates,       Scope.VERSIONED, false);
         // The others are strings:

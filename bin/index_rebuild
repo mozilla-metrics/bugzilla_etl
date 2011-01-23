@@ -1,10 +1,23 @@
 #! /bin/bash
-source etl_env.shinclude
-source bin/etl_config.shinclude
+source settings.shinclude
+source bin/management.shinclude
 
 cd "${LILY_HOME}"
 
-echo "Requesting rebuild for SOLR index '${index_name}'."
-./bin/lily-update-index --zookeeper "${zookeeper_host}" -n "${index_name}"  --build-state "BUILD_REQUESTED"
+echo "Rebuild to these indexes requested: ${INDEXES}"
+echo -n "Proceed?"
+need_confirm
 
-echo "Index ${index_name} is being rebuilt."
+for index in $INDEXES; do
+    name="${index%%:*}"
+    host="${index#*:}"
+
+    echo "Rebuild index '${name}' (host: ${host})?"
+    ./bin/lily-update-index \
+        --zookeeper "${ZOOKEEPER_HOST}" \
+        --name "${name}" \
+        --build-state "BUILD_REQUESTED"
+
+    echo "rebuilding..."
+
+done

@@ -46,6 +46,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.mozilla.bugzilla_etl.base.Fields.Facet;
 import com.mozilla.bugzilla_etl.base.Fields.Measurement;
@@ -61,12 +63,15 @@ public class Bug implements Iterable<Version> {
         versions = new LinkedList<Version>();
     }
 
-    private static final long day = 24*60*60*1000;
-    private boolean DEBUG_INCREMENTAL_UPDATE = true;
+    private static final long DAY = 24*60*60*1000;
+    private static final boolean DEBUG_INCREMENTAL_UPDATE = true;
+
     private final Long id;
     private final String reporter;
     private final Date creationDate;
     private final LinkedList<Version> versions;
+
+    private final UpdateHelper helper = new UpdateHelper();
 
     public Long id() { return id; }
     public String reporter() { return reporter; }
@@ -114,8 +119,7 @@ public class Bug implements Iterable<Version> {
 
         final Version mostRecentExistingVersion = existingVersions.getLast();
         if (!versions.getLast().from().after(mostRecentExistingVersion.from())) {
-            System.out.format("Persistent version of bug #%d newer than version to import.\n", id);
-            System.out.format("Can happen when only untracked fields changed since last update.\n");
+            System.out.format("Repo version of bug #%d newer than version to import (OK).\n", id);
         }
 
         // Tell me a ton about this so I can make sure it works
@@ -208,7 +212,7 @@ public class Bug implements Iterable<Version> {
         long msInStatus = 0;
         long msInMajorStatus = 0;
         long msOpenAccumulated = 0;
-        int reopened = 0;
+        int timesReopened = 0;
 
         for (Version version : this) {
 
@@ -220,21 +224,21 @@ public class Bug implements Iterable<Version> {
             String status = facets.get(Facet.STATUS);
             String majorStatus = majorStatusTable.get(status);
             if (majorStatus == null) {
-                // :BMO: This should go to a configuration file so as not to be mozilla-only.
-                // This happens for five very old bugs, so we just handle them hard-coded.
-                int bugId = (int)id.longValue();
-                switch (bugId) {
-                    case 11720: case 11721: case 20015:
-                        status = Status.NEW.name();
-                        majorStatus = Status.Major.OPEN.name();
-                    break;
-                    case 19936: case 19952:
-                        status = Status.CLOSED.name();
-                        majorStatus = Status.Major.CLOSED.name();
-                    break;
-                    default:
-                        Assert.unreachable("Status must be set always for every bug!");
-                        return;
+                status = helper.fixKnownBrokenStatus(id).name();
+                majorStatus = helper.fixKnownBrokenMajorStatus(id).name();
+            }
+
+            long previousStatusDays = -1;
+            long previousMajorStatusDays = -1;
+            if (number > 1 && !status.equals(previousFacets.get(Facet.STATUS))) {
+                previousStatusDays = msInStatus/DAY;
+                msInStatus = 0;
+                statusLastChanged = version.from();
+                if (!majorStatus.equals(previousFacets.get(Facet.MAJOR_STATUS))) {
+                    if (Status.valueOf(status) == Status.REOPENED) ++timesReopened;
+                    previousMajorStatusDays = msInMajorStatus/DAY;
+                    msInMajorStatus = 0;
+                    majorStatusLastChanged = version.from();
                 }
             }
 
@@ -243,59 +247,41 @@ public class Bug implements Iterable<Version> {
             facets.put(Facet.MAJOR_STATUS_LAST_CHANGED_DATE,
                        Converters.DATE.format(majorStatusLastChanged));
 
-            long previousStatusDays = -1;
-            long previousMajorStatusDays = -1;
-            if (number > 1 && !status.equals(previousFacets.get(Facet.STATUS))) {
-                previousStatusDays = msInStatus/day;
-                msInStatus = 0;
-                statusLastChanged = version.from();
-                if (!majorStatus.equals(previousFacets.get(Facet.MAJOR_STATUS))) {
-                    if (Status.valueOf(status) == Status.REOPENED) ++reopened;
-                    previousMajorStatusDays = msInMajorStatus/day;
-                    msInMajorStatus = 0;
-                    majorStatusLastChanged = version.from();
-                }
-            }
-
-            final long duration = version.to().getTime() - version.from().getTime();
-            msInStatus += duration;
-            msInMajorStatus += duration;
-            if (!isLatest && majorStatus != null
-                    && Status.Major.OPEN == Status.Major.valueOf(majorStatus)) {
-                msOpenAccumulated += duration;
-            }
-
             facets.put(Facet.MAJOR_STATUS, majorStatus);
             facets.put(Facet.PREVIOUS_STATUS, previousFacets.get(Facet.STATUS));
             facets.put(Facet.PREVIOUS_MAJOR_STATUS, previousFacets.get(Facet.MAJOR_STATUS));
 
-            final List<String> fieldsModified = new java.util.LinkedList<String>();
-            for (Facet facet : Facet.values()) {
-                if (facet == Facet.MODIFIED_FIELDS) continue;
-                boolean changed = false;
-                if (previousFacets.get(facet) == null) {
-                    changed = facets.get(facet) != null;
-                }
-                else {
-                    changed = !previousFacets.get(facet).equals(facets.get(facet));
-                }
-                if (changed) fieldsModified.add(facet.name().toLowerCase());
+            // Itemize the status whiteboard so that users do not have to worry about brackets.
+            {
+                final String whiteboard = facets.get(Facet.STATUS_WHITEBOARD);
+                final List<String> items = helper.whiteboardItems(whiteboard);
+                facets.put(Facet.STATUS_WHITEBOARD_ITEMS,
+                           Converters.STATUS_WHITEBOARD_ITEMS.format(items));
             }
-            facets.put(Facet.MODIFIED_FIELDS, Converters.FIELDS_MODIFIED.format(fieldsModified));
 
+            // The modified fields are computed after all other facets have been processed.
+            facets.put(Facet.MODIFIED_FIELDS, helper.modifiedFields(previousFacets, facets));
+
+            // Compute remaining measurements
+            final long duration = version.to().getTime() - version.from().getTime();
+            msInStatus += duration;
+            msInMajorStatus += duration;
+            if (!isLatest && Status.Major.OPEN == Status.Major.valueOf(majorStatus)) {
+                msOpenAccumulated += duration;
+            }
 
             measurements.put(Measurement.DAYS_IN_PREVIOUS_STATUS,
                              Long.valueOf(previousStatusDays));
             measurements.put(Measurement.DAYS_IN_PREVIOUS_MAJOR_STATUS,
                              Long.valueOf(previousMajorStatusDays));
             measurements.put(Measurement.DAYS_IN_STATUS,
-                             Long.valueOf(isLatest ? -1 : msInStatus/day));
+                             Long.valueOf(isLatest ? -1 : msInStatus/DAY));
             measurements.put(Measurement.DAYS_IN_MAJOR_STATUS,
-                             Long.valueOf(isLatest ? -1 : msInMajorStatus/day));
+                             Long.valueOf(isLatest ? -1 : msInMajorStatus/DAY));
             measurements.put(Measurement.DAYS_OPEN_ACCUMULATED,
-                             Long.valueOf(msOpenAccumulated/day));
+                             Long.valueOf(msOpenAccumulated/DAY));
             measurements.put(Measurement.TIMES_REOPENED,
-                             Long.valueOf(reopened));
+                             Long.valueOf(timesReopened));
             measurements.put(Measurement.NUMBER,
                              Long.valueOf(number));
 
@@ -305,5 +291,74 @@ public class Bug implements Iterable<Version> {
 
     }
 
+    public static class UpdateHelper {
+
+        private static final Pattern WHITEBOARD_ITEMIZER =
+            Pattern.compile("\\[([^\\]]+)(?=\\])|(?:[\\s,\\]]+|^)([^\\s\\[]+|$)");
+
+        public final List<String> whiteboardItems(final String statusWhiteboard) {
+            final Matcher matcher = WHITEBOARD_ITEMIZER.matcher(statusWhiteboard);
+            final LinkedList<String> results = new LinkedList<String>();
+            while (matcher.find()) {
+                for (int i = 1; i<=matcher.groupCount(); ++i) {
+                    final String group = matcher.group(i);
+                    if (group == null || group.equals("")) continue;
+                    if (group.equals("(?)")) {
+                        if (results.size() == 0) continue;
+                        results.set(results.size() - 1, results.getLast() + "?");
+                        continue;
+                    }
+                    results.add(group);
+                }
+            }
+            return results;
+        }
+
+        public final boolean equals(Object a, Object b) {
+            if (a == null) return b != null;
+            return a.equals(b);
+        }
+
+        public final String modifiedFields(final Map<Facet, String> from,
+                                           final Map<Facet, String> to) {
+            final List<String> modified = new java.util.LinkedList<String>();
+            for (Facet facet : Facet.values()) {
+                switch (facet) {
+                    case MAJOR_STATUS_LAST_CHANGED_DATE:
+                    case STATUS_LAST_CHANGED_DATE:
+                    case STATUS_WHITEBOARD_ITEMS:
+                    case MODIFIED_FIELDS:
+                        continue;
+                    default:
+                        if (equals(from.get(facet), to.get(facet))) continue;
+                }
+                modified.add(facet.name().toLowerCase());
+            }
+            return Converters.FIELDS_MODIFIED.format(modified);
+        }
+
+        // This happens for five very old bugs, so we just handle them by their known ids.
+        public final Status fixKnownBrokenStatus(Long id) {
+            // :BMO: This should go to a configuration file so as to be mozilla-only.
+            switch ((int)id.longValue()) {
+                case 11720: case 11721: case 20015: return Status.NEW;
+                case 19936: case 19952:             return Status.CLOSED;
+                default:
+                    Assert.unreachable("Missing status for bug %s", id);
+                    return null;
+            }
+        }
+
+        public final Status.Major fixKnownBrokenMajorStatus(Long id) {
+            switch ((int)id.longValue()) {
+                case 11720: case 11721: case 20015: return Status.Major.OPEN;
+                case 19936: case 19952:             return Status.Major.CLOSED;
+                default:
+                    Assert.unreachable("Missing status for bug %s", id);
+                    return null;
+            }
+        }
+
+    }
 }
 

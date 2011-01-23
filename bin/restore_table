@@ -1,6 +1,6 @@
 #! /bin/bash
-source etl_env.shinclude
-source bin/etl_config.shinclude
+source settings.shinclude
+source bin/management.shinclude
 
 # Modify the classpath -- YMMV
 # Fortunately the classpath is transmitted to the actual task nodes.
@@ -17,7 +17,7 @@ MAX_INT=2147483647
 date_prefix="$(date +'%Y%m%d_%H%M')"
 dfspath=$1
 tableName=$2
-source="hdfs://${hdfs_host}${dfspath}"
+source="hdfs://${HDFS_HOST}${dfspath}"
 echo "SOURCE: $dest"
 echo "HADOOP_CLASSPATH: $HADOOP_CLASSPATH"
 echo

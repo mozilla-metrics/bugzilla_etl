@@ -1,10 +1,20 @@
 #! /bin/bash
-source etl_env.shinclude
-source bin/etl_config.shinclude
+source settings.shinclude
+source bin/management.shinclude
 
 cd "${LILY_HOME}"
 
-echo "Enabling lily index updates."
-./bin/lily-update-index --zookeeper "${zookeeper_host}" -n "${index_name}" --update-state "SUBSCRIBE_AND_LISTEN"
+for index in $INDEXES; do
+    name="${index%%:*}"
+    host="${index#*:}"
 
-echo "Live updates to the index ${index_name} should be enabled now."
+    echo "Enabling updates to index ${name} (host: ${host})."
+    
+    ./bin/lily-update-index \
+        --zookeeper "${ZOOKEEPER_HOST}" \
+        --name "${name}" \
+        --update-state "SUBSCRIBE_AND_LISTEN"
+
+    echo "OK."
+
+done

@@ -1,3 +1,13 @@
 #! /bin/bash
-source etl_env.shinclude
-curl http://${solr_host}/solr/update -H 'Content-type:text/xml' --data-binary '<commit/>'
+source settings.shinclude
+source bin/management.shinclude
+
+for index in $INDEXES; do
+    name="${index%%:*}"
+    host="${index#*:}"
+    
+    echo "Commiting index ${name} (host: ${host})."
+    
+    curl "http://${host}/solr/update" \
+        -H 'Content-type:text/xml' --data-binary '<commit/>'
+done

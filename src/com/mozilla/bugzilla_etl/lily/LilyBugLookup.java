@@ -75,15 +75,6 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
         }
     };
 
-    /*
-    private Comparator<Record> stampComparator = new Comparator<Record>() {
-        public int compare(Record a, Record b) {
-            final Types.Params stamp = types.versionParams.get(Fields.Version.MODIFICATION_DATE);
-            return getDate(a.getFields(), stamp).compareTo(getDate(b.getFields(), stamp));
-        }
-    };
-    */
-
     final List<QName> emptyList = new LinkedList<QName>();
 
     public LilyBugLookup(final PrintStream log, final String lilyConnection) {
@@ -114,9 +105,9 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
 
         final List<Record> versionRecords = repository.readVersions(id, new Long(1), record.getVersion(), emptyList);
 
-        // Ugly workaround: when deleting and then re-creating a record, lily restores the previous
-        //                  versions, even after an hbase compaction! We are only interested in the
-        //                  latest versions though.
+        // Ugly workaround: when deleting and re-creating a record, lily restores previous versions,
+        //                  even after an hbase compaction (soft-delete). We are only interested in
+        //                  the latest versions though (otherwise we'll have dupes).
         Collections.sort(versionRecords, versionComparator);
         List<Record> versionsToUse = new java.util.ArrayList<Record>(versionRecords.size());
         final Types.Params numberParams = types.measurementParams.get(Fields.Measurement.NUMBER);
@@ -131,9 +122,11 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
             }
             maxNumber = Math.max(maxNumber, number);
         }
-        versionsToUse = versionsToUse.subList(0, maxNumber);
 
-        log.format("LOOKUP: Reconstructing %s/%s\n", versionsToUse.size(), versionRecords.size());
+        // Now we have only the "latest" bug versions, sorted ascending.
+        log.format("LOOKUP: Reconstructing from %s/%s versions\n",
+                   versionsToUse.size(), versionRecords.size());
+
         return reconstruct(versionsToUse);
     }
 

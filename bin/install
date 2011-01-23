@@ -1,5 +1,5 @@
 #! /bin/bash
-source etl_env.shinclude
+source settings.shinclude
 
 ant clean dist
 

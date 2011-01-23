@@ -43,8 +43,11 @@ package com.mozilla.bugzilla_etl.base;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 public class Converters {
+
+    private static final Pattern CSV_SPLITTER = Pattern.compile("\\s*,\\s*");
 
     public static interface Converter<T> {
         T parse(String representation);
@@ -55,7 +58,7 @@ public class Converters {
         @Override
         public List<String> parse(String representation) {
             Assert.nonNull(representation);
-            return Arrays.asList(representation.split("\\s*,\\s*"));
+            return Arrays.asList(CSV_SPLITTER.split(representation));
         }
         @Override
         public String format(List<String> keywords) {
@@ -71,6 +74,12 @@ public class Converters {
     }
 
     public static final Converter<List<String>> FIELDS_MODIFIED = new CsvConverter();
+
+    /**
+     * De/serializes whiteboard items that have already been parsed.
+     * For the initial parsing, look at {@link Bug#updateFacetsAndMeasurements(java.util.Map, Date)}
+     */
+    public static final Converter<List<String>> STATUS_WHITEBOARD_ITEMS = new CsvConverter();
     public static final Converter<List<String>> KEYWORDS = new CsvConverter();
 
     public static final Converter<Flag> FLAG = new Converter<Flag>(){
@@ -92,7 +101,7 @@ public class Converters {
             Assert.nonNull(representation);
             final List<Flag> flags = new java.util.LinkedList<Flag>();
             if (representation.isEmpty()) return flags;
-            for (final String flagRepr : representation.split("\\s*,\\s*")) {
+            for (final String flagRepr : CSV_SPLITTER.split(representation)) {
                 flags.add(Flag.fromRepresentation(flagRepr));
             }
             return flags;
@@ -109,7 +118,7 @@ public class Converters {
             return buffer.toString();
         }
     };
-    
+
     public static final Converter<Date> DATE = new Converter<Date>() {
         @Override
         public Date parse(String representation) {

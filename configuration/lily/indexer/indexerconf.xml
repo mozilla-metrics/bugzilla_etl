@@ -18,7 +18,7 @@
     <indexField name="creation_date">
       <value ><field name="betl:creation_date"/></value>
     </indexField>
-    
+
     <!-- com.mozilla.bugzilla_etl.base.Fields.Version -->
     <indexField name="modified_by">
       <value ><field name="betl:modified_by"/></value>
@@ -60,7 +60,7 @@
     <indexField name="major_status_last_changed_date">
       <value ><field name="betl:major_status_last_changed_date"/></value>
     </indexField>
-    
+
     <indexField name="modified_fields">
       <value ><field name="betl:modified_fields"/></value>
     </indexField>
@@ -103,6 +103,10 @@
 
     <indexField name="status_whiteboard">
       <value ><field name="betl:status_whiteboard"/></value>
+    </indexField>
+
+    <indexField name="status_whiteboard_items">
+      <value ><field name="betl:status_whiteboard_items"/></value>
     </indexField>
 
     <indexField name="target_milestone">
