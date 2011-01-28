@@ -50,6 +50,6 @@ JAVAMAXMEM=2048 eval $cmd <&- >> "${out_log}" 2>>"${err_log}" || exit 1
 
 end_date=$(date +'%Y-%m-%d')
 echo -n "[IMPORT] DONE! From #${from} to #${to} " >> "${out_log}"
-echo    "(start=${start_date}, end=${end_date})") >> "${out_log}"
+echo    "(start=${start_date}, end=${end_date})"  >> "${out_log}"
 
 bin/index_commit >> "${out_log}"

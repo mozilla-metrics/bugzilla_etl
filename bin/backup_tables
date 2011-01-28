@@ -17,9 +17,9 @@ date_prefix="$(date +'%Y%m%d_%H%M')"
 backup_directory=hdfs://${HDFS_HOST}/user/${USER}/lily_backup/${date_prefix}
 hadoop fs -mkdir "${backup_directory}"
 
-for source in $tables;
+for source in $TABLES;
 do
-    dest="${backup_directory}/${tableName}"
+    dest="${backup_directory}/${source}"
     echo "DEST: $dest"
     echo "HADOOP_CLASSPATH: $HADOOP_CLASSPATH"
     echo

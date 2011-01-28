@@ -65,6 +65,7 @@ import com.mozilla.bugzilla_etl.base.Bug;
 import com.mozilla.bugzilla_etl.base.Converters;
 import com.mozilla.bugzilla_etl.base.Counter;
 import com.mozilla.bugzilla_etl.base.Destination;
+import com.mozilla.bugzilla_etl.base.Failable;
 import com.mozilla.bugzilla_etl.base.Fields;
 import com.mozilla.bugzilla_etl.base.PersistenceState;
 import com.mozilla.bugzilla_etl.base.Version;
@@ -121,8 +122,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
                 case DIRTY:
                     record = bugAtNumber(id, currentVersion);
                     setVersionMutableFields(record, version);
-                    record = repository.update(record, true, true);
-                    log.format("Updated [bug id='%s'] (# v%d).\n", id, record.getVersion());
+                    doReplace(record, id);
                     continue;
                 case NEW:
                     if (record == null ||
@@ -132,12 +132,10 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
                     setVersionFields(record, version);
                     setVersionMutableFields(record, version);
                     if (currentVersion == 1) {
-                        record = repository.create(record);
-                        log.format("Created [bug id='%s'] (* v%d).\n", id, record.getVersion());
+                        doCreate(record, id);
                     }
                     else {
-                        record = repository.update(record);
-                        log.format("Updated [bug id='%s'] (* v%d).\n", id, record.getVersion());
+                        doAppend(record, id);
                     }
                     continue;
                 default:
@@ -145,7 +143,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
             }
         }
         counter.count(bug);
-        String latest = "<not retrieved>";
+        String latest = "<N.A.>";
         if (record != null && record.getVersion() != null) {
             latest = record.getVersion().toString();
         }
@@ -159,12 +157,44 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
                    bug.id(), bug.numVersions());
     }
 
+    void doCreate(final Record record, final RecordId id) throws RepositoryException {
+        waitForIt(new Failable<RepositoryException>() {
+            public void tryIt() throws RepositoryException {
+                try { repository.create(record); }
+                catch (RecordExistsException e) { repository.update(record); }
+                log.format("Created %s (* v1).\n", this);
+            }
+            public String toString() { return String.format("[bug id='%s']", id); }
+        });
+    }
+
+    void doAppend(final Record record, final RecordId id) throws RepositoryException {
+        waitForIt(new Failable<RepositoryException>() {
+            public void tryIt() throws RepositoryException {
+                repository.update(record, false, true);
+                log.format("Appended %s (* v%d).\n", this, record.getVersion());
+            }
+            public String toString() { return String.format("[bug id='%s']", id); }
+        });
+    }
+
+    void doReplace(final Record record, final RecordId id) throws RepositoryException {
+        waitForIt(new Failable<RepositoryException>() {
+            public void tryIt() throws RepositoryException {
+                repository.update(record, true, true);
+                historicCounter.increment(Counter.Item.NEW_ZERO);
+                log.format("Updated %s (# v%d).\n", this, record.getVersion());
+            }
+            public String toString() { return String.format("[bug id='%s']", id); }
+        });
+    }
+
     /**
      * As long as we do not have indexing on all versions, simply add an individual bug record for
      * each version.
      * :TODO: Remove this once indexing for all versions is available.
      */
-    private void send(Bug bug, Version version) throws RepositoryException {
+    private void send(final Bug bug, final Version version) throws RepositoryException {
 
         Assert.nonNull(bug.id(), version.from(), version.to(), version.annotation());
 
@@ -191,38 +221,38 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         }
 
         // OK, new version.
-        Record record = newBugRecord(bug, id);
+        final Record record = newBugRecord(bug, id);
         setVersionFields(record, version);
         setVersionMutableFields(record, version);
         record.setField(types.vTagParams.get(Types.VTag.HISTORY).qname, 1L);
-        saveWithRetry(record, String.format("[bug historic, id='%s']", id), true);
+
+        waitForIt(new Failable<RepositoryException>() {
+            public void tryIt() throws RepositoryException {
+                try { repository.create(record); }
+                catch (RecordExistsException exists) { repository.update(record); }
+                historicCounter.increment(Counter.Item.NEW_ZERO);
+            }
+            public String toString() { return String.format("[bug historic, id='%s']", id); }
+        });
     }
 
-    private void saveWithRetry(Record record, String description, boolean doCreate)
+    private void waitForIt(Failable<RepositoryException> failable)
     throws RepositoryException {
         final int MAX_RETRIES = 20;
-        final int WAIT_MS = 500;
+        final int WAIT_MS = 1000;
         int retries = MAX_RETRIES;
         synchronized (waitLock) {
             while (retries > 0) {
                 try {
-                    try {
-                        record = doCreate ? repository.create(record) : repository.update(record);
-                    }
-                    catch (RecordExistsException exists) {
-                        log.format("SEND %s exists! Item deleted or previous run cancelled? Updating\n",
-                                   description);
-                        repository.update(record);
-                    }
+                    failable.tryIt();
                     retries = 0;
-                    historicCounter.increment(Counter.Item.NEW_ZERO);
                 }
                 catch (RecordException exception) {
                     if (retries == 0) {
-                        log.format("SEND %s -- RecordException: Retries exhausted.\n", description);
+                        log.format("SEND %s -- RecordException: Retries exhausted.\n", failable);
                         throw exception;
                     }
-                    log.format("SEND %s RecordException (see below): Retrying.\n", description);
+                    log.format("SEND %s RecordException (see below): Retrying.\n", failable);
                     exception.printStackTrace(log);
                     --retries;
                     try {
