@@ -159,6 +159,7 @@ public class Fields {
      */
     public static enum Facet implements Field {
         ASSIGNED_TO,
+        CHANGES(true),
         COMPONENT,
         FLAGS,
         KEYWORDS,

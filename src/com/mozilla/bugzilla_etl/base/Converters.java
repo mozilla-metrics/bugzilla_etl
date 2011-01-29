@@ -47,7 +47,8 @@ import java.util.regex.Pattern;
 
 public class Converters {
 
-    private static final Pattern CSV_SPLITTER = Pattern.compile("\\s*,\\s*");
+    private static final Pattern CSV_SPLITTER = Pattern.compile("[^\\]\\s*,\\s*");
+    private static final Pattern CSV_WITH_ESCAPES_SPLITTER = Pattern.compile("[^\\]\\s*,\\s*");
 
     public static interface Converter<T> {
         T parse(String representation);
@@ -55,32 +56,37 @@ public class Converters {
     }
 
     public static class CsvConverter implements Converter<List<String>> {
+
+        final boolean usesEscapes;
+        public CsvConverter() { usesEscapes = true; }
+        public CsvConverter(final boolean useEscapes) { usesEscapes = useEscapes; }
+
         @Override
         public List<String> parse(String representation) {
             Assert.nonNull(representation);
-            return Arrays.asList(CSV_SPLITTER.split(representation));
+            return Arrays.asList((usesEscapes ? CSV_WITH_ESCAPES_SPLITTER
+                                              : CSV_SPLITTER).split(representation));
         }
+
         @Override
-        public String format(List<String> keywords) {
+        public String format(List<String> items) {
             final StringBuilder buffer = new StringBuilder();
             boolean first = true;
-            for (String keyword : keywords) {
+            for (String item : items) {
+                if (usesEscapes) item = item.replace(",", "\\,");
                 if (!first) buffer.append(',');
-                buffer.append(keyword);
+                buffer.append(item);
                 first = false;
             }
             return buffer.toString();
         }
     }
 
-    public static final Converter<List<String>> FIELDS_MODIFIED = new CsvConverter();
-
-    /**
-     * De/serializes whiteboard items that have already been parsed.
-     * For the initial parsing, look at {@link Bug#updateFacetsAndMeasurements(java.util.Map, Date)}
-     */
-    public static final Converter<List<String>> STATUS_WHITEBOARD_ITEMS = new CsvConverter();
-    public static final Converter<List<String>> KEYWORDS = new CsvConverter();
+    public static final Converter<List<String>> KEYWORDS = new CsvConverter(false);
+    public static final Converter<List<String>> MODIFIED_FIELDS = new CsvConverter(false);
+    public static final Converter<List<String>> CHANGES = new CsvConverter(true);
+    /** This does not parse the status_whiteboard field! */
+    public static final Converter<List<String>> STATUS_WHITEBOARD_ITEMS = new CsvConverter(true);
 
     public static final Converter<Flag> FLAG = new Converter<Flag>(){
         @Override
@@ -131,5 +137,6 @@ public class Converters {
             return Long.valueOf(date.getTime()).toString();
         }
     };
+
 
 }

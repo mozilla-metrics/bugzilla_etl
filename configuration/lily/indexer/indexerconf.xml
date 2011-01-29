@@ -41,6 +41,10 @@
       <value ><field name="betl:assigned_to"/></value>
     </indexField>
 
+    <indexField name="changes">
+      <value ><field name="betl:changes"/></value>
+    </indexField>
+
     <indexField name="component">
       <value ><field name="betl:component"/></value>
     </indexField>

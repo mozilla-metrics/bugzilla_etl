@@ -79,7 +79,6 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
 
     public LilyBugLookup(final PrintStream log, final String lilyConnection) {
         super(log, lilyConnection);
-        csvConverter = new Converters.CsvConverter();
     }
 
     @Override

@@ -41,14 +41,17 @@
 package com.mozilla.bugzilla_etl.base;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.mozilla.bugzilla_etl.base.Converters.Converter;
 import com.mozilla.bugzilla_etl.base.Fields.Facet;
 import com.mozilla.bugzilla_etl.base.Fields.Measurement;
 
@@ -206,9 +209,9 @@ public class Bug implements Iterable<Version> {
         // and no change for days_open_accumulated
         boolean isLatest;
 
-        Map<Fields.Facet, String> previousFacets = Version.createFacets();
-        Date statusLastChanged = null;
-        Date majorStatusLastChanged = null;
+        Map<Facet, String> previousFacets = Version.createFacets();
+        Date statusLastChanged = creationDate;
+        Date majorStatusLastChanged = creationDate;
         long msInStatus = 0;
         long msInMajorStatus = 0;
         long msOpenAccumulated = 0;
@@ -218,8 +221,8 @@ public class Bug implements Iterable<Version> {
 
             isLatest = version.to().after(now);
 
-            final Map<Fields.Facet, String> facets = version.facets();
-            final Map<Fields.Measurement, Long> measurements = version.measurements();
+            final Map<Facet, String> facets = version.facets();
+            final Map<Measurement, Long> measurements = version.measurements();
 
             String status = facets.get(Facet.STATUS);
             String majorStatus = majorStatusTable.get(status);
@@ -228,13 +231,27 @@ public class Bug implements Iterable<Version> {
                 majorStatus = helper.fixKnownBrokenMajorStatus(id).name();
             }
 
+            // Previous status and major status are equal to the version before....
+            if (previousFacets.get(Facet.PREVIOUS_STATUS) != null) {
+                facets.put(Facet.PREVIOUS_STATUS,
+                           previousFacets.get(Facet.PREVIOUS_STATUS));
+                if (previousFacets.get(Facet.PREVIOUS_MAJOR_STATUS) != null) {
+                    facets.put(Facet.PREVIOUS_MAJOR_STATUS,
+                               previousFacets.get(Facet.PREVIOUS_MAJOR_STATUS));
+                }
+            }
+
+            // ...unless something changes to this version.
             long previousStatusDays = -1;
             long previousMajorStatusDays = -1;
             if (number > 1 && !status.equals(previousFacets.get(Facet.STATUS))) {
+                facets.put(Facet.PREVIOUS_STATUS, previousFacets.get(Facet.STATUS));
                 previousStatusDays = msInStatus/DAY;
                 msInStatus = 0;
                 statusLastChanged = version.from();
                 if (!majorStatus.equals(previousFacets.get(Facet.MAJOR_STATUS))) {
+                    facets.put(Facet.PREVIOUS_MAJOR_STATUS, previousFacets.get(Facet.MAJOR_STATUS));
+                    facets.put(Facet.MAJOR_STATUS, majorStatus);
                     if (Status.valueOf(status) == Status.REOPENED) ++timesReopened;
                     previousMajorStatusDays = msInMajorStatus/DAY;
                     msInMajorStatus = 0;
@@ -242,14 +259,11 @@ public class Bug implements Iterable<Version> {
                 }
             }
 
-            facets.put(Facet.STATUS_LAST_CHANGED_DATE,
+                        facets.put(Facet.STATUS_LAST_CHANGED_DATE,
                        Converters.DATE.format(statusLastChanged));
             facets.put(Facet.MAJOR_STATUS_LAST_CHANGED_DATE,
                        Converters.DATE.format(majorStatusLastChanged));
 
-            facets.put(Facet.MAJOR_STATUS, majorStatus);
-            facets.put(Facet.PREVIOUS_STATUS, previousFacets.get(Facet.STATUS));
-            facets.put(Facet.PREVIOUS_MAJOR_STATUS, previousFacets.get(Facet.MAJOR_STATUS));
 
             // Itemize the status whiteboard so that users do not have to worry about brackets.
             {
@@ -260,7 +274,9 @@ public class Bug implements Iterable<Version> {
             }
 
             // The modified fields are computed after all other facets have been processed.
-            facets.put(Facet.MODIFIED_FIELDS, helper.modifiedFields(previousFacets, facets));
+            final Pair<String, String> changes = helper.changes(previousFacets, facets);
+            facets.put(Facet.CHANGES, changes.first());
+            facets.put(Facet.MODIFIED_FIELDS, changes.second());
 
             // Compute remaining measurements
             final long duration = version.to().getTime() - version.from().getTime();
@@ -314,27 +330,59 @@ public class Bug implements Iterable<Version> {
             return results;
         }
 
+        /**
+         * While modified_fields will just contain field names, this is a list of actual changes.
+         * For single value fields, it produces items like this:
+         * "status:RESOLVED"
+         * The "TO" values for single value fields are not included.
+         * For multivalue fields it produces elements like:
+         * "-flags=previous-flag"
+         * "+keywords=new_keyword"
+         */
+        public Pair<String, String> changes(final Map<Facet, String> from,
+                                            final Map<Facet, String> to) {
+            final List<String> changes = new LinkedList<String>();
+            final List<String> modified = new java.util.LinkedList<String>();
+            for (final Facet facet : Facet.values()) {
+                switch (facet) {
+                    case MODIFIED_FIELDS:
+                    case STATUS_LAST_CHANGED_DATE:
+                    case MAJOR_STATUS_LAST_CHANGED_DATE:
+                        continue;
+                    default:
+                        if (equals(from, to)) continue;
+                }
+                if (equals(from, to)) continue;
+
+                final String key = facet.name().toLowerCase();
+                if (facet != Facet.STATUS_WHITEBOARD_ITEMS) {
+                    modified.add(key);
+                }
+
+                final Converter<List<String>> csvConverter = new Converters.CsvConverter();
+                if (facet == Facet.KEYWORDS || facet == Facet.FLAGS) {
+                    final List<String> fromItems = csvConverter.parse(from.get(facet));
+                    final List<String> toItems = csvConverter.parse(from.get(facet));
+                    final Set<String> fromLookup = new HashSet<String>(fromItems);
+                    final Set<String> toLookup = new HashSet<String>(toItems);
+                    for (final String item : fromItems) {
+                        if (!toLookup.contains(item)) changes.add("-" + key + "=" + item);
+                    }
+                    for (final String item : toItems) {
+                        if (!fromLookup.contains(item)) changes.add("+" + key + "=" + item);
+                    }
+                }
+                else {
+                    changes.add(key + "=" + from.get(facet));
+                }
+            }
+            return new Pair<String, String>(Converters.CHANGES.format(changes),
+                                            Converters.MODIFIED_FIELDS.format(modified));
+        }
+
         public final boolean equals(Object a, Object b) {
             if (a == null) return b != null;
             return a.equals(b);
-        }
-
-        public final String modifiedFields(final Map<Facet, String> from,
-                                           final Map<Facet, String> to) {
-            final List<String> modified = new java.util.LinkedList<String>();
-            for (Facet facet : Facet.values()) {
-                switch (facet) {
-                    case MAJOR_STATUS_LAST_CHANGED_DATE:
-                    case STATUS_LAST_CHANGED_DATE:
-                    case STATUS_WHITEBOARD_ITEMS:
-                    case MODIFIED_FIELDS:
-                        continue;
-                    default:
-                        if (equals(from.get(facet), to.get(facet))) continue;
-                }
-                modified.add(facet.name().toLowerCase());
-            }
-            return Converters.FIELDS_MODIFIED.format(modified);
         }
 
         // This happens for five very old bugs, so we just handle them by their known ids.

@@ -53,6 +53,7 @@
 
     <!-- com.mozilla.bugzilla_etl.base.Fields.Facet -->
     <field name="assigned_to"                    type="string"     required="false"/>
+    <field name="changes"                        type="stringlist" required="false"/>
     <field name="component"                      type="string"     required="false"/>
     <field name="flags"                          type="stringlist" required="false"/>
     <field name="keywords"                       type="stringlist" required="false"/>
@@ -60,7 +61,9 @@
     <field name="major_status_last_changed_date" type="tdate"      required="false"/>
     <field name="modified_fields"                type="stringlist" required="false"/>
     <field name="opsys"                          type="string"     required="false"/>
+    <!--  deprectaed -->
     <field name="previous_major_status"          type="string"     required="false"/>
+    <!--  deprectaed -->
     <field name="previous_status"                type="string"     required="false"/>
     <field name="priority"                       type="string"     required="false"/>
     <field name="product"                        type="string"     required="false"/>
