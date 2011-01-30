@@ -41,14 +41,15 @@
 package com.mozilla.bugzilla_etl.base;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Date;
 import java.util.regex.Pattern;
 
 public class Converters {
 
-    private static final Pattern CSV_SPLITTER = Pattern.compile("[^\\]\\s*,\\s*");
-    private static final Pattern CSV_WITH_ESCAPES_SPLITTER = Pattern.compile("[^\\]\\s*,\\s*");
+    private static final Pattern CSV_SPLITTER = Pattern.compile("\\s*,\\s*");
+    private static final Pattern CSV_WITH_ESCAPES_SPLITTER = Pattern.compile("\\s*(?<!\\\\),\\s*");
 
     public static interface Converter<T> {
         T parse(String representation);
@@ -64,8 +65,10 @@ public class Converters {
         @Override
         public List<String> parse(String representation) {
             Assert.nonNull(representation);
-            return Arrays.asList((usesEscapes ? CSV_WITH_ESCAPES_SPLITTER
-                                              : CSV_SPLITTER).split(representation));
+            final String[] parts = (usesEscapes ? CSV_WITH_ESCAPES_SPLITTER
+                                                : CSV_SPLITTER).split(representation);
+            if (parts.length == 1 && parts[0].equals("")) return Collections.emptyList();
+            return Arrays.asList(parts);
         }
 
         @Override

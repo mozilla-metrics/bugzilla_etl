@@ -281,6 +281,7 @@ class Types {
         add(facetParams, Fields.Facet.FLAGS,                          stringlists, Scope.VERSIONED, false);
         add(facetParams, Fields.Facet.MODIFIED_FIELDS,                stringlists, Scope.VERSIONED, false);
         add(facetParams, Fields.Facet.STATUS_WHITEBOARD_ITEMS,        stringlists, Scope.VERSIONED, false);
+        add(facetParams, Fields.Facet.CHANGES,                        stringlists, Scope.VERSIONED, false);
         add(facetParams, Fields.Facet.MAJOR_STATUS_LAST_CHANGED_DATE, dates,       Scope.VERSIONED, false);
         add(facetParams, Fields.Facet.STATUS_LAST_CHANGED_DATE,       dates,       Scope.VERSIONED, false);
         // The others are strings:

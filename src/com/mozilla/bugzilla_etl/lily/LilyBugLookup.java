@@ -67,7 +67,7 @@ import com.mozilla.bugzilla_etl.lily.Types.Params;
 
 public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
 
-    private Converter<List<String>> csvConverter;
+    private final Converter<List<String>> csvConverter = new Converters.CsvConverter(true);
 
     private Comparator<Record> versionComparator = new Comparator<Record>() {
         public int compare(Record a, Record b) {
@@ -85,7 +85,6 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
     public Bug find(Long bugzillaId) throws RepositoryException {
         Record record;
         RecordId id = ids.forBug(bugzillaId);
-        log.format("LOOKUP: Looking up bug %s using bug id %s\n", bugzillaId, id);
         try {
             record = repository.read(id);
         }
@@ -93,7 +92,7 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
             return null;
         }
         catch (Throwable e) {
-            log.format("LOOKUP: Unexpected Error Trying to read bug %s using bug id %s\n",
+            log.format("LOOKUP: Unexpected Error Trying to read bug %s using record id %s\n",
                        bugzillaId, id);
             do {
                 e.printStackTrace(log);
@@ -102,13 +101,14 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
             return null;
         }
 
-        final List<Record> versionRecords = repository.readVersions(id, new Long(1), record.getVersion(), emptyList);
+        final List<Record> versionRecords = repository.readVersions(id, new Long(1),
+                                                                    record.getVersion(), emptyList);
 
         // Ugly workaround: when deleting and re-creating a record, lily restores previous versions,
         //                  even after an hbase compaction (soft-delete). We are only interested in
         //                  the latest versions though (otherwise we'll have dupes).
         Collections.sort(versionRecords, versionComparator);
-        List<Record> versionsToUse = new java.util.ArrayList<Record>(versionRecords.size());
+        final List<Record> versionsToUse = new java.util.ArrayList<Record>(versionRecords.size());
         final Types.Params numberParams = types.measurementParams.get(Fields.Measurement.NUMBER);
         int maxNumber = 1;
         for (Record r : versionRecords) {
@@ -123,8 +123,8 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
         }
 
         // Now we have only the "latest" bug versions, sorted ascending.
-        log.format("LOOKUP: Reconstructing from %s/%s versions\n",
-                   versionsToUse.size(), versionRecords.size());
+        log.format("LOOKUP: Reconstructing bug %d from %s/%s versions\n",
+                   bugzillaId, versionsToUse.size(), versionRecords.size());
 
         return reconstruct(versionsToUse);
     }
@@ -133,13 +133,11 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
     private Bug reconstruct(final List<Record> versionRecords) {
         final Map<QName, Object> bugFields = versionRecords.get(0).getFields();
 
-        log.format("LOOKUP: Creating base bug...\n");
         final Bug bug = new Bug(
             (Long) bugFields.get(types.bugParams.get(Fields.Bug.ID).qname),
             (String) bugFields.get(types.bugParams.get(Fields.Bug.REPORTED_BY).qname),
             getDate(bugFields, types.bugParams.get(Fields.Bug.CREATION_DATE))
         );
-        log.format("LOOKUP: Created bug %s\n", bug.id());
 
         for (final Record versionRecord : versionRecords) {
             final Map<QName, Object> fields = versionRecord.getFields();

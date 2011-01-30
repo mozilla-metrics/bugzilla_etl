@@ -83,7 +83,7 @@ import com.mozilla.bugzilla_etl.di.io.Input.Row;
  */
 public class RebuilderBugSource extends AbstractSource<Bug> {
 
-    private boolean DEBUG_REORDER = true;
+    private boolean DEBUG_REORDER = false;
 
     private Lookup<Bug, KettleStepException> bugLookup;
     public RebuilderBugSource(TransformClassBase step,

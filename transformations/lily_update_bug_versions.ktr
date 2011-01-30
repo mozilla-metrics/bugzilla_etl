@@ -1484,6 +1484,16 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 
         </field>
         <field>
+        <field_name>changes</field_name>
+
+        <field_type>String</field_type>
+
+        <field_length>-1</field_length>
+
+        <field_precision>-1</field_precision>
+
+        </field>
+        <field>
         <field_name>component</field_name>
 
         <field_type>String</field_type>

@@ -75,6 +75,8 @@ import com.mozilla.bugzilla_etl.lily.Types.Params;
 public class BugDestination
 extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
 
+    private boolean DEBUG_SEND = false;
+
     final Object waitLock = new Object();
 
     final List<QName> emptyList = new LinkedList<QName>();
@@ -101,14 +103,14 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         // Fetch or create the record.
         final RecordId id = ids.id(bug);
         Record record = null;
-        log.format("LilyBugDestination: Sending bug %s (record: [bug id='%s']).\n", bug.id(), id);
+        log.format("SEND: Sending bug %s (record: [bug id='%s']).\n", bug.id(), id);
 
         if (bug.iterator().next().persistenceState() == PersistenceState.NEW) {
             record = newBugRecord(bug, id);
-            log.format("SEND [bug id='%s'] is new.\n", id);
+            if (DEBUG_SEND) log.format("SEND [bug id='%s'] is new.\n", id);
         }
         else {
-            log.format("SEND [bug id='%s'] has already been created -> incremental.\n", id);
+            if (DEBUG_SEND) log.format("SEND [bug id='%s'] has already been created -> incremental.\n", id);
         }
 
         // Create the (new) versions.
@@ -148,7 +150,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
             latest = record.getVersion().toString();
         }
         log.format("SEND DONE [bug id='%s', versions='%d', latest='%s']\n",
-                   id, currentVersion, latest);
+                                   id, currentVersion, latest);
 
         // Create the fake versions so all historic versions are indexed.
         // This should be removed once we are able to index versions without vtags.
@@ -162,7 +164,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
             public void tryIt() throws RepositoryException {
                 try { repository.create(record); }
                 catch (RecordExistsException e) { repository.update(record); }
-                log.format("Created %s (* v1).\n", this);
+                if (DEBUG_SEND) log.format("Created %s (* v=1).\n", this);
             }
             public String toString() { return String.format("[bug id='%s']", id); }
         });
@@ -172,7 +174,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         waitForIt(new Failable<RepositoryException>() {
             public void tryIt() throws RepositoryException {
                 repository.update(record, false, true);
-                log.format("Appended %s (* v%d).\n", this, record.getVersion());
+                if (DEBUG_SEND) log.format("Appended %s (* v=%d).\n", this, record.getVersion());
             }
             public String toString() { return String.format("[bug id='%s']", id); }
         });
@@ -183,7 +185,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
             public void tryIt() throws RepositoryException {
                 repository.update(record, true, true);
                 historicCounter.increment(Counter.Item.NEW_ZERO);
-                log.format("Updated %s (# v%d).\n", this, record.getVersion());
+                if (DEBUG_SEND) log.format("Updated %s (# v=%d).\n", this, record.getVersion());
             }
             public String toString() { return String.format("[bug id='%s']", id); }
         });
@@ -199,15 +201,14 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         Assert.nonNull(bug.id(), version.from(), version.to(), version.annotation());
 
         final RecordId id = ids.id(version);
-        log.format("SEND [bug historic, id='%s']\n", id.toString());
+        if (DEBUG_SEND) log.format("SEND [version, id='%s']\n", id.toString());
         if (version.persistenceState() == PersistenceState.SAVED) {
             // Incremental update: we already know this version.
-            log.format("SEND [bug historic, id='%s'] is already persisted. Skipping.\n", id);
+            if (DEBUG_SEND) log.format("SEND [version, id='%s'] skipped existing version.\n", id);
             return;
         }
         if (version.persistenceState() == PersistenceState.DIRTY) {
-            log.format("SEND historic#%s TRYING TO UPDATE [bug historic, id='%s']:\n", bug.id(), id);
-            log.format("SEND historic#%s TRYING TO UPDATE %s.\n", bug.id(), version);
+            if (DEBUG_SEND) log.format("SEND historic#%s TRYING TO UPDATE %s.\n", bug.id(), version);
             Record record = null;
             record = repository.read(id);
             record.setRecordType(bugType.getName(), null);

@@ -40,6 +40,7 @@
 
 package com.mozilla.bugzilla_etl.base;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -67,7 +68,7 @@ public class Bug implements Iterable<Version> {
     }
 
     private static final long DAY = 24*60*60*1000;
-    private static final boolean DEBUG_INCREMENTAL_UPDATE = true;
+    private static final boolean DEBUG_INCREMENTAL_UPDATE = false;
 
     private final Long id;
     private final String reporter;
@@ -251,15 +252,14 @@ public class Bug implements Iterable<Version> {
                 statusLastChanged = version.from();
                 if (!majorStatus.equals(previousFacets.get(Facet.MAJOR_STATUS))) {
                     facets.put(Facet.PREVIOUS_MAJOR_STATUS, previousFacets.get(Facet.MAJOR_STATUS));
-                    facets.put(Facet.MAJOR_STATUS, majorStatus);
                     if (Status.valueOf(status) == Status.REOPENED) ++timesReopened;
                     previousMajorStatusDays = msInMajorStatus/DAY;
                     msInMajorStatus = 0;
                     majorStatusLastChanged = version.from();
                 }
             }
-
-                        facets.put(Facet.STATUS_LAST_CHANGED_DATE,
+            facets.put(Facet.MAJOR_STATUS, majorStatus);
+            facets.put(Facet.STATUS_LAST_CHANGED_DATE,
                        Converters.DATE.format(statusLastChanged));
             facets.put(Facet.MAJOR_STATUS_LAST_CHANGED_DATE,
                        Converters.DATE.format(majorStatusLastChanged));
@@ -331,49 +331,55 @@ public class Bug implements Iterable<Version> {
         }
 
         /**
-         * While modified_fields will just contain field names, this is a list of actual changes.
+         * While modified_fields will just contain field names, changes is a list of actual changes.
          * For single value fields, it produces items like this:
          * "status:RESOLVED"
          * The "TO" values for single value fields are not included.
          * For multivalue fields it produces elements like:
          * "-flags=previous-flag"
          * "+keywords=new_keyword"
+         *
+         * @return a pair of strings. The first string is the facet "changes", the second is the
+         *         facet "modified_fields".
          */
-        public Pair<String, String> changes(final Map<Facet, String> from,
-                                            final Map<Facet, String> to) {
+        public Pair<String, String> changes(final Map<Facet, String> fromFacets,
+                                            final Map<Facet, String> toFacets) {
             final List<String> changes = new LinkedList<String>();
             final List<String> modified = new java.util.LinkedList<String>();
             for (final Facet facet : Facet.values()) {
+                final String from = fromFacets.get(facet);
+                final String to = toFacets.get(facet);
                 switch (facet) {
                     case MODIFIED_FIELDS:
+                    case CHANGES:
                     case STATUS_LAST_CHANGED_DATE:
                     case MAJOR_STATUS_LAST_CHANGED_DATE:
                         continue;
-                    default:
-                        if (equals(from, to)) continue;
                 }
                 if (equals(from, to)) continue;
 
-                final String key = facet.name().toLowerCase();
+                final String name = facet.name().toLowerCase();
                 if (facet != Facet.STATUS_WHITEBOARD_ITEMS) {
-                    modified.add(key);
+                    modified.add(name);
                 }
 
                 final Converter<List<String>> csvConverter = new Converters.CsvConverter();
-                if (facet == Facet.KEYWORDS || facet == Facet.FLAGS) {
-                    final List<String> fromItems = csvConverter.parse(from.get(facet));
-                    final List<String> toItems = csvConverter.parse(from.get(facet));
+                if (facet == Facet.KEYWORDS || facet == Facet.FLAGS || facet == Facet.STATUS_WHITEBOARD_ITEMS) {
+                    List<String> fromItems = Collections.emptyList();
+                    List<String> toItems = Collections.emptyList();
+                    if (from != null) fromItems = csvConverter.parse(from);
+                    if (to != null) toItems = csvConverter.parse(to);
                     final Set<String> fromLookup = new HashSet<String>(fromItems);
                     final Set<String> toLookup = new HashSet<String>(toItems);
                     for (final String item : fromItems) {
-                        if (!toLookup.contains(item)) changes.add("-" + key + "=" + item);
+                        if (!toLookup.contains(item)) changes.add("-" + name + "=" + item);
                     }
                     for (final String item : toItems) {
-                        if (!fromLookup.contains(item)) changes.add("+" + key + "=" + item);
+                        if (!fromLookup.contains(item)) changes.add("+" + name + "=" + item);
                     }
                 }
-                else {
-                    changes.add(key + "=" + from.get(facet));
+                else  if (from != null && !from.equals("<empty>")) {
+                    changes.add(name + "=" + from);
                 }
             }
             return new Pair<String, String>(Converters.CHANGES.format(changes),
@@ -381,7 +387,7 @@ public class Bug implements Iterable<Version> {
         }
 
         public final boolean equals(Object a, Object b) {
-            if (a == null) return b != null;
+            if (a == null) return b == null;
             return a.equals(b);
         }
 
