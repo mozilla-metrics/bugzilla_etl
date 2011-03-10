@@ -6,4 +6,6 @@ do
   CLASSPATH=$CLASSPATH:$f
 done
 
+CLASSPATH="${CLASSPATH}:$(pwd)/configuration/hbase-client"
+
 java -cp "${CLASSPATH}" com.mozilla.bugzilla_etl.lily.Types "${ZOOKEEPER_HOST}"

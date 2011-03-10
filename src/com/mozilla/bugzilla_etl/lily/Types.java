@@ -126,10 +126,16 @@ class Types {
 
     Types(PrintStream log, Repository repository) {
         typeManager = repository.getTypeManager();
-        longs = typeManager.getValueType("LONG", false, false);
-        strings = typeManager.getValueType("STRING", false, false);
-        dates = typeManager.getValueType("DATETIME", false, false);
-        stringlists = typeManager.getValueType("STRING", true, false);
+        try {
+            longs = typeManager.getValueType("LONG", false, false);
+            strings = typeManager.getValueType("STRING", false, false);
+            dates = typeManager.getValueType("DATETIME", false, false);
+            stringlists = typeManager.getValueType("STRING", true, false);
+        } catch (TypeException e) {
+            e.printStackTrace();
+            log.format("Fatal: value type not found.");
+            throw new RuntimeException(e);
+        }
 
         vTagParams = vTagParams();
         bugParams = bugParams();
@@ -171,38 +177,40 @@ class Types {
             return typeManager.getRecordTypeByName(typeName, null);
         }
         catch (RecordTypeNotFoundException notFound) { /* that's fine, let's create it... */ }
-        catch (TypeException typeException) {
+        catch (Exception error) {
+            error.printStackTrace(log);
             log.format("Error: Unexpected problem accessing type (%s).\n", typeName);
-            throw new RuntimeException(typeException);
+            throw new RuntimeException(error);
         }
 
         log.format("Type (%s) does not exist, creating it.\n", typeName);
 
         // Actually create the fields and the type.
-        final RecordType type = typeManager.newRecordType(typeName);
-        for (Map.Entry<Class<? extends Enum<?>>, EnumMap<? extends Enum<?>, Params>> pair :
-                all.entrySet()) {
-            final EnumMap<?, Params> fields = pair.getValue();
-            for (final Enum<?> field : pair.getKey().getEnumConstants()) {
-                final Params params = fields.get(field);
-                // Ensure that every enum constant is handled.
-                if(params == null) {
-                    Assert.unreachable("Missing params for field %s.%s -- aborting.",
-                                       field.getClass().getSimpleName(),
-                                       field.name());
-                    break;
-                }
-                if (fields.get(field) == Params.UNUSED) continue;
-                type.addFieldTypeEntry(createOrGetFieldType(params).getId(),
-                                       params.mandatory);
-            }
-        }
-
+        final RecordType type;
         try {
+            type = typeManager.newRecordType(typeName);
+            for (Map.Entry<Class<? extends Enum<?>>, EnumMap<? extends Enum<?>, Params>> pair :
+                    all.entrySet()) {
+                final EnumMap<?, Params> fields = pair.getValue();
+                for (final Enum<?> field : pair.getKey().getEnumConstants()) {
+                    final Params params = fields.get(field);
+                    // Ensure that every enum constant is handled.
+                    if(params == null) {
+                        Assert.unreachable("Missing params for field %s.%s -- aborting.",
+                                           field.getClass().getSimpleName(),
+                                           field.name());
+                        break;
+                    }
+                    if (fields.get(field) == Params.UNUSED) continue;
+                    type.addFieldTypeEntry(createOrGetFieldType(params).getId(),
+                                           params.mandatory);
+                }
+            }
             typeManager.createRecordType(type);
         } catch (Exception error) {
             error.printStackTrace();
-            log.format("Error: Unexpected error creating Bug record type.\n");
+            log.format("Fatal: Unexpected error creating Bug record type.\n");
+            throw new RuntimeException(error);
         }
 
         return type;
@@ -228,6 +236,11 @@ class Types {
             log.format("Error: Unexpected problem with managing field type (%s).\n",
                        params.qname.getName());
             throw new RuntimeException(typeException);
+        } 
+        catch (InterruptedException error) {
+            log.println("Fatal: Got interrupted creating field type:");
+            error.printStackTrace(log);
+            throw new RuntimeException(error);
         }
         return fieldType;
     }

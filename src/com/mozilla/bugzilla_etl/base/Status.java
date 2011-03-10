@@ -61,7 +61,7 @@ public enum Status {
     public enum Major { 
         OPEN,
         // We have this as a regular status as well, that's fine.
-        @SuppressWarnings("hiding") CLOSED 
+        CLOSED 
     }
 
     public final Major major;

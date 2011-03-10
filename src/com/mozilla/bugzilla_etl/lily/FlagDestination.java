@@ -62,29 +62,35 @@ extends AbstractLilyClient implements Destination<Flag, RepositoryException> {
     }
 
     @Override
-    public void send(Flag flag) throws RepositoryException {
+    public void send(Flag flag) throws RepositoryException{
 
         Assert.nonNull(flag.id(), flag.name(), flag.status());
 
         RecordId id = ids.id(flag);
         Record record = null;
+        
         try {
-            record = repository.read(id);
-            log.format("Record {flag id='%s'} has already been created. Skipping.\n", id);
-            return;
+            try {
+                record = repository.read(id);
+                log.format("Record {flag id='%s'} has already been created. Skipping.\n", id);
+                return;
+            }
+            catch (RecordNotFoundException notFound) { /* fine, we'll create it */ }
+    
+            // OK, new version.
+            record = repository.newRecord();
+            record.setRecordType(flagType.getName(), null);
+            record.setId(id);
+            record.setField(types.flagParams.get(Fields.Flag.ID).qname, flag.id());
+            record.setField(types.flagParams.get(Fields.Flag.NAME).qname, flag.name());
+            record.setField(types.flagParams.get(Fields.Flag.STATUS).qname, ""+flag.status().indicator);
+            record = repository.create(record);
+            record.setField(types.vTagParams.get(Types.VTag.HISTORY).qname, record.getVersion());
+            repository.update(record);
         }
-        catch (RecordNotFoundException notFound) { /* fine, we'll create it */ }
-
-        // OK, new version.
-        record = repository.newRecord();
-        record.setRecordType(flagType.getName(), null);
-        record.setId(id);
-        record.setField(types.flagParams.get(Fields.Flag.ID).qname, flag.id());
-        record.setField(types.flagParams.get(Fields.Flag.NAME).qname, flag.name());
-        record.setField(types.flagParams.get(Fields.Flag.STATUS).qname, ""+flag.status().indicator);
-        record = repository.create(record);
-        record.setField(types.vTagParams.get(Types.VTag.HISTORY).qname, record.getVersion());
-        repository.update(record);
+        catch (InterruptedException e) {
+            log.format("Got interrupted while trying to insert flag '%s'.", id);
+        }
 
         log.format("Done with flag {flag id='%s', versions='%d'}\n",
                    id, record.getVersion());

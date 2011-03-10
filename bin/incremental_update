@@ -5,7 +5,7 @@ source settings.shinclude
 
 mkdir -p ./log/incremental/
 
-JAVAMAXMEM=2048 "${KETTLE_LIBS}/../kitchen.sh" \
+CLASSPATH=./configuration/hbase-client JAVAMAXMEM=2048 "${KETTLE_LIBS}/../kitchen.sh" \
         -file "${ETL_HOME}/jobs/incremental_update.kjb" \
         -param:"ZOOKEEPER_HOST=${ZOOKEEPER_HOST}" \
     > "${ETL_HOME}/log/incremental/stdout_$(date +%Y%m%d_%H%M%S)" \

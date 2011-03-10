@@ -101,8 +101,16 @@ public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
             return null;
         }
 
-        final List<Record> versionRecords = repository.readVersions(id, new Long(1),
-                                                                    record.getVersion(), emptyList);
+        
+        List<Record> versionRecords;
+        try {
+            versionRecords = repository.readVersions(id, new Long(1), record.getVersion(), 
+                                                     emptyList);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            log.format("Got interrupted while looking up bug '%s'", bugzillaId);
+            throw new RuntimeException(e);
+        }
 
         // Ugly workaround: when deleting and re-creating a record, lily restores previous versions,
         //                  even after an hbase compaction (soft-delete). We are only interested in

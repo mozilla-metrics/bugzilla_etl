@@ -1,0 +1,12 @@
+.classpath
+.project
+.settings
+.externalToolBuilders
+.kettle
+settings.shinclude
+build.properties
+log
+local
+build
+configuration/hbase-client
+

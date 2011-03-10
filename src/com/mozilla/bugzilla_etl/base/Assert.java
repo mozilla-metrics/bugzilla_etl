@@ -42,7 +42,7 @@ package com.mozilla.bugzilla_etl.base;
 
 public class Assert {
 
-    private static final String prefix = "[ASSERTION FAILED] ";
+    private static final String prefix = "[FATAL] ";
 
     public static void nonNull(Object... values) {
         int i = 0;
@@ -69,10 +69,23 @@ public class Assert {
 
     public static void unreachable() {
         throw new IllegalStateException(String.format("%s Code should be unreachable!\n",
+                                                      prefix));        
+    }
+         
+    public static void unreachable(String message, Object... objects) {
+        throw new IllegalStateException(String.format("%s Code should be unreachable: %s\n", 
+                                                      prefix, 
+                                                      String.format(message, objects)));
+    }
+    
+    /* Return this where java wants to have a return value of type T. Silly, really... */
+    public static <T> T unreachable(Class<T> returnType) {
+        throw new IllegalStateException(String.format("%s Code should be unreachable!\n",
                                                       prefix));
     }
 
-    public static void unreachable(final String message, Object... objects) {
+    /* Return this where java wants to have a return value of type T. Silly, really... */
+    public static <T> T unreachable(Class<T> returnType, String message, Object... objects) {
         throw new IllegalStateException(String.format("%s Code should be unreachable: %s\n", 
                                                       prefix, 
                                                       String.format(message, objects)));
