@@ -22,6 +22,4 @@ them in a Lily repository. This ETL drives [BMO](http://bugzilla.mozilla.org)-da
 
 ## Known issues
 
-* Incremental update will become slower over time as the start date is hardcoded. This is a known flaw and is sitting on the top of the TODO list. No duplicates are imported though.
-
 * There are a few locations in the code handling peculiarities of bugzilla.mozilla.org (for which this ETL was built). They should be marked with "BMO" in comments. Please contact me (or better, [file a Metrics bug](https://bugzilla.mozilla.org/enter_bug.cgi?product=Mozilla%20Metrics)) if you have an interest in this ETL for a different bugzilla installation, and I am sure we can ascertain if these can cause any problems.
