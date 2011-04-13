@@ -11,7 +11,7 @@
     <parameters>
         <parameter>
             <name>BUG_IDS_PARTITION</name>
-            <default_value>bug_id &gt;= 596081 and bug_id &lt; 596101</default_value>
+            <default_value>bug_id &gt;= 601001 and bug_id &lt; 602001</default_value>
             <description>Partitioning to reduce memory and process time for big batch processing</description>
         </parameter>
         <parameter>
@@ -86,6 +86,8 @@
     </slaveservers>
     <clusterschemas>
     </clusterschemas>
+  <created_user/>
+  <created_date>2011&#47;04&#47;06 19:29:14.806</created_date>
   <modified_user>-</modified_user>
   <modified_date>2010&#47;08&#47;16 18:56:31.843</modified_date>
   </info>
@@ -115,7 +117,7 @@
       <note>:TODO: Integrate with dimension tables.</note>
       <xloc>596</xloc>
       <yloc>827</yloc>
-      <width>205</width>
+      <width>206</width>
       <heigth>23</heigth>
       <fontname>Ariel</fontname>
       <fontsize>10</fontsize>
@@ -138,7 +140,7 @@
 bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
       <xloc>204</xloc>
       <yloc>11</yloc>
-      <width>452</width>
+      <width>454</width>
       <heigth>58</heigth>
       <fontname>Ariel</fontname>
       <fontsize>12</fontsize>
@@ -900,8 +902,16 @@ JOIN profiles assignee ON assignee.userid = bugs.assigned_to
 JOIN profiles reporter ON reporter.userid = bugs.reporter
 JOIN products prod ON prod.id = product_id
 JOIN components comp ON comp.id = component_id
+LEFT JOIN (
+    SELECT
+    bug_id AS keywords_bug_id,
+    GROUP_CONCAT(`keyworddefs`.`name`) AS keywords
+    FROM `keywords`
+    LEFT JOIN `keyworddefs` ON `keywords`.`keywordid` = `keyworddefs`.`id`
+) AS `kw` ON kw.keywords_bug_id = bug_id
 WHERE delta_ts &gt; ?
 AND ${BUG_IDS_PARTITION}
+GROUP BY bug_id
 ORDER BY bug_id ASC</sql>
     <limit>0</limit>
     <lookup>Calculate start date</lookup>
