@@ -893,9 +893,9 @@ ORDER BY
 , CASE WHEN status_whiteboard = &apos;&apos; THEN &apos;&lt;empty&gt;&apos; ELSE status_whiteboard END AS status_whiteboard
 , CASE WHEN target_milestone = &apos;&apos; THEN &apos;&lt;empty&gt;&apos; ELSE target_milestone END AS target_milestone
 , version
-, creation_ts
-, CAST(DATE(creation_ts)+0 AS SIGNED INTEGER) AS created_on
-, CAST(TIME(creation_ts)+0 AS SIGNED INTEGER) AS created_at
+, bugs.creation_ts
+, CAST(DATE(bugs.creation_ts)+0 AS SIGNED INTEGER) AS created_on
+, CAST(TIME(bugs.creation_ts)+0 AS SIGNED INTEGER) AS created_at
 , ${CF_FLAGS_SQL_PARAMETER} as flags_cf
 FROM bugs
 JOIN profiles assignee ON assignee.userid = bugs.assigned_to
