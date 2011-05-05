@@ -40,6 +40,8 @@
 
 package com.mozilla.bugzilla_etl.base;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -111,7 +113,13 @@ public class Converters {
             final List<Flag> flags = new java.util.LinkedList<Flag>();
             if (representation.isEmpty()) return flags;
             for (final String flagRepr : CSV_SPLITTER.split(representation)) {
-                flags.add(Flag.fromRepresentation(flagRepr));
+                try {
+                    flags.add(Flag.fromRepresentation(flagRepr));
+                }
+                catch (IllegalArgumentException ex) {
+                    // Error parsing individual flag. Just give a message.
+                    System.out.format("WARNING: %s\n", ex.getMessage());
+                }
             }
             return flags;
         }
@@ -141,5 +149,36 @@ public class Converters {
         }
     };
 
+    public static final Converter<Date> ISO8601 = new Converter<Date>() {
+        private final SimpleDateFormat df =
+            new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSSz" );
+
+        /** Note that the full ISO 8601 string including time zone is needed. */
+        @Override
+        public Date parse(String repr) {
+            // Change time zone indicator to be java compatible.
+            if (repr.endsWith("Z")) {
+                repr = repr.substring(0, repr.length()-1) + "GMT-00:00";
+            }
+            else {
+                int tzStart = repr.length() - 6;
+                String s0 = repr.substring(0, tzStart);
+                String s1 = repr.substring(tzStart, repr.length());
+                repr = s0 + "GMT" + s1;
+            }
+
+            try {
+                return df.parse(repr);
+            }
+            catch (ParseException e) {
+                return Assert.unreachable(Date.class, "Invalid date: %s", repr);
+            }
+        }
+
+        @Override
+        public String format(Date value) {
+            return Assert.unreachable(String.class, "Not yet implemented.");
+        }
+    };
 
 }

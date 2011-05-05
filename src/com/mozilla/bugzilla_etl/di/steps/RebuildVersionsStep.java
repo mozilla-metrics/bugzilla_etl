@@ -53,12 +53,12 @@ import org.pentaho.di.trans.steps.userdefinedjavaclass.UserDefinedJavaClassMeta;
                                                                                              // snip
                                                                                              // snip
 public class RebuildVersionsStep extends TransformClassBase {                                // snip
-                                                                                             // step
+                                                                                             // snip
     public RebuildVersionsStep(UserDefinedJavaClass parent,                                  // snip
                                UserDefinedJavaClassMeta meta,                                // snip
                                UserDefinedJavaClassData data) throws KettleStepException {   // snip
         super(parent, meta, data);                                                           // snip
-    }                                                                                        // step
+    }                                                                                        // snip
 
     /**
      * source: {@link com.mozilla.bugzilla_etl.di.steps.RebuildVersionsStep}
@@ -70,34 +70,56 @@ public class RebuildVersionsStep extends TransformClassBase {                   
      * Because it is compiled at Runtime by Janino, the language constructs are
      * restricted: http://docs.codehaus.org/display/JANINO/Home#Home-limitations
      *
-     * Everything that is more complex is factored out into helper classes (parent
-     * package).
+     * For incremental update of existing bugs, a lookup is used:
+     * - If "IS_IMPORT" is set, an empty dummy lookup is used.
+     * - If "ES_NODES" is set, the elasticsearch lookup is used.
+     * - If "LILY_ZK_NODES" is set, the lily repository will be used.
+     * - Otherwise an error is raised.
      *
-     * Input: A stream of bugs and bug activities. The bug activities are grouped
-     * by bug. Output: A stream of complete bug versions.
+     * Input: A stream of bugs and bug activities. 
+     *        The activities of each bug are grouped together. 
+     * Output: A stream of complete bug versions.
      */
     private static final String IN_STEP = "Prepare History Input";
     private static final String IN_STEP_STATUS_LOOKUP = "Get Major Status Lookup";
     private com.mozilla.bugzilla_etl.di.BugDestination destination;
     private com.mozilla.bugzilla_etl.di.RebuilderBugSource source;
-    private com.mozilla.bugzilla_etl.lily.BugLookup lookup;
+    private com.mozilla.bugzilla_etl.di.IBugLookup lookup;
 
-    @Override
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
         if (first) {
             first = false;
             final RowMeta outputRowMeta = new RowMeta();
             data.outputRowMeta = outputRowMeta;
             meta.getFields(data.outputRowMeta, getStepname(), null, null, parent);
-            final String lilyConnectString = getParameter("lily_zk_connect_string");
+            
+            java.io.PrintStream log = System.out;
+            String isInitialImport = getParameter("IS_IMPORT");
+            String esNodes = getParameter("ES_NODES");
+            String lilyZkNodes = getParameter("LILY_ZK_NODES");
 
-            lookup = new com.mozilla.bugzilla_etl.lily.EmptyBugLookup();
-            if (!"true".equals(getParameter("is_initial_import"))) {
-                lookup = new com.mozilla.bugzilla_etl.lily.LilyBugLookup(System.out, 
-                                                                         lilyConnectString);
+            logBasic(String.format(
+                    "Params: IS_IMPORT=%s, ES_NODES=%s, LILY_ZK_NODES=%s",
+                    new Object[]{isInitialImport, esNodes, lilyZkNodes}
+            ));
+            if ("true".equals(isInitialImport)) {
+                log.println("Rebuilder Lookup: none (initial_import)");
+                lookup = new com.mozilla.bugzilla_etl.di.EmptyBugLookup();
+            }
+            else if (esNodes != null && esNodes.length() > 0) {
+                log.println("Rebuilder Lookup: elasticsearch");
+                lookup = 
+                    new com.mozilla.bugzilla_etl.es.BugLookup(log, esNodes);
+            }
+            else if (lilyZkNodes != null && lilyZkNodes.length() > 0) {
+                log.println("Rebuilder Lookup: Lily repository");
+                lookup = 
+                    new com.mozilla.bugzilla_etl.lily.LilyBugLookup(log, 
+                                                                    lilyZkNodes);
             }
             else {
-                System.out.println("Skipping lily lookup (initial_import)");
+                logError("RebuildVersionStep Lookup Configuration Invalid!");
+                com.mozilla.bugzilla_etl.base.Assert.unreachable();
             }
             source = new com.mozilla.bugzilla_etl.di.RebuilderBugSource(
                          this,

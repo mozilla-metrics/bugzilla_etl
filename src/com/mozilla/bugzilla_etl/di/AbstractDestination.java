@@ -57,4 +57,7 @@ abstract class AbstractDestination<T> implements Destination<T, KettleException>
         this.output = new Output(fromStep, out);
     }
 
+    @Override 
+    public void flush() throws KettleException { }
+
 }

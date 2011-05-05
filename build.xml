@@ -38,6 +38,7 @@
     xmlns:selectors="antlib:org.apache.tools.ant.types.resources.selectors">
     <property file="build.properties"/>
     <property name="src" value="src"/>
+    <property name="build.sysclasspath" value="last"/>
     <property name="build_dir" value="build/ant"/>
     <property name="jar_name" value="${ant.project.name}.jar"/>
     <property name="lib_dir" value="lib"/>

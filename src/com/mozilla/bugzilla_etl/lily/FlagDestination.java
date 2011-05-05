@@ -98,4 +98,6 @@ extends AbstractLilyClient implements Destination<Flag, RepositoryException> {
 
     private final RecordType flagType;
 
+    @Override public void flush() throws RepositoryException { }
+
 }

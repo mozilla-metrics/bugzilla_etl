@@ -1,9 +1,7 @@
 #! /bin/bash
 
-# Base dir of the lily build (containing the indexer project)
-export LILY_HOME="/usr/local/bugzilla_etl/lily"
 
-# The etl-project -- contains bin/ and configuration/ 
+# The etl-project -- contains bin/ and configuration/
 export ETL_HOME="/usr/local/bugzilla_etl"
 
 # The folder containing the .kettle dir
@@ -12,14 +10,6 @@ export KETTLE_HOME="/usr/local/bugzilla_etl"
 # The folder where the PDI step classes and dependencies go to.
 export KETTLE_LIBS="/usr/local/pdi-ee/data-integration/libext"
 
-# Zookeeper quorum that LilyCMS is also using
-export ZOOKEEPER_HOST="localhost:2181"
 
-# HDFS host (for hbase table backups)
-export HDFS_HOST="localhost:8020"
-
-# SOLR instances to use:
-export INDEXES="development:host.example.com:1337 production:host.example.com"
-
-# Point to hbase libs so hadoop can backup tables to hdfs
-export HBASE_HOME="/usr/lib/hbase"
+# Elasticsearch hosts for the transport client to connect to (CSV).
+export ES_NODES="localhost:9300"

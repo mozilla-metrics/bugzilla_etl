@@ -1,0 +1,26 @@
+#! /bin/bash
+source settings.shinclude
+source bin/lily/management.shinclude
+
+echo "Removing the index configuration for:"
+echo "${INDEXES}"
+echo "Proceed? Indexes on the listed Solr hosts will not be deleted."
+
+need_confirm
+
+cd "${LILY_HOME}"
+
+for index in $INDEXES; do
+    name="${index%%:*}"
+    host="${index#*:}"
+
+    echo "Removing index '${name}' (host: ${host})?"
+
+    ./bin/lily-update-index \
+        --zookeeper "${ZOOKEEPER_HOST}" \
+        --name "${name}" \
+        --state "DELETE_REQUESTED"
+
+    echo "Done."
+
+done

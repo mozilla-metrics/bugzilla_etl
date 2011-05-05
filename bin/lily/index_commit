@@ -1,0 +1,13 @@
+#! /bin/bash
+source settings.shinclude
+source bin/lily/management.shinclude
+
+for index in $INDEXES; do
+    name="${index%%:*}"
+    host="${index#*:}"
+
+    echo "Commiting index ${name} (host: ${host})."
+
+    curl "http://${host}/solr/update" \
+        -H 'Content-type:text/xml' --data-binary '<commit/>'
+done

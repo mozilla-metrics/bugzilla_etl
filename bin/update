@@ -1,0 +1,20 @@
+#! /bin/bash
+project_dir=$(dirname "${0}")/..
+cd "${project_dir}"
+source settings.shinclude
+
+mkdir -p ./log/update/
+
+JAVAMAXMEM=2048 "${KETTLE_LIBS}/../kitchen.sh" \
+        -file "${ETL_HOME}/jobs/update.kjb" \
+        -param:"ES_NODES=${ES_NODES}" \
+    >> "${ETL_HOME}/log/update/stdout" \
+    2>> "${ETL_HOME}/log/update/stderr" || exit 1
+
+# Update start date:
+# TODO: Use an ES document, depending on success of last update
+new_date=$(date --date "now -2 hours" +"%F %T")
+echo "Updating start date for next incremental update to ${new_date}"
+cat jobs/update.kjb.template | \
+    sed -r 's/\$\{UPDATE_BASE_DATE\}/'"${new_date}"'/' \
+    > jobs/update.kjb

@@ -62,4 +62,9 @@ public class FlagDestination extends AbstractDestination<Flag> {
         output.next();
     }
 
+    @Override public void flush() throws KettleException {
+        // TODO Auto-generated method stub
+        
+    }
+
 }

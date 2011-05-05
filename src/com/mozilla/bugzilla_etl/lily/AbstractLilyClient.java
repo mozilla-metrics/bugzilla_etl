@@ -58,11 +58,12 @@ abstract class AbstractLilyClient {
     protected final Types types;
     protected final Ids ids;
 
-    public AbstractLilyClient(final PrintStream log, final String lilyConnection) {
-        Assert.nonNull(log, lilyConnection);
+    public AbstractLilyClient(final PrintStream log, final String lilyZkNodes) {
+        Assert.nonNull(log, lilyZkNodes);
         this.log = log;
+        log.format("INFO: Connecting to lily (zk quorum '%s')\n", lilyZkNodes);
         try {
-            client = new LilyClient(lilyConnection, ZK_TIMEOUT_MS);
+            client = new LilyClient(lilyZkNodes, ZK_TIMEOUT_MS);
             repository = client.getRepository();
         }
         catch (KeeperException zookeeperError) {

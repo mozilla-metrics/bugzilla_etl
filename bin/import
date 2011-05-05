@@ -11,7 +11,7 @@ to=$2
 
 start_date=$(date +'%Y-%m-%d')
 
-log_dir="./log/initial/${start_date}"
+log_dir="./log/import/${start_date}"
 mkdir -p "${log_dir}"
 log="${log_dir}/${from}.to.${to}.at.$(date +'%H%M')"
 out_log="${log}.log"
@@ -25,31 +25,15 @@ echo "[IMPORT] STARTING import at $(date +'%Y%m%d %H%M')" >> "${out_log}"
 echo "" >> "${out_log}"
 
 cmd='"${KETTLE_LIBS}/../kitchen.sh" \
-    -file "${ETL_HOME}/jobs/initial_import.kjb" \
-    -param:"ZOOKEEPER_HOST=${ZOOKEEPER_HOST}" \
+    -file "${ETL_HOME}/jobs/import.kjb" \
+    -param:"ES_NODES=${ES_NODES}" \
     -param:"FROM_ID=${from}" \
-    -param:"TO_ID=${to}" $mode_param \
-    -level:Rowlevel'
-
-mode_param=""
-if [[ "${#}" -gt "2" ]]; then
-    start_time="$3"
-    echo "Using incremental mode from ${start_time}."
-    incremental_param="'-param:is_initial_import=false' '-param:OVERRIDE_START_TIME=${start_time}'"
-    cmd='"${KETTLE_LIBS}/../pan.sh" "/file:${ETL_HOME}/transformations/lily_update_bug_versions.ktr" \
-        -param:"OVERRIDE_START_TIME=${start_time}" \
-        -param:"BUG_IDS_PARTITION=bug_id >= ${from} and bug_id < ${to}" \
-        -param:"lily_zk_connect_string=${ZOOKEEPER_HOST}" \
-        ${mode_param} \
-        -level:Rowlevel'
-fi
+    -param:"TO_ID=${to}"'
 
 echo "CMD: $cmd"
 # do it
-CLASSPATH=./configuration/hbase-client JAVAMAXMEM=2048 eval $cmd <&- >> "${out_log}" 2>>"${err_log}" || exit 1
+JAVAMAXMEM=4096 eval $cmd <&- >> "${out_log}" 2>>"${err_log}" || exit 1
 
 end_date=$(date +'%Y-%m-%d')
 echo -n "[IMPORT] DONE! From #${from} to #${to} " >> "${out_log}"
 echo    "(start=${start_date}, end=${end_date})"  >> "${out_log}"
-
-bin/index_commit >> "${out_log}"

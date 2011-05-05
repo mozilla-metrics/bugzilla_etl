@@ -1,0 +1,11 @@
+#! /bin/bash
+source settings.shinclude
+
+for f in `find $KETTLE_LIBS -type f -name "*.jar"` `find $KETTLE_LIBS -type f -name "*.zip"`
+do
+  CLASSPATH=$CLASSPATH:$f
+done
+
+CLASSPATH="${CLASSPATH}:$(pwd)/configuration/hbase-client"
+
+java -cp "${CLASSPATH}" com.mozilla.bugzilla_etl.lily.Types "${ZOOKEEPER_HOST}"

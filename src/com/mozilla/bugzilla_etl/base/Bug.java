@@ -122,8 +122,8 @@ public class Bug implements Iterable<Version> {
         }
 
         final Version mostRecentExistingVersion = existingVersions.getLast();
-        if (!versions.getLast().from().after(mostRecentExistingVersion.from())) {
-            System.out.format("Repo version of bug #%d newer than version to import (OK).\n", id);
+        if (versions.getLast().from().before(mostRecentExistingVersion.from())) {
+            System.out.format("Index version of bug #%d newer than version to import (OK).\n", id);
         }
 
         // Tell me a ton about this so I can make sure it works
