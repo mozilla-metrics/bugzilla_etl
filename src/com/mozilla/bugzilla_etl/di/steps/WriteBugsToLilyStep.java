@@ -73,7 +73,6 @@ public class WriteBugsToLilyStep extends TransformClassBase {                   
     private com.mozilla.bugzilla_etl.di.BugSource source;
     private com.mozilla.bugzilla_etl.lily.BugDestination destination;
 
-    @Override
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
         if (first) {
             first = false;

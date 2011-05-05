@@ -44,7 +44,7 @@ import org.lilyproject.repository.api.RepositoryException;
 
 import com.mozilla.bugzilla_etl.base.Bug;
 
-public class EmptyBugLookup implements BugLookup {
+public class EmptyBugLookup implements IBugLookup {
 
     @Override
     public Bug find(Long id) throws RepositoryException { return null; }

@@ -359,4 +359,6 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
     private final RecordType bugType;
     private final Converter<List<String>> csvConverter;
 
+    @Override public void flush() throws RepositoryException { }
+
 }

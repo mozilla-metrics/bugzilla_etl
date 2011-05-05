@@ -58,7 +58,7 @@ public class RebuildVersionsStep extends TransformClassBase {                   
                                UserDefinedJavaClassMeta meta,                                // snip
                                UserDefinedJavaClassData data) throws KettleStepException {   // snip
         super(parent, meta, data);                                                           // snip
-    }                                                                                        // step
+    }                                                                                        // snip
 
     /**
      * source: {@link com.mozilla.bugzilla_etl.di.steps.RebuildVersionsStep}
@@ -80,9 +80,8 @@ public class RebuildVersionsStep extends TransformClassBase {                   
     private static final String IN_STEP_STATUS_LOOKUP = "Get Major Status Lookup";
     private com.mozilla.bugzilla_etl.di.BugDestination destination;
     private com.mozilla.bugzilla_etl.di.RebuilderBugSource source;
-    private com.mozilla.bugzilla_etl.lily.BugLookup lookup;
+    private com.mozilla.bugzilla_etl.lily.IBugLookup lookup;
 
-    @Override
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
         if (first) {
             first = false;

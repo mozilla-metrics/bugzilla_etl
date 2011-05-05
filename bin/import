@@ -25,11 +25,11 @@ echo "[IMPORT] STARTING import at $(date +'%Y%m%d %H%M')" >> "${out_log}"
 echo "" >> "${out_log}"
 
 cmd='"${KETTLE_LIBS}/../kitchen.sh" \
-    -file "${ETL_HOME}/jobs/initial_import.kjb" \
-    -param:"ZOOKEEPER_HOST=${ZOOKEEPER_HOST}" \
+    -file "${ETL_HOME}/jobs/import.kjb" \
+    -param:"ES_CONNECT_STRING=localhost:9200" \
     -param:"FROM_ID=${from}" \
     -param:"TO_ID=${to}" $mode_param \
-    -level:Rowlevel'
+    -level:Debug'
 
 mode_param=""
 if [[ "${#}" -gt "2" ]]; then

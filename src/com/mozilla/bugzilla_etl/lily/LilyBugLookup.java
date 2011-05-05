@@ -65,7 +65,7 @@ import com.mozilla.bugzilla_etl.base.Version;
 import com.mozilla.bugzilla_etl.base.Converters.Converter;
 import com.mozilla.bugzilla_etl.lily.Types.Params;
 
-public class LilyBugLookup extends AbstractLilyClient implements BugLookup {
+public class LilyBugLookup extends AbstractLilyClient implements IBugLookup {
 
     private final Converter<List<String>> csvConverter = new Converters.CsvConverter(true);
 

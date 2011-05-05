@@ -74,7 +74,6 @@ public class WriteFlagsToLilyStep extends TransformClassBase {                  
     private com.mozilla.bugzilla_etl.lily.FlagDestination destination;
     private int count = 0;
 
-    @Override
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
         if (first) {
             first = false;

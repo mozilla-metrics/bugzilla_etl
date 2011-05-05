@@ -79,7 +79,7 @@ class Ids {
                                            .append(flag.id()).toString());
     }
 
-    private String id(final Long bugId, final Long versionIdentifier) {
+    protected String id(final Long bugId, final Long versionIdentifier) {
         final String prefix = String.format("%06d", bugId);
         final String suffix = (versionIdentifier != null) ? versionIdentifier.toString() : "";
         final StringBuilder dest = new StringBuilder(prefix.length() + 1 + suffix.length());
