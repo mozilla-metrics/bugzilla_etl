@@ -41,13 +41,16 @@
 package com.mozilla.bugzilla_etl.es;
 
 
+import java.io.PrintStream;
+import java.util.List;
+
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-
-import java.io.PrintStream;
+import org.elasticsearch.common.transport.TransportAddress;
 
 import com.mozilla.bugzilla_etl.base.Assert;
+import com.mozilla.bugzilla_etl.base.Converters;
 import com.mozilla.bugzilla_etl.base.Fields;
 import com.mozilla.bugzilla_etl.es.Mapping.BugMapping;
 import com.mozilla.bugzilla_etl.es.Mapping.FacetMapping;
@@ -64,11 +67,21 @@ abstract class AbstractEsClient {
         return "bugs";
     }
 
-    public AbstractEsClient(final PrintStream log, final String esQuorum) {
-        Assert.nonNull(log);
+    public AbstractEsClient(final PrintStream log, final String esNodes) {
+        Assert.nonNull(log, esNodes);
         this.log = log;
         try {
-            client = new TransportClient().addTransportAddress(new InetSocketTransportAddress("localhost", 9300));
+            log.format("Using elasticsearch connection '%s'.\n", esNodes);
+            TransportClient transportClient = new TransportClient(); 
+            List<String> nodes = new Converters.CsvConverter().parse(esNodes);
+            for (String node : nodes) {
+                int colon = node.indexOf(':');
+                String host = node.substring(0, colon);
+                int port = Integer.parseInt(node.substring(colon+1));
+                TransportAddress a = new InetSocketTransportAddress(host, port);
+                transportClient.addTransportAddress(a);
+            }
+            client = transportClient;
         }
         catch (Exception error) {
             log.print("Error: Cannot create elastic search client.\n");

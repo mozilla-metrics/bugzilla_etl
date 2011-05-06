@@ -38,15 +38,14 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.lily;
-
-import org.lilyproject.repository.api.RepositoryException;
+package com.mozilla.bugzilla_etl.di;
 
 import com.mozilla.bugzilla_etl.base.Bug;
+
 
 public class EmptyBugLookup implements IBugLookup {
 
     @Override
-    public Bug find(Long id) throws RepositoryException { return null; }
+    public Bug find(Long id) throws Exception { return null; }
 
 }

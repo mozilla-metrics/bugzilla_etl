@@ -1,6 +1,6 @@
 #! /bin/bash
 source settings.shinclude
-source bin/management.shinclude
+source bin/lily/management.shinclude
 
 cd "${LILY_HOME}"
 
@@ -9,7 +9,7 @@ for index in $INDEXES; do
     host="${index#*:}"
 
     echo "Creating index ${name} on host ${host}..."
-    
+
     ./bin/lily-add-index \
         --zookeeper "${ZOOKEEPER_HOST}" \
         --name "${name}" \

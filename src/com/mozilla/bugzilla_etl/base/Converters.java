@@ -111,7 +111,13 @@ public class Converters {
             final List<Flag> flags = new java.util.LinkedList<Flag>();
             if (representation.isEmpty()) return flags;
             for (final String flagRepr : CSV_SPLITTER.split(representation)) {
-                flags.add(Flag.fromRepresentation(flagRepr));
+                try {
+                    flags.add(Flag.fromRepresentation(flagRepr));
+                }
+                catch (IllegalArgumentException ex) {
+                    // Error parsing individual flag. Just give a message.
+                    System.out.format("WARNING: %s\n", ex.getMessage());
+                }
             }
             return flags;
         }

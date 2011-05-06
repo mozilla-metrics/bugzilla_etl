@@ -63,6 +63,7 @@ import com.mozilla.bugzilla_etl.base.Fields;
 import com.mozilla.bugzilla_etl.base.PersistenceState;
 import com.mozilla.bugzilla_etl.base.Version;
 import com.mozilla.bugzilla_etl.base.Converters.Converter;
+import com.mozilla.bugzilla_etl.di.IBugLookup;
 import com.mozilla.bugzilla_etl.lily.Types.Params;
 
 public class LilyBugLookup extends AbstractLilyClient implements IBugLookup {

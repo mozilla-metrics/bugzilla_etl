@@ -18,67 +18,83 @@ import com.mozilla.bugzilla_etl.base.PersistenceState;
 import com.mozilla.bugzilla_etl.base.Version;
 import com.mozilla.bugzilla_etl.es.Mapping.BugMapping;
 
-public class BugDestination extends AbstractEsClient implements Destination<Bug, Exception> {
+public class BugDestination extends AbstractEsClient 
+                            implements Destination<Bug, Exception> {
 
-    public static final int BATCH = 5000;
-    public static final int TIMEOUT = 5000;
+    public static final int BATCH_LIMIT = 1000;
+    public static final int TIMEOUT = 15000;
     
-    public BugDestination(PrintStream log, String esQuorum) {
-      super(log, esQuorum);
+    public BugDestination(PrintStream log, String esNodes) {
+      super(log, esNodes);
     }
 
       
     public void send(Bug bug) throws Exception {
         if (bulk == null) {
             bulk = client.prepareBulk();
-            buffered = 0;
+            batchSize = 0;
         }
         
         for (final Version version : bug) {
             if (version.persistenceState() == PersistenceState.SAVED) continue;
             bulk.add(request(version));
-            ++buffered;
+            ++batchSize;
         }
         
-        if (buffered >= BATCH) flush();
+        if (batchSize >= BATCH_LIMIT) flush();
     }
 
     
     @Override 
     public void flush() throws Exception {
         if (bulk == null) return;
-        BulkResponse response = bulk.execute().actionGet(TIMEOUT);
-        log.format("Indexed bulk of %d records in %d ms.\n",
-                   buffered, response.getTookInMillis());
+        final BulkResponse response = bulk.execute().actionGet(TIMEOUT);
+        log.format("Indexed bulk of %d records in %d ms. Verifying...",
+                   batchSize, response.getTookInMillis());
+        checkResponse(response);
         bulk = null;
     }
     
-    private IndexRequest request(Version ver) throws IOException {
+    
+    private void checkResponse(final BulkResponse response) {
+        if (!response.hasFailures()) {
+            log.println("OK");
+            return;
+        }
+        log.println("Bulk load had failures:");
+        log.println(response.buildFailureMessage());
+    }
+    
+    
+    private IndexRequest request(final Version version) throws IOException {
       XContentBuilder out = XContentFactory.jsonBuilder();
       out.startObject();
-      BUG.append(out, Fields.Bug.ID, ver.bug().id());
-      BUG.append(out, Fields.Bug.REPORTED_BY, ver.bug().reporter());
-      BUG.append(out, Fields.Bug.CREATION_DATE, ver.bug().creationDate());
-      VERSION.append(out, Fields.Version.MODIFIED_BY, ver.author());
-      VERSION.append(out, Fields.Version.MODIFICATION_DATE, ver.to());
-      VERSION.append(out, Fields.Version.EXPIRATION_DATE, ver.from());
-      VERSION.append(out, Fields.Version.ANNOTATION, ver.annotation());
+      BUG.append(out, Fields.Bug.ID, version.bug().id());
+      BUG.append(out, Fields.Bug.REPORTED_BY, version.bug().reporter());
+      BUG.append(out, Fields.Bug.CREATION_DATE, version.bug().creationDate());
+      VERSION.append(out, Fields.Version.MODIFIED_BY, version.author());
+      VERSION.append(out, Fields.Version.MODIFICATION_DATE, version.to());
+      VERSION.append(out, Fields.Version.EXPIRATION_DATE, version.from());
+      VERSION.append(out, Fields.Version.ANNOTATION, version.annotation());
       for (Facet facet : Facet.values()) {
-          FACET.append(out, facet, ver.facets().get(facet));
+          FACET.append(out, facet, version.facets().get(facet));
       }
       for (Measurement measure : Measurement.values()) {
-          MEASURE.append(out, measure, ver.measurements().get(measure));
+          MEASURE.append(out, measure, version.measurements().get(measure));
       }
       out.endObject();
       
       final String id = 
-          ver.bug().id() + "." + ver.measurements().get(Measurement.NUMBER);
+          new StringBuilder().append(version.bug().id()).append('.')
+          .append(version.measurements().get(Measurement.NUMBER)).toString();
+      
       return client.prepareIndex(index(), BugMapping.TYPE)
-             .setId(id)
-             .setSource(out).request();
+                   .setId(id)
+                   .setSource(out).request();
     }
     
-    private int buffered = 0;
+    
+    private int batchSize = 0;
     private BulkRequestBuilder bulk;
     
 }

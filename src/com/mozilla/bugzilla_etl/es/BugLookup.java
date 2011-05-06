@@ -56,13 +56,14 @@ import com.mozilla.bugzilla_etl.base.Bug;
 import com.mozilla.bugzilla_etl.base.Fields;
 import com.mozilla.bugzilla_etl.base.PersistenceState;
 import com.mozilla.bugzilla_etl.base.Version;
+import com.mozilla.bugzilla_etl.di.IBugLookup;
 import com.mozilla.bugzilla_etl.es.Mapping.BugMapping;
 
 
 public class BugLookup extends AbstractEsClient implements IBugLookup {
     
-    public BugLookup(final PrintStream log, final String esQuorum) {
-        super(log, esQuorum);
+    public BugLookup(final PrintStream log, final String esNodes) {
+        super(log, esNodes);
     }
     
     @Override

@@ -79,6 +79,11 @@ public class Flag {
         if (requesteePos != -1) representation = representation.substring(0, requesteePos);
         
         final int lastPos = representation.length() -1;
+        if (lastPos <= 0) {
+            final String message = String.format("Could not parse flag '%s'",
+                                                 representation);
+            throw new IllegalArgumentException(message);
+        }
         Assert.check(lastPos > 0);        
         final Status status = Status.forIndicator(representation.charAt(lastPos));
 

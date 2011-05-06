@@ -1,6 +1,6 @@
 #! /bin/bash
 source settings.shinclude
-source bin/management.shinclude
+source bin/lily/management.shinclude
 
 # Modify the classpath -- YMMV
 # Fortunately the classpath is transmitted to the actual task nodes.

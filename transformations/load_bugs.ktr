@@ -11,7 +11,7 @@
     <parameters>
         <parameter>
             <name>BUG_IDS_PARTITION</name>
-            <default_value>bug_id &gt;= 606001 and bug_id &lt; 606101</default_value>
+            <default_value>bug_id &gt;= 606001 and bug_id &lt; 606011</default_value>
             <description>Partitioning to reduce memory and process time for big batch processing</description>
         </parameter>
         <parameter>
@@ -20,19 +20,19 @@
             <description>An SQL expression that selects flags from custom fields.</description>
         </parameter>
         <parameter>
-            <name>OVERRIDE_START_TIME</name>
-            <default_value>1901-01-01 01:01:01</default_value>
+            <name>ES_NODES</name>
+            <default_value>localhost:9300</default_value>
             <description/>
         </parameter>
         <parameter>
-            <name>is_initial_import</name>
+            <name>IS_IMPORT</name>
             <default_value>true</default_value>
             <description>Will skip check for incremental update if &quot;true&quot;.</description>
         </parameter>
         <parameter>
-            <name>lily_zk_connect_string</name>
-            <default_value>zk.local:2181</default_value>
-            <description>zookeeper quorum that manages our Lily Server instance</description>
+            <name>OVERRIDE_START_TIME</name>
+            <default_value>1901-01-01 01:01:01</default_value>
+            <description/>
         </parameter>
     </parameters>
     <log>
@@ -98,8 +98,8 @@
 Make sure to have the database settings specified in your kettle.properties
 (either in your ~&#47;.kettle or your $KETTLE_HOME&#47;.kettle if set)
 bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
-      <xloc>860</xloc>
-      <yloc>81</yloc>
+      <xloc>666</xloc>
+      <yloc>20</yloc>
       <width>453</width>
       <heigth>90</heigth>
       <fontname>Ariel</fontname>
@@ -184,10 +184,9 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
             first = false;
             RowSet input = (RowSet)this.getInputRowSets().get(0);
             source = new com.mozilla.bugzilla_etl.di.BugSource(this, input);
-            final String esConnectString = getParameter("es_connect_string");
-            System.out.print("Using ES connection: '" + esConnectString + "'\n");
+            final String esNodes = getVariable("ES_NODES");
             destination = new com.mozilla.bugzilla_etl.es.BugDestination(System.out,
-                                                                         esConnectString);
+                                                                         esNodes);
         }
         try {
             if (!source.hasMore()) {
@@ -213,8 +212,8 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
     </fields><clear_result_fields>N</clear_result_fields>
 <info_steps></info_steps><target_steps></target_steps><usage_parameters></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>332</xloc>
-      <yloc>843</yloc>
+      <xloc>733</xloc>
+      <yloc>768</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -790,8 +789,8 @@ writeToLog(&quot;m&quot;, &quot;Updating FACT_bug_states &quot;+bugIDsPartition+
     </data>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>464</xloc>
-      <yloc>726</yloc>
+      <xloc>865</xloc>
+      <yloc>651</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1389,17 +1388,21 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
      * Because it is compiled at Runtime by Janino, the language constructs are
      * restricted: http://docs.codehaus.org/display/JANINO/Home#Home-limitations
      *
-     * Everything that is more complex is factored out into helper classes (parent
-     * package).
+     * For incremental update of existing bugs, a lookup is used:
+     * - If "IS_IMPORT" is set, an empty dummy lookup is used.
+     * - If "ES_NODES" is set, the elasticsearch lookup is used.
+     * - If "LILY_ZK_NODES" is set, the lily repository will be used.
+     * - Otherwise an error is raised.
      *
-     * Input: A stream of bugs and bug activities. The bug activities are grouped
-     * by bug. Output: A stream of complete bug versions.
+     * Input: A stream of bugs and bug activities. 
+     *        The activities of each bug are grouped together. 
+     * Output: A stream of complete bug versions.
      */
     private static final String IN_STEP = "Prepare History Input";
     private static final String IN_STEP_STATUS_LOOKUP = "Get Major Status Lookup";
     private com.mozilla.bugzilla_etl.di.BugDestination destination;
     private com.mozilla.bugzilla_etl.di.RebuilderBugSource source;
-    private com.mozilla.bugzilla_etl.lily.IBugLookup lookup;
+    private com.mozilla.bugzilla_etl.di.IBugLookup lookup;
 
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
         if (first) {
@@ -1407,15 +1410,34 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
             final RowMeta outputRowMeta = new RowMeta();
             data.outputRowMeta = outputRowMeta;
             meta.getFields(data.outputRowMeta, getStepname(), null, null, parent);
-            final String lilyConnectString = getParameter("lily_zk_connect_string");
+            
+            java.io.PrintStream log = System.out;
+            String isInitialImport = getParameter("IS_IMPORT");
+            String esNodes = getParameter("ES_NODES");
+            String lilyZkNodes = getParameter("LILY_ZK_NODES");
 
-            lookup = new com.mozilla.bugzilla_etl.lily.EmptyBugLookup();
-            if (!"true".equals(getParameter("is_initial_import"))) {
-                lookup = new com.mozilla.bugzilla_etl.lily.LilyBugLookup(System.out, 
-                                                                         lilyConnectString);
+            logBasic(String.format(
+                    "Params: IS_IMPORT=%s, ES_NODES=%s, LILY_ZK_NODES=%s",
+                    new Object[]{isInitialImport, esNodes, lilyZkNodes}
+            ));
+            if ("true".equals(isInitialImport)) {
+                log.println("Rebuilder Lookup: none (initial_import)");
+                lookup = new com.mozilla.bugzilla_etl.di.EmptyBugLookup();
+            }
+            else if (esNodes != null && esNodes.length() > 0) {
+                log.println("Rebuilder Lookup: elasticsearch");
+                lookup = 
+                    new com.mozilla.bugzilla_etl.es.BugLookup(log, esNodes);
+            }
+            else if (lilyZkNodes != null && lilyZkNodes.length() > 0) {
+                log.println("Rebuilder Lookup: Lily repository");
+                lookup = 
+                    new com.mozilla.bugzilla_etl.lily.LilyBugLookup(log, 
+                                                                    lilyZkNodes);
             }
             else {
-                System.out.println("Skipping lily lookup (initial_import)");
+                logError("RebuildVersionStep Lookup Configuration Invalid!");
+                com.mozilla.bugzilla_etl.base.Assert.unreachable();
             }
             source = new com.mozilla.bugzilla_etl.di.RebuilderBugSource(
                          this,
@@ -1804,16 +1826,19 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 
         </field>
     </fields><clear_result_fields>Y</clear_result_fields>
-<info_steps></info_steps><target_steps></target_steps><usage_parameters><usage_parameter><parameter_tag>lily_zk_connect_string</parameter_tag>
-<parameter_value>${lily_zk_connect_string}</parameter_value>
+<info_steps></info_steps><target_steps></target_steps><usage_parameters><usage_parameter><parameter_tag>ES_NODES</parameter_tag>
+<parameter_value>${ES_NODES}</parameter_value>
 <parameter_description/>
-</usage_parameter><usage_parameter><parameter_tag>is_initial_import</parameter_tag>
-<parameter_value>${is_initial_import}</parameter_value>
+</usage_parameter><usage_parameter><parameter_tag>IS_IMPORT</parameter_tag>
+<parameter_value>${IS_IMPORT}</parameter_value>
+<parameter_description/>
+</usage_parameter><usage_parameter><parameter_tag>LILY_ZK_NODES</parameter_tag>
+<parameter_value>${LILY_ZK_NODES}</parameter_value>
 <parameter_description/>
 </usage_parameter></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>332</xloc>
-      <yloc>727</yloc>
+      <xloc>733</xloc>
+      <yloc>652</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

@@ -1,6 +1,6 @@
 #! /bin/bash
 source settings.shinclude
-source bin/management.shinclude
+source bin/lily/management.shinclude
 
 echo "Removing the index configuration for:"
 echo "${INDEXES}"
@@ -15,12 +15,12 @@ for index in $INDEXES; do
     host="${index#*:}"
 
     echo "Removing index '${name}' (host: ${host})?"
-    
+
     ./bin/lily-update-index \
         --zookeeper "${ZOOKEEPER_HOST}" \
         --name "${name}" \
         --state "DELETE_REQUESTED"
-    
+
     echo "Done."
 
 done

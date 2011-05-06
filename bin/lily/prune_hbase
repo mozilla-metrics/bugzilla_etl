@@ -1,6 +1,6 @@
 #! /bin/bash
 source settings.shinclude
-source bin/management.shinclude
+source bin/lily/management.shinclude
 
 echo "Sure you want to drop all lily-tables in your hbase installation?"
 echo "(${TABLES})"

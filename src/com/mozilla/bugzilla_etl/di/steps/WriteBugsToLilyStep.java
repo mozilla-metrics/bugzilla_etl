@@ -78,10 +78,9 @@ public class WriteBugsToLilyStep extends TransformClassBase {                   
             first = false;
             RowSet input = (RowSet)this.getInputRowSets().get(0);
             source = new com.mozilla.bugzilla_etl.di.BugSource(this, input);
-            final String lilyConnectString = getParameter("lily_zk_connect_string");
-            System.out.print("Connecting to LilyCMS (zookeeper at '" + lilyConnectString + "')\n");
+            final String lilyZkNodes = getParameter("T_LILY_ZK_NODES");
             destination = new com.mozilla.bugzilla_etl.lily.BugDestination(System.out,
-                                                                           lilyConnectString);
+                                                                           lilyZkNodes);
         }
         if (!source.hasMore()) {
             setOutputDone();

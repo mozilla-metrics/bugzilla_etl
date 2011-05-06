@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <job>
-  <name>incremental_update</name>
+  <name>update</name>
     <description/>
     <extended_description/>
     <job_version/>
@@ -13,7 +13,7 @@
     <parameters>
         <parameter>
             <name>LOGS_DIR</name>
-            <default_value>${Internal.Job.Filename.Directory}&#47;..&#47;log&#47;incremental</default_value>
+            <default_value>${Internal.Job.Filename.Directory}&#47;..&#47;log&#47;update</default_value>
             <description/>
         </parameter>
         <parameter>
@@ -50,7 +50,7 @@
       <type>TRANS</type>
       <specification_method>filename</specification_method>
       <trans_object_id/>
-      <filename>${Internal.Job.Filename.Directory}&#47;..&#47;transformations&#47;lily_update_bug_versions.ktr</filename>
+      <filename>&#47;Volumes&#47;Work&#47;mozilla&#47;bugzilla_dwh&#47;bugzilla_etl&#47;transformations&#47;load_bugs.ktr</filename>
       <transname/>
       <arg_from_previous>N</arg_from_previous>
       <params_from_previous>N</params_from_previous>
@@ -58,7 +58,7 @@
       <clear_rows>N</clear_rows>
       <clear_files>N</clear_files>
       <set_logfile>Y</set_logfile>
-      <logfile>${LOGS_DIR}&#47;bugzilla_incremental_current_run</logfile>
+      <logfile>${LOGS_DIR}&#47;update_current_run</logfile>
       <logext>log</logext>
       <add_date>Y</add_date>
       <add_time>Y</add_time>
@@ -75,11 +75,11 @@
             <value>bug_id &gt;= 1 AND bug_id &lt; 900900900</value>
             </parameter>            <parameter>            <name>OVERRIDE_START_TIME</name>
             <stream_name/>
-            <value>${INCREMENTAL_BASE_DATE}</value>
-            </parameter>            <parameter>            <name>lily_zk_connect_string</name>
+            <value>2011-03-08 01:01:01</value>
+            </parameter>            <parameter>            <name>LILY_ZK_NODES</name>
             <stream_name/>
             <value>${ZOOKEEPER_HOST}</value>
-            </parameter>            <parameter>            <name>is_initial_import</name>
+            </parameter>            <parameter>            <name>IS_IMPORT</name>
             <stream_name/>
             <value>false</value>
             </parameter>      </parameters>      <parallel>N</parallel>
@@ -163,7 +163,7 @@
       <add_date>N</add_date>
       <add_time>N</add_time>
       <insertScript>Y</insertScript>
-      <script>rename current_run_ &apos;&apos; bugzilla_incremental_current_run*.log
+      <script>rename current_run_ &apos;&apos; update_current_run*.log
 </script>
       <loglevel>Nothing</loglevel>
       <parallel>N</parallel>
@@ -182,7 +182,7 @@
       <fields>
         <field>
           <name>${LOGS_DIR}</name>
-          <filemask>bugzilla_incremental_current_run_.*\.log</filemask>
+          <filemask>update_current_run_.*\.log</filemask>
         </field>
       </fields>
       <parallel>N</parallel>
@@ -207,7 +207,7 @@
       <add_time>N</add_time>
       <insertScript>Y</insertScript>
       <script>NOW=`date +%s`
-FILE=`stat -c %Z bugzilla_incremental_current_run_*.log`
+FILE=`stat -c %Z update_current_run_*.log`
 AGE=`expr \( $NOW - $FILE \) &#47; 60 &#47; 60`
 exit $AGE</script>
       <loglevel>Nothing</loglevel>
@@ -269,7 +269,7 @@ To resume processing, run: cd &#47;opt&#47;pentaho&#47;kettle; .&#47;kitchen.sh 
       <fields>
         <field>
           <name>${LOGS_DIR}</name>
-          <filemask>bugzilla_incremental_current_run_.*\.log</filemask>
+          <filemask>update_current_run_.*\.log</filemask>
         </field>
       </fields>
       <parallel>N</parallel>
@@ -293,7 +293,7 @@ To resume processing, run: cd &#47;opt&#47;pentaho&#47;kettle; .&#47;kitchen.sh 
       <add_date>N</add_date>
       <add_time>N</add_time>
       <insertScript>Y</insertScript>
-      <script>ls -l &quot;bugzilla_incremental_current_run*.log&quot; 2&gt;&amp;1
+      <script>ls -l &quot;update_current_run*.log&quot; 2&gt;&amp;1
 exit $?</script>
       <loglevel>Nothing</loglevel>
       <parallel>N</parallel>
@@ -405,7 +405,7 @@ exit $?</script>
       <to>Success</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
-      <enabled>Y</enabled>
+      <enabled>N</enabled>
       <evaluation>Y</evaluation>
       <unconditional>N</unconditional>
     </hop>
