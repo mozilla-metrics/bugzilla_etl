@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.search.SearchHitField;
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.base.Converters;
 import com.mozilla.bugzilla_etl.base.Fields;
@@ -57,30 +56,30 @@ import com.mozilla.bugzilla_etl.base.Fields.Field;
 
 interface Mapping<T extends Field> {
 
-    String string(T field, Map<String, SearchHitField> fields);
-    Date date(T field, Map<String, SearchHitField> fields);
-    String csv(T field, Map<String, SearchHitField> fields);
-    Long integer(T field, Map<String, SearchHitField> fields);
-    XContentBuilder append(XContentBuilder builder, T field, Object value) 
+    String string(T field, Map<String, Object> fields);
+    Date date(T field, Map<String, Object> fields);
+    String csv(T field, Map<String, Object> fields);
+    Long integer(T field, Map<String, Object> fields);
+    XContentBuilder append(XContentBuilder builder, T field, Object value)
         throws IOException;
 
     static class BugMapping extends BaseMapping<Fields.Bug> {
-        
+
         public static final String TYPE = "bug";
-        
+
         BugMapping() {
-            conversions = 
+            conversions =
                 new EnumMap<Fields.Bug, Conv>(Fields.Bug.class);
             conversions.put(Fields.Bug.ID,            Conv.INTEGER);
             conversions.put(Fields.Bug.REPORTED_BY,   Conv.STRING);
             conversions.put(Fields.Bug.CREATION_DATE, Conv.DATE);
         }
     }
-    
-    
+
+
     static class VersionMapping extends BaseMapping<Fields.Version> {
         VersionMapping() {
-            conversions = 
+            conversions =
                 new EnumMap<Fields.Version, Conv>(Fields.Version.class);
             conversions.put(Fields.Version.BUG_ID,            Conv.UNUSED);
             conversions.put(Fields.Version.PERSISTENCE_STATE, Conv.UNUSED);
@@ -90,11 +89,11 @@ interface Mapping<T extends Field> {
             conversions.put(Fields.Version.EXPIRATION_DATE,   Conv.DATE);
         }
     }
-    
-    
+
+
     static class FacetMapping extends BaseMapping<Fields.Facet> {
         FacetMapping() {
-            final EnumMap<Fields.Facet, Conv> c = 
+            final EnumMap<Fields.Facet, Conv> c =
                 new EnumMap<Fields.Facet, Conv>(Fields.Facet.class);
             c.put(Fields.Facet.KEYWORDS,                       Conv.STRINGLIST);
             c.put(Fields.Facet.FLAGS,                          Conv.STRINGLIST);
@@ -110,9 +109,9 @@ interface Mapping<T extends Field> {
             }
             conversions = c;
         }
-        
-        @Override 
-        public XContentBuilder append(XContentBuilder builder, 
+
+        @Override
+        public XContentBuilder append(XContentBuilder builder,
                                       Fields.Facet field, Object value) throws IOException {
             Assert.check(value == null || value instanceof String);
             String facet = (String) value;
@@ -139,52 +138,52 @@ interface Mapping<T extends Field> {
 
     }
 
-    
+
     static class MeasurementMapping extends BaseMapping<Fields.Measurement> {
         public MeasurementMapping() {
-            conversions = 
+            conversions =
                 new EnumMap<Fields.Measurement, Conv>(Fields.Measurement.class);
             for (Fields.Measurement field : Fields.Measurement.values()) {
                 conversions.put(field, Conv.INTEGER);
             }
         }
-      
+
     }
-    
+
     static enum Conv { STRING, STRINGLIST, DATE, INTEGER, UNUSED }
-    
+
     static abstract class BaseMapping<T extends Field> implements Mapping<T> {
 
         @Override
-        public String string(T field, Map<String, SearchHitField> fields) {
+        public String string(T field, Map<String, Object> fields) {
             final String name = name(field);
             if (!fields.containsKey(name)) return null;
-            return string(field, fields.get(name).value());
-        }
-        
-        @Override
-        public Date date(T field, Map<String, SearchHitField> fields) {
-            final String name = name(field);
-            if (!fields.containsKey(name)) return null;
-            return date(field, fields.get(name).value());
-        }
-        
-        @Override
-        public String csv(T field, Map<String, SearchHitField> fields) {
-            final String name = name(field);
-            if (!fields.containsKey(name)) return null;
-            return csv(field, fields.get(name).values());
+            return string(field, fields.get(name));
         }
 
         @Override
-        public Long integer(T field, Map<String, SearchHitField> fields) {
+        public Date date(T field, Map<String, Object> fields) {
             final String name = name(field);
             if (!fields.containsKey(name)) return null;
-            return integer(field, fields.get(name).value());
+            return date(field, fields.get(name));
         }
 
-        @Override 
-        public XContentBuilder append(XContentBuilder builder, 
+        @Override
+        public String csv(T field, Map<String, Object> fields) {
+            final String name = name(field);
+            if (!fields.containsKey(name)) return null;
+            return csv(field, fields.get(name));
+        }
+
+        @Override
+        public Long integer(T field, Map<String, Object> fields) {
+            final String name = name(field);
+            if (!fields.containsKey(name)) return null;
+            return integer(field, fields.get(name));
+        }
+
+        @Override
+        public XContentBuilder append(XContentBuilder builder,
                                       T field, Object value) throws IOException {
             switch (conversions.get(field)) {
                 case DATE:
@@ -205,43 +204,49 @@ interface Mapping<T extends Field> {
             Assert.nonNull(field);
             return field.columnName();
         }
-        
+
         private String string(T field, Object esValue) {
-            Assert.check(conversions.get(field) == Conv.STRING);
+            // For facets, obtain date- and csv-fields as strings.
+            if (conversions.get(field) == Conv.STRINGLIST) {
+                return csv(field, esValue);
+            }
+            Assert.check(conversions.get(field) == Conv.STRING
+                         || conversions.get(field) == Conv.DATE);
             if (esValue == null) return null;
-            return esValue.toString();
+            return (String) esValue;
         }
-        
+
         private Long integer(T field, Object esValue) {
             Assert.check(conversions.get(field) == Conv.INTEGER);
             if (esValue == null) return null;
             if (esValue instanceof Integer) return new Long((Integer) esValue);
             Assert.check(esValue instanceof Long);
             return (Long) esValue;
-        }        
+        }
 
         private Date date(T field, Object esValue) {
             Assert.check(conversions.get(field) == Conv.DATE);
             if (esValue == null) return null;
-            Assert.check(esValue instanceof Date);
-            return (Date) esValue; 
-        }
-        
-        private String csv(T field, List<?> esValues) {
-            Assert.check(conversions.get(field) == Conv.STRINGLIST);
-            if (esValues == null) return "";
-            // Cast is guarded by the check above.
-            @SuppressWarnings("unchecked") 
-            List<String> list = (List<String>) esValues;
-            return csvConverter.format(list); 
+            Assert.check(esValue instanceof String);
+            return Converters.ISO8601.parse((String)esValue);
         }
 
-        
-        protected final Converter<List<String>> csvConverter = 
+        private String csv(T field, Object esValue) {
+            Assert.check(conversions.get(field) == Conv.STRINGLIST);
+            if (esValue == null) return "";
+            List<?> esValues = (List<?>) esValue;
+            // Cast is guarded by the check above.
+            @SuppressWarnings("unchecked")
+            List<String> list = (List<String>) esValues;
+            return csvConverter.format(list);
+        }
+
+
+        protected final Converter<List<String>> csvConverter =
             new Converters.CsvConverter(true);
-        
+
         protected Map<T, Conv> conversions;
 
     }
-    
+
 }

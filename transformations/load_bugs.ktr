@@ -236,11 +236,14 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
 var bugIDsPartition = getVariable(&quot;BUG_IDS_PARTITION&quot;, &quot;1 = 1&quot;);
 var overrideStartTime = getVariable(&quot;OVERRIDE_START_TIME&quot;, &quot;&quot;);
 
+writeToLog(&quot;m&quot;, &quot;Override start time: &quot; + overrideStartTime);
+
+
 if (overrideStartTime.length == 19) {
 	startDateTime = str2date(overrideStartTime, &quot;yyyy-MM-dd HH:mm:ss&quot;);
 } else {
 
-    &#47;&#47; NEED TO GET THIS FROM LILY INSTEAD
+    &#47;&#47; NEED TO GET THIS FROM ELASTIC_SEARCH INSTEAD
 	var strConn = &quot;bugs_dw&quot;;
 	var strSQL = &quot;SELECT MAX(valid_from_ts) FROM FACT_bug_states WHERE &quot;+bugIDsPartition.replace(&quot;bug_id&quot;, &quot;bug_nk&quot;);
 	var xArr = fireToDB(strConn, strSQL);
@@ -253,7 +256,8 @@ if (overrideStartTime.length == 19) {
 	}
 }
 
-writeToLog(&quot;m&quot;, &quot;Updating FACT_bug_states &quot;+bugIDsPartition+&quot; starting from [&quot;+date2str(startDateTime,&quot;yyyy-MM-dd HH:mm:ss&quot;)+&quot;]&quot;);
+writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartition
+                + &quot;, since [&quot;+date2str(startDateTime,&quot;yyyy-MM-dd HH:mm:ss&quot;)+&quot;]&quot;);
 </jsScript_script>
       </jsScript>    </jsScripts>    <fields>      <field>        <name>startDateTime</name>
         <rename>START_DATE_RANGE</rename>

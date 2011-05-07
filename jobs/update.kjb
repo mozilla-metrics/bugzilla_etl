@@ -45,7 +45,7 @@
    <shared_objects_file/>
   <entries>
     <entry>
-      <name>Load bug activity since last run</name>
+      <name>Load bug updates</name>
       <description/>
       <type>TRANS</type>
       <specification_method>filename</specification_method>
@@ -75,7 +75,7 @@
             <value>bug_id &gt;= 1 AND bug_id &lt; 900900900</value>
             </parameter>            <parameter>            <name>OVERRIDE_START_TIME</name>
             <stream_name/>
-            <value>${INCREMENTAL_BASE_DATE}</value>
+            <value>2011-05-01 01:01:01</value>
             </parameter>            <parameter>            <name>LILY_ZK_NODES</name>
             <stream_name/>
             <value>${ZOOKEEPER_HOST}</value>
@@ -347,7 +347,7 @@ exit $?</script>
   </entries>
   <hops>
     <hop>
-      <from>Load bug activity since last run</from>
+      <from>Load bug updates</from>
       <to>Rename current_log</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
@@ -356,7 +356,7 @@ exit $?</script>
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Load bug activity since last run</from>
+      <from>Load bug updates</from>
       <to>Get log</to>
       <from_nr>0</from_nr>
       <to_nr>1</to_nr>
@@ -438,7 +438,7 @@ exit $?</script>
     </hop>
     <hop>
       <from>Get Custom Field Flags</from>
-      <to>Load bug activity since last run</to>
+      <to>Load bug updates</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>

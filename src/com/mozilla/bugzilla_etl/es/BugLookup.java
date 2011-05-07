@@ -48,12 +48,13 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.index.query.xcontent.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.sort.SortOrder;
 
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.base.Bug;
 import com.mozilla.bugzilla_etl.base.Fields;
+import com.mozilla.bugzilla_etl.base.Fields.Measurement;
 import com.mozilla.bugzilla_etl.base.PersistenceState;
 import com.mozilla.bugzilla_etl.base.Version;
 import com.mozilla.bugzilla_etl.di.IBugLookup;
@@ -61,27 +62,37 @@ import com.mozilla.bugzilla_etl.es.Mapping.BugMapping;
 
 
 public class BugLookup extends AbstractEsClient implements IBugLookup {
-    
+
     public BugLookup(final PrintStream log, final String esNodes) {
         super(log, esNodes);
     }
-    
+
     @Override
     public Bug find(Long bugzillaId) {
-        
+
         final String index = index();
         final String type = BugMapping.TYPE;
 
-        final SearchResponse response = 
+        // Now we have only the "latest" bug versions, sorted ascending.
+        log.format("ES LOOKUP: Searching for bug %d.\n", bugzillaId);
+
+        final SearchResponse response =
             client.prepareSearch(index).setTypes(type)
-            .setSearchType(SearchType.QUERY_AND_FETCH)
+            .setSearchType(SearchType.DEFAULT)
+            .setTimeout("5s")
             .setQuery(QueryBuilders.fieldQuery(Fields.Bug.ID.columnName(),
-                                               bugzillaId.toString()))
-            .setFrom(0).setSize(Integer.MAX_VALUE).setExplain(false)
+                                               bugzillaId))
+            .setFrom(0).setSize(1024).setExplain(false)
+            .addSort(Fields.Measurement.NUMBER.columnName(), SortOrder.ASC)
             .execute()
             .actionGet();
-        
+
         final SearchHits hits = response.getHits();
+        if (hits.getTotalHits() == 0) {
+            // Now we have only the "latest" bug versions, sorted ascending.
+            log.format("LOOKUP: Nothing found for bug %d\n", bugzillaId);
+            return null;
+        }
 
         // Now we have only the "latest" bug versions, sorted ascending.
         log.format("LOOKUP: Reconstructing bug %d from %s versions\n",
@@ -90,14 +101,14 @@ public class BugLookup extends AbstractEsClient implements IBugLookup {
         return reconstruct(hits);
     }
 
-    
+
     /** Construct a Bug from its elasticsearch version records. */
     private Bug reconstruct(final SearchHits hits) {
         Assert.nonNull(hits);
         Assert.check(hits.hits().length > 0);
-        
-        final Map<String, SearchHitField> bugFields = 
-            hits.hits()[0].getFields();
+
+        final Map<String, Object> bugFields =
+            hits.hits()[0].getSource();
 
         final Bug bug = new Bug(
             BUG.integer(Fields.Bug.ID, bugFields),
@@ -105,9 +116,11 @@ public class BugLookup extends AbstractEsClient implements IBugLookup {
             BUG.date(Fields.Bug.CREATION_DATE, bugFields)
         );
 
+        log.format("\n\nBug %s\n", bug.id());
+
         for (final SearchHit hit : hits) {
-            final Map<String, SearchHitField> fields = hit.getFields();
-            
+            final Map<String, Object> fields = hit.getSource();
+
             final EnumMap<Fields.Facet, String> facets = Version.createFacets();
             for (Fields.Facet facet : Fields.Facet.values()) {
                 facets.put(facet, FACET.string(facet, fields));
@@ -119,6 +132,18 @@ public class BugLookup extends AbstractEsClient implements IBugLookup {
                                  MEASURE.integer(measurement, fields));
             }
 
+            log.format("Bug %s Hit %s/%s (_id %s):\n", bug.id(),
+                       measurements.get(Measurement.NUMBER),
+                       hits.hits().length, hit.id());
+            for (Map.Entry<String, Object> entry : fields.entrySet()) {
+                log.format("Entry '%s': %s (%s)\n",
+                           entry.getKey(),
+                           entry.getValue(),
+                           entry.getValue().getClass().getSimpleName());
+            }
+
+            log.format("BugLookup bug %s (size %s) -- Appending version %s\n",
+                       bug.id(), bug.numVersions(), measurements.get(Measurement.NUMBER));
             bug.append(new Version(
                 bug,
                 facets,
