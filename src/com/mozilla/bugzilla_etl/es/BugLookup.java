@@ -116,8 +116,6 @@ public class BugLookup extends AbstractEsClient implements IBugLookup {
             BUG.date(Fields.Bug.CREATION_DATE, bugFields)
         );
 
-        log.format("\n\nBug %s\n", bug.id());
-
         for (final SearchHit hit : hits) {
             final Map<String, Object> fields = hit.getSource();
 
@@ -132,18 +130,6 @@ public class BugLookup extends AbstractEsClient implements IBugLookup {
                                  MEASURE.integer(measurement, fields));
             }
 
-            log.format("Bug %s Hit %s/%s (_id %s):\n", bug.id(),
-                       measurements.get(Measurement.NUMBER),
-                       hits.hits().length, hit.id());
-            for (Map.Entry<String, Object> entry : fields.entrySet()) {
-                log.format("Entry '%s': %s (%s)\n",
-                           entry.getKey(),
-                           entry.getValue(),
-                           entry.getValue().getClass().getSimpleName());
-            }
-
-            log.format("BugLookup bug %s (size %s) -- Appending version %s\n",
-                       bug.id(), bug.numVersions(), measurements.get(Measurement.NUMBER));
             bug.append(new Version(
                 bug,
                 facets,

@@ -75,7 +75,7 @@
             <value>bug_id &gt;= 1 AND bug_id &lt; 900900900</value>
             </parameter>            <parameter>            <name>OVERRIDE_START_TIME</name>
             <stream_name/>
-            <value>2011-03-08 01:01:01</value>
+            <value>${UPDATE_BASE_DATE}</value>
             </parameter>            <parameter>            <name>LILY_ZK_NODES</name>
             <stream_name/>
             <value>${ZOOKEEPER_HOST}</value>

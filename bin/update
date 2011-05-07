@@ -16,5 +16,5 @@ JAVAMAXMEM=2048 "${KETTLE_LIBS}/../kitchen.sh" \
 new_date=$(date --date "now -2 hours" +"%F %T")
 echo "Updating start date for next incremental update to ${new_date}"
 cat jobs/update.kjb.template | \
-    sed -r 's/\$\{INCREMENTAL_BASE_DATE\}/'"${new_date}"'/' \
+    sed -r 's/\$\{UPDATE_BASE_DATE\}/'"${new_date}"'/' \
     > jobs/update.kjb
