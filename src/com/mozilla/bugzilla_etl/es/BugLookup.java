@@ -54,7 +54,6 @@ import org.elasticsearch.search.sort.SortOrder;
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.base.Bug;
 import com.mozilla.bugzilla_etl.base.Fields;
-import com.mozilla.bugzilla_etl.base.Fields.Measurement;
 import com.mozilla.bugzilla_etl.base.PersistenceState;
 import com.mozilla.bugzilla_etl.base.Version;
 import com.mozilla.bugzilla_etl.di.IBugLookup;
