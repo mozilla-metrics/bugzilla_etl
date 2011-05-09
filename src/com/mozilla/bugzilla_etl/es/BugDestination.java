@@ -49,6 +49,8 @@ public class BugDestination extends AbstractEsClient
     public void flush() throws Exception {
         if (bulk == null || batchSize == 0) return;
         final BulkResponse response = bulk.execute().actionGet(TIMEOUT);
+        log.format("Loaded %s docs in %s ms, checking...",
+                   batchSize, response.getTookInMillis());
         checkResponse(response);
         bulk = null;
     }
