@@ -42,117 +42,30 @@ package com.mozilla.bugzilla_etl.es;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
+
 import com.mozilla.bugzilla_etl.base.Assert;
-import com.mozilla.bugzilla_etl.base.Converters;
-import com.mozilla.bugzilla_etl.base.Fields;
-import com.mozilla.bugzilla_etl.base.Converters.Converter;
-import com.mozilla.bugzilla_etl.base.Fields.Field;
+import com.mozilla.bugzilla_etl.di.Converters;
+import com.mozilla.bugzilla_etl.di.Converters.Converter;
+import com.mozilla.bugzilla_etl.model.Field;
 
 
-interface Mapping<T extends Field> {
+public interface Mapping<T extends Field> {
 
     String string(T field, Map<String, Object> fields);
     Date date(T field, Map<String, Object> fields);
     String csv(T field, Map<String, Object> fields);
     Long integer(T field, Map<String, Object> fields);
-    XContentBuilder append(XContentBuilder builder, T field, Object value)
-        throws IOException;
-
-    static class BugMapping extends BaseMapping<Fields.Bug> {
-
-        public static final String TYPE = "bug";
-
-        BugMapping() {
-            conversions =
-                new EnumMap<Fields.Bug, Conv>(Fields.Bug.class);
-            conversions.put(Fields.Bug.ID,            Conv.INTEGER);
-            conversions.put(Fields.Bug.REPORTED_BY,   Conv.STRING);
-            conversions.put(Fields.Bug.CREATION_DATE, Conv.DATE);
-        }
-    }
+    XContentBuilder append(XContentBuilder builder, T field, Object value) throws IOException;
 
 
-    static class VersionMapping extends BaseMapping<Fields.Version> {
-        VersionMapping() {
-            conversions =
-                new EnumMap<Fields.Version, Conv>(Fields.Version.class);
-            conversions.put(Fields.Version.BUG_ID,            Conv.UNUSED);
-            conversions.put(Fields.Version.PERSISTENCE_STATE, Conv.UNUSED);
-            conversions.put(Fields.Version.MODIFIED_BY,       Conv.STRING);
-            conversions.put(Fields.Version.ANNOTATION,        Conv.STRING);
-            conversions.put(Fields.Version.MODIFICATION_DATE, Conv.DATE);
-            conversions.put(Fields.Version.EXPIRATION_DATE,   Conv.DATE);
-        }
-    }
+    public static enum Conv { STRING, STRINGLIST, DATE, INTEGER, BOOLEAN, UNUSED }
 
 
-    static class FacetMapping extends BaseMapping<Fields.Facet> {
-        FacetMapping() {
-            final EnumMap<Fields.Facet, Conv> c =
-                new EnumMap<Fields.Facet, Conv>(Fields.Facet.class);
-            c.put(Fields.Facet.KEYWORDS,                       Conv.STRINGLIST);
-            c.put(Fields.Facet.FLAGS,                          Conv.STRINGLIST);
-            c.put(Fields.Facet.MODIFIED_FIELDS,                Conv.STRINGLIST);
-            c.put(Fields.Facet.STATUS_WHITEBOARD_ITEMS,        Conv.STRINGLIST);
-            c.put(Fields.Facet.CHANGES,                        Conv.STRINGLIST);
-            c.put(Fields.Facet.MAJOR_STATUS_LAST_CHANGED_DATE, Conv.DATE);
-            c.put(Fields.Facet.STATUS_LAST_CHANGED_DATE,       Conv.DATE);
-            // The others are all single strings:
-            for (Fields.Facet field : Fields.Facet.values()) {
-                if (c.containsKey(field)) continue;
-                c.put(field, Conv.STRING);
-            }
-            conversions = c;
-        }
-
-        @Override
-        public XContentBuilder append(XContentBuilder builder,
-                                      Fields.Facet field, Object value) throws IOException {
-            Assert.check(value == null || value instanceof String);
-            String facet = (String) value;
-            switch (conversions.get(field)) {
-                case DATE:
-                    Date date = Converters.DATE.parse(facet);
-                    if (date == null) return builder;
-                    return builder.field(field.columnName(), date);
-                case STRING:
-                    if (facet == null) facet = "<none>";
-                    return builder.field(field.columnName(), facet);
-                case STRINGLIST:
-                    List<String> values = csvConverter.parse(facet);
-                    if (values.size() == 0) return builder;
-                    builder.field(field.columnName()).startArray();
-                    for (String item : values) builder.value(item);
-                    return builder.endArray();
-                case UNUSED:
-                    return builder;
-                default:
-                    return Assert.unreachable(XContentBuilder.class);
-            }
-        }
-
-    }
-
-
-    static class MeasurementMapping extends BaseMapping<Fields.Measurement> {
-        public MeasurementMapping() {
-            conversions =
-                new EnumMap<Fields.Measurement, Conv>(Fields.Measurement.class);
-            for (Fields.Measurement field : Fields.Measurement.values()) {
-                conversions.put(field, Conv.INTEGER);
-            }
-        }
-
-    }
-
-    static enum Conv { STRING, STRINGLIST, DATE, INTEGER, UNUSED }
-
-    static abstract class BaseMapping<T extends Field> implements Mapping<T> {
+    public static abstract class BaseMapping<T extends Field> implements Mapping<T> {
 
         @Override
         public String string(T field, Map<String, Object> fields) {
@@ -182,6 +95,7 @@ interface Mapping<T extends Field> {
             return integer(field, fields.get(name));
         }
 
+
         @Override
         public XContentBuilder append(XContentBuilder builder,
                                       T field, Object value) throws IOException {
@@ -193,6 +107,8 @@ interface Mapping<T extends Field> {
                     return builder.field(field.columnName(), (String) value);
                 case INTEGER:
                     return builder.field(field.columnName(), (Long) value);
+                case BOOLEAN:
+                    return builder.field(field.columnName(), ((Boolean)value).booleanValue());
                 case UNUSED:
                     return builder;
                 default:
@@ -206,9 +122,12 @@ interface Mapping<T extends Field> {
         }
 
         private String string(T field, Object esValue) {
-            // For facets, obtain date- and csv-fields as strings.
+            // For facets, obtain fields as strings.
             if (conversions.get(field) == Conv.STRINGLIST) {
                 return csv(field, esValue);
+            }
+            if (conversions.get(field) == Conv.BOOLEAN) {
+                return Converters.BOOL.format((Boolean) esValue);
             }
             Assert.check(conversions.get(field) == Conv.STRING
                          || conversions.get(field) == Conv.DATE);
@@ -248,5 +167,43 @@ interface Mapping<T extends Field> {
         protected Map<T, Conv> conversions;
 
     }
+
+
+    /** Facet mappings are extracted from EnumMap<Field, String> */
+    public static abstract class BaseFacetMapping<FACET extends Enum<FACET> & Field>
+    extends BaseMapping<FACET>{
+
+        @Override
+        public XContentBuilder append(XContentBuilder builder,
+                                      FACET field, Object value) throws IOException {
+            Assert.check(value == null || value instanceof String);
+            String facet = (String) value;
+            switch (conversions.get(field)) {
+                case DATE:
+                    Date date = Converters.DATE.parse(facet);
+                    if (date == null) return builder;
+                    return builder.field(field.columnName(), date);
+                case STRING:
+                    if (facet == null) facet = "<none>";
+                    return builder.field(field.columnName(), facet);
+                case STRINGLIST:
+                    List<String> values = csvConverter.parse(facet);
+                    if (values.size() == 0) return builder;
+                    builder.field(field.columnName()).startArray();
+                    for (String item : values) builder.value(item);
+                    return builder.endArray();
+                case BOOLEAN:
+                    if (facet == null) return builder;
+                    return builder.field(field.columnName(),
+                                         Converters.BOOL.parse(facet).booleanValue());
+                case UNUSED:
+                    return builder;
+                default:
+                    return Assert.unreachable(XContentBuilder.class);
+            }
+        }
+
+    }
+
 
 }

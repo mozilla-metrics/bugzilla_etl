@@ -47,87 +47,86 @@ import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.trans.steps.userdefinedjavaclass.FieldHelper;
 
 import com.mozilla.bugzilla_etl.base.Assert;
-import com.mozilla.bugzilla_etl.base.Fields.Family;
-import com.mozilla.bugzilla_etl.base.Fields.Bug;
-import com.mozilla.bugzilla_etl.base.Fields.Field;
-import com.mozilla.bugzilla_etl.base.Fields.Flag;
-import com.mozilla.bugzilla_etl.base.Fields.Facet;
-import com.mozilla.bugzilla_etl.base.Fields.Measurement;
-import com.mozilla.bugzilla_etl.base.Fields.User;
-import com.mozilla.bugzilla_etl.base.Fields.Version;
+import com.mozilla.bugzilla_etl.model.Family;
+import com.mozilla.bugzilla_etl.model.Field;
+import com.mozilla.bugzilla_etl.model.Fields;
+import com.mozilla.bugzilla_etl.model.Fields.Column;
 
 
 /**
- * Provides the field helpers that are needed for the Input/Output api.
- * This class does for PDI integration roughly what Types does for Lily integration. Whenever fields
- * are added/removed, this class should be checked.
- *
- * Using various EnumMaps for the individual field types causes some boilerplate code, but allows
- * for constant time access (without hashing) and for a certain degree of type safety.
+ * Provides and caches field helpers to conveniently access PDI stream cells
+ * for the Fields used by our model.
  */
 class Helpers {
 
-    <T extends Enum<T> & Field> FieldHelper helper(T field) {
-        if (!familyHelpers(field).containsKey(field)) {
-            familyHelpers(field).put(field, new FieldHelper(rowMeta, field.columnName()));
+    // We know that Fields are always enums (java does not allow us to state this).
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public FieldHelper helper(Field field, Fields.Column column) {
+        if (!helpers.containsKey(field.family())) {
+            helpers.put(field.family(), new FieldHelpers(field.family().fields));
         }
-        return familyHelpers(field).get(field);
+        return helpers.get(field.family()).get(field, column);
     }
 
-    public FieldHelper helper(Facet facet, Facet.Column column) {
-        if (!facetHelpers.get(facet).containsKey(column)) {
-            facetHelpers.get(facet).put(column,
-                                        new FieldHelper(rowMeta, facet.columnNames.get(column)));
-        }
-        return facetHelpers.get(facet).get(column);
+    public FieldHelper helper(Field field) {
+        return helper(field, Column.LATEST);
     }
 
     Helpers(RowMetaInterface rowMeta) {
         Assert.nonNull(rowMeta);
         this.rowMeta = rowMeta;
+    }
 
-        // Ensure that we create maps for all families.
-        for (Family family : Family.values()) {
-            switch (family) {
-                case BUG:         prepare(Bug.class,         family); break;
-                case VERSION:     prepare(Version.class,     family); break;
-                case MEASUREMENT: prepare(Measurement.class, family); break;
-                case FLAG:        prepare(Flag.class,        family); break;
-                case FACET:       prepare(Facet.class,       family); break;
-                case USER:        prepare(User.class,        family); break;
-                default: Assert.unreachable();
+    private class FieldHelpers<T extends Enum<T>> {
+        final EnumMap<T, ColumnHelpers> helpers;
+
+        FieldHelpers(Class<T> fieldType) {
+            helpers = new EnumMap<T, ColumnHelpers>(fieldType);
+        }
+
+        @SuppressWarnings("unchecked")
+        FieldHelper get(final Field field, final Column column) {
+            // We know that Fields are always enums (java does not allow us to state this):
+            @SuppressWarnings("rawtypes") Map map = helpers;
+            if (!helpers.containsKey(field)) map.put(field, new ColumnHelpers(field));
+            return helpers.get(field).get(column);
+        }
+    }
+
+    private class ColumnHelpers {
+        final EnumMap<Column, FieldHelper> helpers = new EnumMap<Column, FieldHelper>(Column.class);
+        final Field field;
+
+        private ColumnHelpers(Field field) {
+            this.field = field;
+        }
+
+        FieldHelper get(final Column column) {
+            if (helpers.get(column) == null) {
+                String columnName;
+                switch (column) {
+                    case LATEST:
+                    case RESULT:
+                        columnName = field.columnName();
+                        break;
+                    case FROM:
+                        columnName = field.columnName() + "_from";
+                        break;
+                    case TO:
+                        columnName = field.columnName() + "_to";
+                        break;
+                    default:
+                        columnName = Assert.unreachable(String.class,
+                                                        "Unhandled column: %s", column.name());
+                }
+                helpers.put(column, new FieldHelper(rowMeta, columnName));
             }
-        }
-
-        // Also create maps for the columns specific to facets in advance.
-        for (Facet facet : Facet.values()) {
-            Map<Facet.Column, FieldHelper> cache =
-                new EnumMap<Facet.Column, FieldHelper>(Facet.Column.class);
-            facetHelpers.put(facet, cache);
+            return helpers.get(column);
         }
     }
 
-    private <T extends Enum<T> & Field> void prepare(Class<T> cls, Family family) {
-        EnumMap<T, FieldHelper> cache = new EnumMap<T, FieldHelper>(cls);
-        helpers.put(family, cache);
-    }
-
-    /**
-     * We know this works, we've put the stuff in by family in the constructor. Of course,
-     * all implementations of Fields.Field need to play along and not use the same family twice.
-     */
-    @SuppressWarnings("unchecked")
-    private <T extends Enum<T> & Field> EnumMap<T, FieldHelper> familyHelpers(T field) {
-        return (EnumMap<T, FieldHelper>) helpers.get(field.family());
-    }
-
-    // Contains all helpers (except for facets):
-    private EnumMap<Family, EnumMap<? extends Enum<?>, FieldHelper>> helpers =
-        new EnumMap<Family, EnumMap<? extends Enum<?>, FieldHelper>>(Family.class);
-
-    // Helpers for facets (which can have multiple input columns):
-    private final Map<Facet, Map<Facet.Column, FieldHelper>> facetHelpers =
-        new EnumMap<Facet, Map<Facet.Column, FieldHelper>>(Facet.class);
+    private EnumMap<Family, FieldHelpers<? extends Enum<?>>> helpers =
+        new EnumMap<Family, FieldHelpers<? extends Enum<?>>>(Family.class);
 
     private final RowMetaInterface rowMeta;
 }

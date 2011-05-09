@@ -85,7 +85,7 @@
             </parameter>      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>581</xloc>
+      <xloc>506</xloc>
       <yloc>216</yloc>
       </entry>
     <entry>
@@ -98,7 +98,7 @@
       <destinationCc/>
       <destinationBCc/>
       <replyto>metrics@mozilla.com</replyto>
-      <replytoname>Metrics Bugzilla ETL</replytoname>
+      <replytoname>Metrics Bugzilla ETL (update bugs)</replytoname>
       <subject>Bugzilla ETL Failure</subject>
       <include_date>N</include_date>
       <contact_person>Michael Kurze</contact_person>
@@ -125,8 +125,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>581</xloc>
-      <yloc>23</yloc>
+      <xloc>506</xloc>
+      <yloc>30</yloc>
       </entry>
     <entry>
       <name>START</name>
@@ -169,7 +169,7 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>764</xloc>
+      <xloc>785</xloc>
       <yloc>216</yloc>
       </entry>
     <entry>
@@ -188,7 +188,7 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>1</nr>
-      <xloc>581</xloc>
+      <xloc>506</xloc>
       <yloc>119</yloc>
       </entry>
     <entry>
@@ -310,7 +310,7 @@ exit $?</script>
       <draw>Y</draw>
       <nr>0</nr>
       <xloc>929</xloc>
-      <yloc>217</yloc>
+      <yloc>216</yloc>
       </entry>
     <entry>
       <name>Get Custom Field Flags</name>
@@ -341,20 +341,111 @@ exit $?</script>
       </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>402</xloc>
+      <xloc>355</xloc>
       <yloc>216</yloc>
+      </entry>
+    <entry>
+      <name>Load attach updates</name>
+      <description/>
+      <type>TRANS</type>
+      <specification_method>filename</specification_method>
+      <trans_object_id/>
+      <filename>&#47;Volumes&#47;Work&#47;mozilla&#47;bugzilla_dwh&#47;bugzilla_etl&#47;transformations&#47;load_attachments.ktr</filename>
+      <transname/>
+      <arg_from_previous>N</arg_from_previous>
+      <params_from_previous>N</params_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <clear_rows>N</clear_rows>
+      <clear_files>N</clear_files>
+      <set_logfile>Y</set_logfile>
+      <logfile>${LOGS_DIR}&#47;update_current_run</logfile>
+      <logext>log</logext>
+      <add_date>Y</add_date>
+      <add_time>Y</add_time>
+      <loglevel>Debug</loglevel>
+      <cluster>N</cluster>
+      <slave_server_name/>
+      <set_append_logfile>N</set_append_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <follow_abort_remote>N</follow_abort_remote>
+      <create_parent_folder>Y</create_parent_folder>
+      <parameters>        <pass_all_parameters>Y</pass_all_parameters>
+            <parameter>            <name>BUG_IDS_PARTITION</name>
+            <stream_name/>
+            <value>bug_id &gt;= 1 AND bug_id &lt; 900900900</value>
+            </parameter>            <parameter>            <name>OVERRIDE_START_TIME</name>
+            <stream_name/>
+            <value>2011-05-06 01:01:01</value>
+            </parameter>            <parameter>            <name>IS_IMPORT</name>
+            <stream_name/>
+            <value>false</value>
+            </parameter>      </parameters>      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>632</xloc>
+      <yloc>216</yloc>
+      </entry>
+    <entry>
+      <name>send fail mail 2</name>
+      <description/>
+      <type>MAIL</type>
+      <server>localhost</server>
+      <port>25</port>
+      <destination>mkurze@mozilla.com</destination>
+      <destinationCc/>
+      <destinationBCc/>
+      <replyto>metrics@mozilla.com</replyto>
+      <replytoname>Metrics Bugzilla ETL</replytoname>
+      <subject>Bugzilla ETL Failure (update attachments)</subject>
+      <include_date>N</include_date>
+      <contact_person>Michael Kurze</contact_person>
+      <contact_phone/>
+      <comment/>
+      <include_files>Y</include_files>
+      <zip_files>N</zip_files>
+      <zip_name/>
+      <use_auth>N</use_auth>
+      <use_secure_auth>N</use_secure_auth>
+      <auth_user/>
+      <auth_password>Encrypted </auth_password>
+      <only_comment>N</only_comment>
+      <use_HTML>N</use_HTML>
+      <use_Priority>N</use_Priority>
+      <encoding>UTF-8</encoding>
+      <priority>normal</priority>
+      <importance>normal</importance>
+      <secureconnectiontype>SSL</secureconnectiontype>
+      <replyToAddresses/>
+      <filetypes>        <filetype>GENERAL</filetype>
+      </filetypes>      <embeddedimages>
+      </embeddedimages>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>632</xloc>
+      <yloc>32</yloc>
+      </entry>
+    <entry>
+      <name>Get log 2</name>
+      <description>Add filenames to result</description>
+      <type>ADD_RESULT_FILENAMES</type>
+      <arg_from_previous>N</arg_from_previous>
+      <include_subfolders>N</include_subfolders>
+      <delete_all_before>Y</delete_all_before>
+      <fields>
+        <field>
+          <name>${LOGS_DIR}</name>
+          <filemask>update_current_run_.*\.log</filemask>
+        </field>
+      </fields>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>1</nr>
+      <xloc>632</xloc>
+      <yloc>119</yloc>
       </entry>
   </entries>
   <hops>
-    <hop>
-      <from>Load bug updates</from>
-      <to>Rename current_log</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
     <hop>
       <from>Load bug updates</from>
       <to>Get log</to>
@@ -445,12 +536,48 @@ exit $?</script>
       <evaluation>Y</evaluation>
       <unconditional>N</unconditional>
     </hop>
+    <hop>
+      <from>Load bug updates</from>
+      <to>Load attach updates</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Load attach updates</from>
+      <to>Rename current_log</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Load attach updates</from>
+      <to>Get log 2</to>
+      <from_nr>0</from_nr>
+      <to_nr>1</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Get log 2</from>
+      <to>send fail mail 2</to>
+      <from_nr>1</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
   </hops>
   <notepads>
     <notepad>
       <note>&lt;--- Happy Lane</note>
-      <xloc>973</xloc>
-      <yloc>217</yloc>
+      <xloc>972</xloc>
+      <yloc>215</yloc>
       <width>94</width>
       <heigth>23</heigth>
       <fontname>Ariel</fontname>

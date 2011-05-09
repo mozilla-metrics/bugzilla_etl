@@ -59,7 +59,8 @@ import org.lilyproject.repository.api.TypeManager;
 import org.lilyproject.repository.api.ValueType;
 
 import com.mozilla.bugzilla_etl.base.Assert;
-import com.mozilla.bugzilla_etl.base.Fields;
+import com.mozilla.bugzilla_etl.model.Fields;
+import com.mozilla.bugzilla_etl.model.bug.BugFields;
 
 /** Building on {@link Fields} the lily record types are defined herein. */
 class Types {
@@ -109,12 +110,10 @@ class Types {
     }
 
     final EnumMap<Types.VTag, Params> vTagParams;
-    final EnumMap<Fields.Bug, Params> bugParams;
-    final EnumMap<Fields.Version, Params> versionParams;
-    final EnumMap<Fields.Facet, Params> facetParams;
-    final EnumMap<Fields.Measurement, Params> measurementParams;
-    final EnumMap<Fields.Flag, Params> flagParams;
-    final EnumMap<Fields.User, Params> userParams;
+    final EnumMap<BugFields.Bug, Params> bugParams;
+    final EnumMap<Fields.Activity, Params> versionParams;
+    final EnumMap<BugFields.Facet, Params> facetParams;
+    final EnumMap<BugFields.Measurement, Params> measurementParams;
     final ValueType longs;
     final ValueType strings;
     final ValueType stringlists;
@@ -142,8 +141,6 @@ class Types {
         versionParams = versionParams();
         facetParams = createFacetParams();
         measurementParams = createMeasurementParams();
-        flagParams = flagParams();
-        userParams = userParams();
         this.log = log;
     }
 
@@ -151,10 +148,10 @@ class Types {
     RecordType bugType() {
         final Map<Class<? extends Enum<?>>, EnumMap<? extends Enum<?>, Params>> allParams =
             new HashMap<Class<? extends Enum<?>>, EnumMap<? extends Enum<?>, Params>>();
-        allParams.put(Fields.Bug.class, bugParams);
-        allParams.put(Fields.Version.class, versionParams);
-        allParams.put(Fields.Facet.class, facetParams);
-        allParams.put(Fields.Measurement.class, measurementParams);
+        allParams.put(BugFields.Bug.class, bugParams);
+        allParams.put(Fields.Activity.class, versionParams);
+        allParams.put(BugFields.Facet.class, facetParams);
+        allParams.put(BugFields.Measurement.class, measurementParams);
         allParams.put(Types.VTag.class, vTagParams);
         return createOrGetRecordType(BUG, allParams);
     }
@@ -164,7 +161,6 @@ class Types {
     RecordType flagType() {
         final Map<Class<? extends Enum<?>>, EnumMap<? extends Enum<?>, Params>> allParams =
             new HashMap<Class<? extends Enum<?>>, EnumMap<? extends Enum<?>, Params>>();
-        allParams.put(Fields.Flag.class, flagParams);
         allParams.put(Types.VTag.class, vTagParams);
         return createOrGetRecordType(FLAG, allParams);
     }
@@ -236,7 +232,7 @@ class Types {
             log.format("Error: Unexpected problem with managing field type (%s).\n",
                        params.qname.getName());
             throw new RuntimeException(typeException);
-        } 
+        }
         catch (InterruptedException error) {
             log.println("Fatal: Got interrupted creating field type:");
             error.printStackTrace(log);
@@ -266,74 +262,52 @@ class Types {
     }
 
     // Record: Bug
-    private EnumMap<Fields.Bug, Params> bugParams() {
-        final EnumMap<Fields.Bug, Params> bugParams =
-            new EnumMap<Fields.Bug, Params>(Fields.Bug.class);
-        add(bugParams, Fields.Bug.ID,            longs,   Scope.NON_VERSIONED, true);
-        add(bugParams, Fields.Bug.REPORTED_BY,   strings, Scope.NON_VERSIONED, true);
-        add(bugParams, Fields.Bug.CREATION_DATE, dates, Scope.NON_VERSIONED, true);
+    private EnumMap<BugFields.Bug, Params> bugParams() {
+        final EnumMap<BugFields.Bug, Params> bugParams =
+            new EnumMap<BugFields.Bug, Params>(BugFields.Bug.class);
+        add(bugParams, BugFields.Bug.ID,            longs,   Scope.NON_VERSIONED, true);
+        add(bugParams, BugFields.Bug.REPORTED_BY,   strings, Scope.NON_VERSIONED, true);
+        add(bugParams, BugFields.Bug.CREATION_DATE, dates, Scope.NON_VERSIONED, true);
         return bugParams;
     }
 
-    private EnumMap<Fields.Version, Params> versionParams() {
-        final EnumMap<Fields.Version, Params> versionParams =
-            new EnumMap<Fields.Version, Params>(Fields.Version.class);
-        versionParams.put(Fields.Version.BUG_ID, Params.UNUSED);
-        versionParams.put(Fields.Version.PERSISTENCE_STATE, Params.UNUSED);
-        add(versionParams, Fields.Version.ANNOTATION,        strings, Scope.VERSIONED_MUTABLE, false);
-        add(versionParams, Fields.Version.MODIFIED_BY,       strings, Scope.VERSIONED, true);
-        add(versionParams, Fields.Version.MODIFICATION_DATE, dates,   Scope.VERSIONED, true);
-        add(versionParams, Fields.Version.EXPIRATION_DATE,   dates,   Scope.VERSIONED_MUTABLE, true);
+    private EnumMap<Fields.Activity, Params> versionParams() {
+        final EnumMap<Fields.Activity, Params> versionParams =
+            new EnumMap<Fields.Activity, Params>(Fields.Activity.class);
+        versionParams.put(Fields.Activity.ENTITY_ID, Params.UNUSED);
+        versionParams.put(Fields.Activity.PERSISTENCE_STATE, Params.UNUSED);
+        add(versionParams, Fields.Activity.ANNOTATION,        strings, Scope.VERSIONED_MUTABLE, false);
+        add(versionParams, Fields.Activity.MODIFIED_BY,       strings, Scope.VERSIONED, true);
+        add(versionParams, Fields.Activity.MODIFICATION_DATE, dates,   Scope.VERSIONED, true);
+        add(versionParams, Fields.Activity.EXPIRATION_DATE,   dates,   Scope.VERSIONED_MUTABLE, true);
         return versionParams;
     }
 
-    private EnumMap<Fields.Facet, Params> createFacetParams() {
-        final EnumMap<Fields.Facet, Params> facetParams =
-            new EnumMap<Fields.Facet, Params>(Fields.Facet.class);
-        add(facetParams, Fields.Facet.KEYWORDS,                       stringlists, Scope.VERSIONED, false);
-        add(facetParams, Fields.Facet.FLAGS,                          stringlists, Scope.VERSIONED, false);
-        add(facetParams, Fields.Facet.MODIFIED_FIELDS,                stringlists, Scope.VERSIONED, false);
-        add(facetParams, Fields.Facet.STATUS_WHITEBOARD_ITEMS,        stringlists, Scope.VERSIONED, false);
-        add(facetParams, Fields.Facet.CHANGES,                        stringlists, Scope.VERSIONED, false);
-        add(facetParams, Fields.Facet.MAJOR_STATUS_LAST_CHANGED_DATE, dates,       Scope.VERSIONED, false);
-        add(facetParams, Fields.Facet.STATUS_LAST_CHANGED_DATE,       dates,       Scope.VERSIONED, false);
+    private EnumMap<BugFields.Facet, Params> createFacetParams() {
+        final EnumMap<BugFields.Facet, Params> facetParams =
+            new EnumMap<BugFields.Facet, Params>(BugFields.Facet.class);
+        add(facetParams, BugFields.Facet.KEYWORDS,                       stringlists, Scope.VERSIONED, false);
+        add(facetParams, BugFields.Facet.FLAGS,                          stringlists, Scope.VERSIONED, false);
+        add(facetParams, BugFields.Facet.MODIFIED_FIELDS,                stringlists, Scope.VERSIONED, false);
+        add(facetParams, BugFields.Facet.STATUS_WHITEBOARD_ITEMS,        stringlists, Scope.VERSIONED, false);
+        add(facetParams, BugFields.Facet.CHANGES,                        stringlists, Scope.VERSIONED, false);
+        add(facetParams, BugFields.Facet.MAJOR_STATUS_LAST_CHANGED_DATE, dates,       Scope.VERSIONED, false);
+        add(facetParams, BugFields.Facet.STATUS_LAST_CHANGED_DATE,       dates,       Scope.VERSIONED, false);
         // The others are strings:
-        for (Fields.Facet field : Fields.Facet.values()) {
+        for (BugFields.Facet field : BugFields.Facet.values()) {
             if (facetParams.containsKey(field)) continue;
             add(facetParams, field, strings, Scope.VERSIONED, false);
         }
         return facetParams;
     }
 
-    private EnumMap<Fields.Measurement, Params> createMeasurementParams() {
-        final EnumMap<Fields.Measurement, Params> measurementParams =
-            new EnumMap<Fields.Measurement, Params>(Fields.Measurement.class);
-        for (Fields.Measurement field : Fields.Measurement.values()) {
+    private EnumMap<BugFields.Measurement, Params> createMeasurementParams() {
+        final EnumMap<BugFields.Measurement, Params> measurementParams =
+            new EnumMap<BugFields.Measurement, Params>(BugFields.Measurement.class);
+        for (BugFields.Measurement field : BugFields.Measurement.values()) {
             add(measurementParams, field, longs, Scope.VERSIONED_MUTABLE, false);
         }
         return measurementParams;
-    }
-
-
-    // Record-type: Flag
-    private EnumMap<Fields.Flag, Params> flagParams() {
-        final EnumMap<Fields.Flag, Params> flagParams =
-            new EnumMap<Fields.Flag, Params>(Fields.Flag.class);
-        add(flagParams, Fields.Flag.ID,     longs,   Scope.NON_VERSIONED, true);
-        add(flagParams, Fields.Flag.NAME,   strings, Scope.VERSIONED, true);
-        add(flagParams, Fields.Flag.STATUS, strings, Scope.NON_VERSIONED, true);
-        return flagParams;
-    }
-
-    // Record-type: User
-    private EnumMap<Fields.User, Params> userParams() {
-        final EnumMap<Fields.User, Params> userParams;
-        userParams = new EnumMap<Fields.User, Params>(Fields.User.class);
-        add(userParams, Fields.User.ID,            longs,   Scope.NON_VERSIONED, true);
-        add(userParams, Fields.User.CREATION_DATE, longs,   Scope.NON_VERSIONED, true);
-        add(userParams, Fields.User.EMAIL,         strings, Scope.VERSIONED, true);
-        add(userParams, Fields.User.NICK,          strings, Scope.VERSIONED, false);
-        return userParams;
     }
 
 

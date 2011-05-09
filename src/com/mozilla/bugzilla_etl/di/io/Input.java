@@ -53,9 +53,12 @@ import org.pentaho.di.trans.steps.userdefinedjavaclass.FieldHelper;
 import org.pentaho.di.trans.steps.userdefinedjavaclass.TransformClassBase;
 
 import com.mozilla.bugzilla_etl.base.Assert;
-import com.mozilla.bugzilla_etl.base.Fields;
 import com.mozilla.bugzilla_etl.base.Pair;
-import com.mozilla.bugzilla_etl.base.Fields.Facet;
+import com.mozilla.bugzilla_etl.model.Field;
+import com.mozilla.bugzilla_etl.model.Fields;
+import com.mozilla.bugzilla_etl.model.attachment.AttachmentFields;
+import com.mozilla.bugzilla_etl.model.bug.BugFields;
+
 
 /** Access to input columns goes through this. */
 public class Input {
@@ -101,21 +104,25 @@ public class Input {
             values = data;
         }
 
-        public <T extends Enum<T> & Fields.Field> Cell cell(T field) {
+        public <T extends Enum<T> & Field> Cell cell(T field) {
             return new Cell(values, helpers.helper(field));
         }
 
-        public Cell cell(Facet field, Facet.Column column) {
+        public Cell cell(Field field, Fields.Column column) {
             return new Cell(values, helpers.helper(field, column));
         }
 
     }
 
-    public <T extends Enum<T> & Fields.Field> Cell cell(T field) {
+    public <T extends Enum<T> & Field> Cell cell(T field) {
         return new Cell(current, helpers.helper(field));
     }
 
-    public Cell cell(Facet field, Facet.Column column) {
+    public Cell cell(BugFields.Facet field, Fields.Column column) {
+        return new Cell(current, helpers.helper(field, column));
+    }
+
+    public Cell cell(AttachmentFields.Facet field, Fields.Column column) {
         return new Cell(current, helpers.helper(field, column));
     }
 

@@ -57,14 +57,15 @@ import org.lilyproject.repository.api.RepositoryException;
 import org.lilyproject.repository.api.ValueType;
 
 import com.mozilla.bugzilla_etl.base.Assert;
-import com.mozilla.bugzilla_etl.base.Bug;
-import com.mozilla.bugzilla_etl.base.Converters;
-import com.mozilla.bugzilla_etl.base.Fields;
-import com.mozilla.bugzilla_etl.base.PersistenceState;
-import com.mozilla.bugzilla_etl.base.Version;
-import com.mozilla.bugzilla_etl.base.Converters.Converter;
-import com.mozilla.bugzilla_etl.di.IBugLookup;
+import com.mozilla.bugzilla_etl.di.Converters;
+import com.mozilla.bugzilla_etl.di.Converters.Converter;
+import com.mozilla.bugzilla_etl.di.bug.IBugLookup;
 import com.mozilla.bugzilla_etl.lily.Types.Params;
+import com.mozilla.bugzilla_etl.model.Fields;
+import com.mozilla.bugzilla_etl.model.PersistenceState;
+import com.mozilla.bugzilla_etl.model.bug.Bug;
+import com.mozilla.bugzilla_etl.model.bug.BugFields;
+import com.mozilla.bugzilla_etl.model.bug.BugVersion;
 
 public class LilyBugLookup extends AbstractLilyClient implements IBugLookup {
 
@@ -102,10 +103,10 @@ public class LilyBugLookup extends AbstractLilyClient implements IBugLookup {
             return null;
         }
 
-        
+
         List<Record> versionRecords;
         try {
-            versionRecords = repository.readVersions(id, new Long(1), record.getVersion(), 
+            versionRecords = repository.readVersions(id, new Long(1), record.getVersion(),
                                                      emptyList);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -118,7 +119,7 @@ public class LilyBugLookup extends AbstractLilyClient implements IBugLookup {
         //                  the latest versions though (otherwise we'll have dupes).
         Collections.sort(versionRecords, versionComparator);
         final List<Record> versionsToUse = new java.util.ArrayList<Record>(versionRecords.size());
-        final Types.Params numberParams = types.measurementParams.get(Fields.Measurement.NUMBER);
+        final Types.Params numberParams = types.measurementParams.get(BugFields.Measurement.NUMBER);
         int maxNumber = 1;
         for (Record r : versionRecords) {
             final int number = ((Long) r.getField(numberParams.qname)).intValue();
@@ -143,16 +144,16 @@ public class LilyBugLookup extends AbstractLilyClient implements IBugLookup {
         final Map<QName, Object> bugFields = versionRecords.get(0).getFields();
 
         final Bug bug = new Bug(
-            (Long) bugFields.get(types.bugParams.get(Fields.Bug.ID).qname),
-            (String) bugFields.get(types.bugParams.get(Fields.Bug.REPORTED_BY).qname),
-            getDate(bugFields, types.bugParams.get(Fields.Bug.CREATION_DATE))
+            (Long) bugFields.get(types.bugParams.get(BugFields.Bug.ID).qname),
+            (String) bugFields.get(types.bugParams.get(BugFields.Bug.REPORTED_BY).qname),
+            getDate(bugFields, types.bugParams.get(BugFields.Bug.CREATION_DATE))
         );
 
         for (final Record versionRecord : versionRecords) {
             final Map<QName, Object> fields = versionRecord.getFields();
 
-            final EnumMap<Fields.Facet, String> facets = Version.createFacets();
-            for (Fields.Facet facet : Fields.Facet.values()) {
+            final EnumMap<BugFields.Facet, String> facets = bug.createFacets();
+            for (BugFields.Facet facet : BugFields.Facet.values()) {
                 Params facetParams = types.facetParams.get(facet);
                 ValueType valueType = facetParams.type;
                 if (types.facetParams.get(facet).type == types.strings) {
@@ -171,20 +172,20 @@ public class LilyBugLookup extends AbstractLilyClient implements IBugLookup {
                 Assert.unreachable("Unhandled valueType %s used for facet: %s", valueType, facet);
             }
 
-            final EnumMap<Fields.Measurement, Long> measurements = Version.createMeasurements();
-            for (Fields.Measurement measurement : Fields.Measurement.values()) {
+            final EnumMap<BugFields.Measurement, Long> measurements = bug.createMeasurements();
+            for (BugFields.Measurement measurement : BugFields.Measurement.values()) {
                 measurements.put(measurement,
                                  getLong(fields, types.measurementParams.get(measurement)));
             }
 
-            bug.append(new Version(
+            bug.append(new BugVersion(
                 bug,
                 facets,
                 measurements,
-                getString(fields, types.versionParams.get(Fields.Version.MODIFIED_BY)),
-                getString(fields, types.versionParams.get(Fields.Version.ANNOTATION)),
-                getDate(fields, types.versionParams.get(Fields.Version.MODIFICATION_DATE)),
-                getDate(fields, types.versionParams.get(Fields.Version.EXPIRATION_DATE)),
+                getString(fields, types.versionParams.get(Fields.Activity.MODIFIED_BY)),
+                getString(fields, types.versionParams.get(Fields.Activity.ANNOTATION)),
+                getDate(fields, types.versionParams.get(Fields.Activity.MODIFICATION_DATE)),
+                getDate(fields, types.versionParams.get(Fields.Activity.EXPIRATION_DATE)),
                 PersistenceState.SAVED
             ));
         }

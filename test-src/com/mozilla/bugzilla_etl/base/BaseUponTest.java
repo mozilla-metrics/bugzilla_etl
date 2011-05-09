@@ -48,6 +48,8 @@ import java.util.Date;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.mozilla.bugzilla_etl.model.bug.Bug;
+
 public class BaseUponTest extends VersionTest {
 
     private Bug initial;

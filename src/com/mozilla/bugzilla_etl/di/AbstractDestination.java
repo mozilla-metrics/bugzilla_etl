@@ -48,7 +48,7 @@ import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.base.Destination;
 import com.mozilla.bugzilla_etl.di.io.Output;
 
-abstract class AbstractDestination<T> implements Destination<T, KettleException> {
+public abstract class AbstractDestination<T> implements Destination<T, KettleException> {
 
     protected final Output output;
 
@@ -57,7 +57,7 @@ abstract class AbstractDestination<T> implements Destination<T, KettleException>
         this.output = new Output(fromStep, out);
     }
 
-    @Override 
+    @Override
     public void flush() throws KettleException { }
 
 }

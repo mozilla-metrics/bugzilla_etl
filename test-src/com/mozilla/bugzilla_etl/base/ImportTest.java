@@ -44,6 +44,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.mozilla.bugzilla_etl.model.bug.Bug;
+
 public class ImportTest extends VersionTest {
     /** Rebuild the bug completely, without using incremental update.*/
     @Test

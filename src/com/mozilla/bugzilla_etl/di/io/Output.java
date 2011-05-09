@@ -47,7 +47,7 @@ import org.pentaho.di.trans.steps.userdefinedjavaclass.FieldHelper;
 import org.pentaho.di.trans.steps.userdefinedjavaclass.TransformClassBase;
 
 import com.mozilla.bugzilla_etl.base.Assert;
-import com.mozilla.bugzilla_etl.base.Fields;
+import com.mozilla.bugzilla_etl.model.Field;
 
 public class Output {
 
@@ -59,7 +59,7 @@ public class Output {
         this.helpers = new Helpers(rowMeta);
     }
 
-    public <T extends Enum<T> & Fields.Field>  Cell cell(T field) {
+    public <T extends Enum<T> & Field>  Cell cell(T field) {
         return new Cell(helpers.helper(field));
     }
 

@@ -45,9 +45,8 @@ import org.lilyproject.repository.api.RecordId;
 import org.lilyproject.repository.api.Repository;
 
 import com.mozilla.bugzilla_etl.base.Assert;
-import com.mozilla.bugzilla_etl.base.Bug;
-import com.mozilla.bugzilla_etl.base.Flag;
-import com.mozilla.bugzilla_etl.base.Version;
+import com.mozilla.bugzilla_etl.model.bug.Bug;
+import com.mozilla.bugzilla_etl.model.bug.BugVersion;
 
 /** Encapsultes the patterns by which repository ids are generated. */
 class Ids {
@@ -65,18 +64,10 @@ class Ids {
     }
 
     /** Generate id for this historic bug version record (no matter if already persisted or not). */
-    final RecordId id(Version version) {
+    final RecordId id(BugVersion version) {
         Assert.nonNull(version);
-        Long bugId = version.bug().id();
+        Long bugId = version.entity().id();
         return forVersion(bugId, version.from().getTime());
-    }
-
-    /** Generate an id for this flag (no matter if already persisted or not). */
-    final RecordId id(Flag flag) {
-        final StringBuilder buffer = new StringBuilder();
-        return generator.newRecordId(buffer.append(flag.status().indicator)
-                                           .append(' ')
-                                           .append(flag.id()).toString());
     }
 
     protected String id(final Long bugId, final Long versionIdentifier) {
@@ -88,7 +79,7 @@ class Ids {
         dest.append(suffix);
         return dest.toString();
       }
-    
+
     final RecordId forBug(final Long bugzillaBugId) {
         Assert.nonNull(bugzillaBugId);
         return generator.newRecordId(id(bugzillaBugId, null));
