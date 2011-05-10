@@ -38,9 +38,9 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.di;
+package com.mozilla.bugzilla_etl.di.bug;
 
-import com.mozilla.bugzilla_etl.base.Bug;
+import com.mozilla.bugzilla_etl.model.bug.Bug;
 
 
 public class EmptyBugLookup implements IBugLookup {

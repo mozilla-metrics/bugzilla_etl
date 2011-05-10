@@ -48,7 +48,7 @@ import org.pentaho.di.trans.steps.userdefinedjavaclass.TransformClassBase;
 import com.mozilla.bugzilla_etl.base.Source;
 import com.mozilla.bugzilla_etl.di.io.Input;
 
-abstract class AbstractSource<T> implements Source<T, KettleException> {
+public abstract class AbstractSource<T> implements Source<T, KettleException> {
 
     protected final Input input;
 

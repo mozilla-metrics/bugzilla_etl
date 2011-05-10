@@ -38,7 +38,7 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.di;
+package com.mozilla.bugzilla_etl.di.bug;
 
 import java.util.Date;
 import java.util.EnumMap;
@@ -49,11 +49,12 @@ import org.pentaho.di.core.exception.KettleStepException;
 import org.pentaho.di.core.exception.KettleValueException;
 import org.pentaho.di.trans.steps.userdefinedjavaclass.TransformClassBase;
 
-import com.mozilla.bugzilla_etl.base.Bug;
 import com.mozilla.bugzilla_etl.base.Counter;
-import com.mozilla.bugzilla_etl.base.Fields;
-import com.mozilla.bugzilla_etl.base.PersistenceState;
-import com.mozilla.bugzilla_etl.base.Version;
+import com.mozilla.bugzilla_etl.di.AbstractSource;
+import com.mozilla.bugzilla_etl.model.PersistenceState;
+import com.mozilla.bugzilla_etl.model.bug.Bug;
+import com.mozilla.bugzilla_etl.model.bug.BugFields;
+import com.mozilla.bugzilla_etl.model.bug.BugVersion;
 
 /**
  * Receive bug entities from another PDI step.
@@ -75,14 +76,14 @@ public class BugSource extends AbstractSource<Bug> {
 
     @Override
     public Bug receive() throws KettleException {
-        final Long bugId = input.cell(Fields.Bug.ID).longValue();
+        final Long bugId = input.cell(BugFields.Bug.ID).longValue();
 
         final Bug bug = new Bug(bugId, 
-                                input.cell(Fields.Bug.REPORTED_BY).stringValue(),
-                                input.cell(Fields.Bug.CREATION_DATE).dateValue());
+                                input.cell(BugFields.Bug.REPORTED_BY).stringValue(),
+                                input.cell(BugFields.Bug.CREATION_DATE).dateValue());
 
         bug.append(versionFromRow(bug));
-        while (input.next() && bugId.equals(input.cell(Fields.Bug.ID).longValue())) {
+        while (input.next() && bugId.equals(input.cell(BugFields.Bug.ID).longValue())) {
             bug.append(versionFromRow(bug));
         }
 
@@ -90,25 +91,25 @@ public class BugSource extends AbstractSource<Bug> {
         return bug;
     }
 
-    private Version versionFromRow(Bug bug) throws KettleValueException {
-        final String author = input.cell(Fields.Version.MODIFIED_BY).stringValue();
-        final String annotation = input.cell(Fields.Version.ANNOTATION).stringValue();
-        final Date from = input.cell(Fields.Version.MODIFICATION_DATE).dateValue();
-        final Date to = input.cell(Fields.Version.EXPIRATION_DATE).dateValue();
+    private BugVersion versionFromRow(Bug bug) throws KettleValueException {
+        final String author = input.cell(BugFields.Activity.MODIFIED_BY).stringValue();
+        final String annotation = input.cell(BugFields.Activity.ANNOTATION).stringValue();
+        final Date from = input.cell(BugFields.Activity.MODIFICATION_DATE).dateValue();
+        final Date to = input.cell(BugFields.Activity.EXPIRATION_DATE).dateValue();
         final PersistenceState persistenceState
-            = input.cell(Fields.Version.PERSISTENCE_STATE).enumValue(PersistenceState.class);
+            = input.cell(BugFields.Activity.PERSISTENCE_STATE).enumValue(PersistenceState.class);
 
-        final EnumMap<Fields.Facet, String> facets = Version.createFacets();
-        for (Fields.Facet field : Fields.Facet.values()) {
-            facets.put(field, input.cell(field, Fields.Facet.Column.RESULT).stringValue());
+        final EnumMap<BugFields.Facet, String> facets = BugVersion.createFacets();
+        for (BugFields.Facet field : BugFields.Facet.values()) {
+            facets.put(field, input.cell(field, BugFields.Facet.Column.RESULT).stringValue());
         }
-        final EnumMap<Fields.Measurement, Long> measurements = Version.createMeasurements();
-        for (Fields.Measurement field : Fields.Measurement.values()) {
+        final EnumMap<BugFields.Measurement, Long> measurements = BugVersion.createMeasurements();
+        for (BugFields.Measurement field : BugFields.Measurement.values()) {
             measurements.put(field, input.cell(field).longValue());
         }
 
-        Version version
-            = new Version(bug, facets, measurements, author, annotation, from, to, persistenceState);
+        BugVersion version
+            = new BugVersion(bug, facets, measurements, author, annotation, from, to, persistenceState);
         return version;
     }
 

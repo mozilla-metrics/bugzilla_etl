@@ -38,7 +38,7 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.base;
+package com.mozilla.bugzilla_etl.di;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -47,6 +47,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Date;
 import java.util.regex.Pattern;
+
+import com.mozilla.bugzilla_etl.base.Assert;
+import com.mozilla.bugzilla_etl.model.bug.Flag;
 
 public class Converters {
 

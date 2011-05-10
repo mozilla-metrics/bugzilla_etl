@@ -38,7 +38,7 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.di;
+package com.mozilla.bugzilla_etl.di.bug;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -58,16 +58,17 @@ import org.pentaho.di.core.exception.KettleValueException;
 import org.pentaho.di.trans.steps.userdefinedjavaclass.TransformClassBase;
 
 import com.mozilla.bugzilla_etl.base.Assert;
-import com.mozilla.bugzilla_etl.base.Bug;
-import com.mozilla.bugzilla_etl.base.Converters;
 import com.mozilla.bugzilla_etl.base.Counter;
-import com.mozilla.bugzilla_etl.base.Fields;
-import com.mozilla.bugzilla_etl.base.Flag;
 import com.mozilla.bugzilla_etl.base.Lookup;
 import com.mozilla.bugzilla_etl.base.Pair;
-import com.mozilla.bugzilla_etl.base.Version;
+import com.mozilla.bugzilla_etl.di.AbstractSource;
+import com.mozilla.bugzilla_etl.di.Converters;
 import com.mozilla.bugzilla_etl.di.io.Input;
 import com.mozilla.bugzilla_etl.di.io.Input.Row;
+import com.mozilla.bugzilla_etl.model.bug.Bug;
+import com.mozilla.bugzilla_etl.model.bug.BugFields;
+import com.mozilla.bugzilla_etl.model.bug.BugVersion;
+import com.mozilla.bugzilla_etl.model.bug.Flag;
 
 
 /**
@@ -130,9 +131,9 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
     private Bug bugFromRows() throws KettleValueException, KettleStepException {
 
         // Get author and date of creation for least recent version (non-incremental).
-        final Date creationStateDate = input.cell(Fields.Bug.CREATION_DATE).dateValue();
-        final String creationStateAuthor = input.cell(Fields.Bug.REPORTED_BY).stringValue();
-        final Long bugId = input.cell(Fields.Bug.ID).longValue();
+        final Date creationStateDate = input.cell(BugFields.Bug.CREATION_DATE).dateValue();
+        final String creationStateAuthor = input.cell(BugFields.Bug.REPORTED_BY).stringValue();
+        final Long bugId = input.cell(BugFields.Bug.ID).longValue();
 
         if (bugId == null) {
             Assert.unreachable("Cannot have bug_id of NULL. Encountered in fields from bugs table.");
@@ -147,14 +148,14 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
 
         // Keep current facet state and mutate it while walking the revisions.
         // Keep flags state separate so it does not have to be parsed for every comparison.
-        Pair<EnumMap<Fields.Facet, String>, Map<String, Flag>> state = stateFromBug(input.row());
-        final EnumMap<Fields.Facet, String> facetState = state.first();
+        Pair<EnumMap<BugFields.Facet, String>, Map<String, Flag>> state = stateFromBug(input.row());
+        final EnumMap<BugFields.Facet, String> facetState = state.first();
         final Map<String, Flag> flagState = state.second();
 
-        if (input.cell(Fields.Version.BUG_ID).longValue() == null) {
+        if (input.cell(BugFields.Activity.BUG_ID).longValue() == null) {
             // No activities (yet). Advance to the next bug and use this bug as-is (initial state).
             // This should always be the latest version of a bug (initial import: also the first).
-            bug.prepend(Version.latest(bug, facetState, creationStateAuthor, creationStateDate,
+            bug.prepend(BugVersion.latest(bug, facetState, creationStateAuthor, creationStateDate,
                                        annotation("0 new activities")));
             input.next();
             applyAnyPersistedState(bug);
@@ -163,7 +164,7 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
             processActivitiesRows(bug, facetState, flagState);
             if (!applyAnyPersistedState(bug)) {
                 // Initial import: Add creation revision.
-                Version successor = bug.iterator().next();
+                BugVersion successor = bug.iterator().next();
                 Date adjustedDate = creationStateDate;
                 if (successor.from().equals(creationStateDate)) {
                     // First modification has same date. Adjust creation date.
@@ -183,22 +184,22 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
      * @const
      * @return the current state facet state and flag state of the bug.
      */
-    private Pair<EnumMap<Fields.Facet, String>, Map<String, Flag>> stateFromBug(Input.Row row)
+    private Pair<EnumMap<BugFields.Facet, String>, Map<String, Flag>> stateFromBug(Input.Row row)
     throws KettleValueException {
         // Use the "left leg" (latest bug state from bugzilla) to construct the "current" version.
-        final EnumMap<Fields.Facet, String> facetState = Version.createFacets();
+        final EnumMap<BugFields.Facet, String> facetState = BugVersion.createFacets();
         final Map<String, Flag> flagState = new java.util.HashMap<String, Flag>();
-        for (Fields.Facet facet : Fields.Facet.values()) {
+        for (BugFields.Facet facet : BugFields.Facet.values()) {
             if (facet.isComputed) continue;
             String value = row.cell(facet).stringValue();
             facetState.put(facet, value);
-            if (facet == Fields.Facet.FLAGS && value != null) {
+            if (facet == BugFields.Facet.FLAGS && value != null) {
                 for (Flag flag : Converters.FLAGS.parse(value)) {
                     flagState.put(flag.name(), flag);
                 }
             }
         }
-        return new Pair<EnumMap<Fields.Facet, String>, Map<String, Flag>>(facetState, flagState);
+        return new Pair<EnumMap<BugFields.Facet, String>, Map<String, Flag>>(facetState, flagState);
     }
 
     /**
@@ -206,13 +207,13 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
      * Facet state and flag state are manipulated in place.
      */
     private void processActivitiesRows(final Bug bug,
-                                       final EnumMap<Fields.Facet, String> facetState,
+                                       final EnumMap<BugFields.Facet, String> facetState,
                                        final Map<String, Flag> flagState)
     throws KettleValueException, KettleStepException {
         final LinkedList<Input.Row> candidates = new java.util.LinkedList<Input.Row>();
         Date candidateDate = null;
         do {
-            final Date currentDate = input.cell(Fields.Version.MODIFICATION_DATE).dateValue();
+            final Date currentDate = input.cell(BugFields.Activity.MODIFICATION_DATE).dateValue();
             if (!candidates.isEmpty() && !currentDate.equals(candidateDate)) {
                 // New date, process all activities with the previous (more recent) date.
                 processCandidates(bug, candidates, facetState, flagState);
@@ -220,7 +221,7 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
             }
             candidateDate = currentDate;
             candidates.add(input.row());
-        } while (input.next() && bug.id().equals(input.cell(Fields.Version.BUG_ID).longValue()));
+        } while (input.next() && bug.id().equals(input.cell(BugFields.Activity.BUG_ID).longValue()));
 
         // the last set of candidates is not processed yet
         processCandidates(bug, candidates, facetState, flagState);
@@ -279,14 +280,14 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
      */
     private void processCandidates(final Bug bug,
                                    final LinkedList<Input.Row> candidates,
-                                   final EnumMap<Fields.Facet, String> facetState,
+                                   final EnumMap<BugFields.Facet, String> facetState,
                                    final Map<String, Flag> flagState)
     throws KettleValueException
     {
         final int n = candidates.size();
         Assert.check(n > 0);
         final Date modificationDate
-            = candidates.get(0).cell(Fields.Version.MODIFICATION_DATE).dateValue();
+            = candidates.get(0).cell(BugFields.Activity.MODIFICATION_DATE).dateValue();
         if (n > 3) Assert.unreachable(
             "There are %d simultaneous changes to bug #%d at %s?! Must be an error.\n",
             n, bug.id(), modificationDate
@@ -307,8 +308,8 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
         Assert.check(activities.size() == n);
         int i = n;
         for (Input.Row activity : activities) {
-            final String author = activity.cell(Fields.Version.MODIFIED_BY).stringValue();
-            final Version v;
+            final String author = activity.cell(BugFields.Activity.MODIFIED_BY).stringValue();
+            final BugVersion v;
             final StringBuilder details = new StringBuilder();
             Date date = modificationDate;
             if (n > 1) {
@@ -321,7 +322,7 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
             if (bug.numVersions() == 0) {
                 // Special case: appending the first (most recent) activity.
                 details.append("most recent version");
-                v = Version.latest(bug, facetState, author, date, annotation(details));
+                v = BugVersion.latest(bug, facetState, author, date, annotation(details));
             }
             else {
                 // Append version as predecessor to a more recent version.
@@ -349,7 +350,7 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
      * order is valid, return null. The first order that is possible is used.
      */
     private LinkedList<Input.Row> orderConsistently(final LinkedList<Input.Row> candidates,
-                                                    final EnumMap<Fields.Facet, String> facetState,
+                                                    final EnumMap<BugFields.Facet, String> facetState,
                                                     final Map<String, Flag> flagState)
     throws KettleValueException {
         if (candidates.size() <= 1) return candidates;
@@ -358,7 +359,7 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
             final int i = next.first();
             final Input.Row candidate = next.second();
 
-            final EnumMap<Fields.Facet, String> restFacetState = facetState.clone();
+            final EnumMap<BugFields.Facet, String> restFacetState = facetState.clone();
             final Map<String, Flag> restFlagState = new HashMap<String, Flag>(flagState);
             if (!invertActivity(candidate, restFacetState, restFlagState)) continue;
 
@@ -384,8 +385,8 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
                 String valueA = null;
                 String valueB = null;
                 try {
-                    valueA = rowA.cell(Fields.Version.MODIFIED_BY).stringValue();
-                    valueB = rowB.cell(Fields.Version.MODIFIED_BY).stringValue();
+                    valueA = rowA.cell(BugFields.Activity.MODIFIED_BY).stringValue();
+                    valueB = rowB.cell(BugFields.Activity.MODIFIED_BY).stringValue();
                     if (valueA.equals(NOBODY)) return -1;
                     if (valueB.equals(NOBODY)) return 1;
                     System.out.format("REORDER ACTIVITIES: Weak result with fallback ordering.\n");
@@ -417,16 +418,16 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
      *         will contain garbage now.
      */
     private boolean invertActivity(final Input.Row activity,
-                                   final EnumMap<Fields.Facet, String> facetState,
+                                   final EnumMap<BugFields.Facet, String> facetState,
                                    final Map<String, Flag> flagState)
     throws KettleValueException {
         boolean isConsistent = true;
-        for (Fields.Facet facet : Fields.Facet.values()) {
+        for (BugFields.Facet facet : BugFields.Facet.values()) {
             if (facet.isComputed) continue;
-            final String toValue = activity.cell(facet, Fields.Facet.Column.TO).stringValue();
-            final String fromValue = activity.cell(facet, Fields.Facet.Column.FROM).stringValue();
+            final String toValue = activity.cell(facet, BugFields.Facet.Column.TO).stringValue();
+            final String fromValue = activity.cell(facet, BugFields.Facet.Column.FROM).stringValue();
             if (fromValue.isEmpty() && toValue.isEmpty()) continue;
-            if (facet == Fields.Facet.FLAGS) {
+            if (facet == BugFields.Facet.FLAGS) {
                 // successor.to() is the complete set for the successor state, while fromValue and
                 // toValue describe an incremental change leading to it. We apply it in reverse to
                 // obtain the predecessor value.
@@ -434,7 +435,7 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
                     if (!flagState.containsKey(toFlag.name())) {
                         isConsistent = false;
                         System.out.format("Inconsistent change on bug %s: set flag missing: '%s'\n",
-                                          activity.cell(Fields.Version.BUG_ID).longValue(), toFlag);
+                                          activity.cell(BugFields.Activity.BUG_ID).longValue(), toFlag);
                     }
                     else {
                         flagState.remove(toFlag.name());
@@ -444,7 +445,7 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
                 for (Flag fromFlag : Converters.FLAGS.parse(fromValue)) {
                     if (flagState.containsKey(fromFlag.name())) {
                         System.out.format("Inconsistent change on bug %s: flag unwarranted: '%s'\n",
-                                          activity.cell(Fields.Version.BUG_ID).longValue(), fromFlag);
+                                          activity.cell(BugFields.Activity.BUG_ID).longValue(), fromFlag);
                         isConsistent = false;
                     }
                     flagState.put(fromFlag.name(), fromFlag);
@@ -458,7 +459,7 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
                 isConsistent = false;
                 System.out.format(
                     "Inconsistent change on bug %s field %s: expected '%s' (but got '%s')\n",
-                    activity.cell(Fields.Version.BUG_ID).longValue(), facet.name().toLowerCase(),
+                    activity.cell(BugFields.Activity.BUG_ID).longValue(), facet.name().toLowerCase(),
                     facetState.get(facet), toValue
                 );
             }
@@ -478,12 +479,12 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
 
     private void printReorderDebugInformation(Bug bug,
                                               List<Input.Row> candidates,
-                                              EnumMap<Fields.Facet, String> facetState)
+                                              EnumMap<BugFields.Facet, String> facetState)
     throws KettleValueException {
         System.out.format("\nREORDER ACTIVITIES (bug #%s)\n", bug.id());
         System.out.format("\nREORDER ACTIVITIES, #reordered: %d\n", candidates.size());
         System.out.format("\nREORDER ACTIVITIES, target:\n");
-        for (Fields.Facet facet : Fields.Facet.values()) {
+        for (BugFields.Facet facet : BugFields.Facet.values()) {
             System.out.format("%s=%s \n", facet, facetState.get(facet));
         }
         System.out.format("\n");
@@ -492,11 +493,11 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
         for (Input.Row row : candidates) {
             ++i;
             System.out.format("activity %d (author: %s)\n",
-                              i, row.cell(Fields.Version.MODIFIED_BY).stringValue());
-            for (Fields.Facet facet : Fields.Facet.values()) {
+                              i, row.cell(BugFields.Activity.MODIFIED_BY).stringValue());
+            for (BugFields.Facet facet : BugFields.Facet.values()) {
                 if (facet.isComputed) continue;
-                String from = row.cell(facet, Fields.Facet.Column.FROM).stringValue();
-                String to = row.cell(facet, Fields.Facet.Column.TO).stringValue();
+                String from = row.cell(facet, BugFields.Facet.Column.FROM).stringValue();
+                String to = row.cell(facet, BugFields.Facet.Column.TO).stringValue();
                 if (from.isEmpty() && to.isEmpty()) continue;
                 System.out.format("%d from: %s=%s\n", i, facet, from);
                 System.out.format("%d to:   %s=%s\n", i, facet, to);

@@ -52,12 +52,12 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortOrder;
 
 import com.mozilla.bugzilla_etl.base.Assert;
-import com.mozilla.bugzilla_etl.base.Bug;
-import com.mozilla.bugzilla_etl.base.Fields;
-import com.mozilla.bugzilla_etl.base.PersistenceState;
-import com.mozilla.bugzilla_etl.base.Version;
-import com.mozilla.bugzilla_etl.di.IBugLookup;
+import com.mozilla.bugzilla_etl.di.bug.IBugLookup;
 import com.mozilla.bugzilla_etl.es.Mapping.BugMapping;
+import com.mozilla.bugzilla_etl.model.PersistenceState;
+import com.mozilla.bugzilla_etl.model.bug.Bug;
+import com.mozilla.bugzilla_etl.model.bug.BugFields;
+import com.mozilla.bugzilla_etl.model.bug.BugVersion;
 
 
 public class BugLookup extends AbstractEsClient implements IBugLookup {
@@ -79,10 +79,10 @@ public class BugLookup extends AbstractEsClient implements IBugLookup {
             client.prepareSearch(index).setTypes(type)
             .setSearchType(SearchType.DEFAULT)
             .setTimeout("5s")
-            .setQuery(QueryBuilders.fieldQuery(Fields.Bug.ID.columnName(),
+            .setQuery(QueryBuilders.fieldQuery(BugFields.Bug.ID.columnName(),
                                                bugzillaId))
             .setFrom(0).setSize(1024).setExplain(false)
-            .addSort(Fields.Measurement.NUMBER.columnName(), SortOrder.ASC)
+            .addSort(BugFields.Measurement.NUMBER.columnName(), SortOrder.ASC)
             .execute()
             .actionGet();
 
@@ -110,33 +110,33 @@ public class BugLookup extends AbstractEsClient implements IBugLookup {
             hits.hits()[0].getSource();
 
         final Bug bug = new Bug(
-            BUG.integer(Fields.Bug.ID, bugFields),
-            BUG.string(Fields.Bug.REPORTED_BY, bugFields),
-            BUG.date(Fields.Bug.CREATION_DATE, bugFields)
+            BUG.integer(BugFields.Bug.ID, bugFields),
+            BUG.string(BugFields.Bug.REPORTED_BY, bugFields),
+            BUG.date(BugFields.Bug.CREATION_DATE, bugFields)
         );
 
         for (final SearchHit hit : hits) {
             final Map<String, Object> fields = hit.getSource();
 
-            final EnumMap<Fields.Facet, String> facets = Version.createFacets();
-            for (Fields.Facet facet : Fields.Facet.values()) {
+            final EnumMap<BugFields.Facet, String> facets = BugVersion.createFacets();
+            for (BugFields.Facet facet : BugFields.Facet.values()) {
                 facets.put(facet, FACET.string(facet, fields));
             }
 
-            final EnumMap<Fields.Measurement, Long> measurements = Version.createMeasurements();
-            for (Fields.Measurement measurement : Fields.Measurement.values()) {
+            final EnumMap<BugFields.Measurement, Long> measurements = BugVersion.createMeasurements();
+            for (BugFields.Measurement measurement : BugFields.Measurement.values()) {
                 measurements.put(measurement,
                                  MEASURE.integer(measurement, fields));
             }
 
-            bug.append(new Version(
+            bug.append(new BugVersion(
                 bug,
                 facets,
                 measurements,
-                VERSION.string(Fields.Version.MODIFIED_BY, fields),
-                VERSION.string(Fields.Version.ANNOTATION, fields),
-                VERSION.date(Fields.Version.MODIFICATION_DATE, fields),
-                VERSION.date(Fields.Version.EXPIRATION_DATE, fields),
+                VERSION.string(BugFields.Activity.MODIFIED_BY, fields),
+                VERSION.string(BugFields.Activity.ANNOTATION, fields),
+                VERSION.date(BugFields.Activity.MODIFICATION_DATE, fields),
+                VERSION.date(BugFields.Activity.EXPIRATION_DATE, fields),
                 PersistenceState.SAVED
             ));
         }

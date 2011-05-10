@@ -38,7 +38,7 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.di.steps;                                                   // snip
+package com.mozilla.bugzilla_etl.di.bug.steps;                                                   // snip
                                                                                              // snip
                                                                                              // snip
 import org.pentaho.di.core.exception.KettleException;                                        // snip
@@ -82,9 +82,9 @@ public class RebuildVersionsStep extends TransformClassBase {                   
      */
     private static final String IN_STEP = "Prepare History Input";
     private static final String IN_STEP_STATUS_LOOKUP = "Get Major Status Lookup";
-    private com.mozilla.bugzilla_etl.di.BugDestination destination;
-    private com.mozilla.bugzilla_etl.di.RebuilderBugSource source;
-    private com.mozilla.bugzilla_etl.di.IBugLookup lookup;
+    private com.mozilla.bugzilla_etl.di.bug.BugDestination destination;
+    private com.mozilla.bugzilla_etl.di.bug.RebuilderBugSource source;
+    private com.mozilla.bugzilla_etl.di.bug.IBugLookup lookup;
 
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
         if (first) {
@@ -104,7 +104,7 @@ public class RebuildVersionsStep extends TransformClassBase {                   
             ));
             if ("true".equals(isInitialImport)) {
                 log.println("Rebuilder Lookup: none (initial_import)");
-                lookup = new com.mozilla.bugzilla_etl.di.EmptyBugLookup();
+                lookup = new com.mozilla.bugzilla_etl.di.bug.EmptyBugLookup();
             }
             else if (esNodes != null && esNodes.length() > 0) {
                 log.println("Rebuilder Lookup: elasticsearch");
@@ -121,19 +121,19 @@ public class RebuildVersionsStep extends TransformClassBase {                   
                 logError("RebuildVersionStep Lookup Configuration Invalid!");
                 com.mozilla.bugzilla_etl.base.Assert.unreachable();
             }
-            source = new com.mozilla.bugzilla_etl.di.RebuilderBugSource(
+            source = new com.mozilla.bugzilla_etl.di.bug.RebuilderBugSource(
                          this,
                          findInputRowSet(IN_STEP),
                          findInputRowSet(IN_STEP_STATUS_LOOKUP),
                          lookup
             );
 
-            destination = new com.mozilla.bugzilla_etl.di.BugDestination(this, outputRowMeta);
+            destination = new com.mozilla.bugzilla_etl.di.bug.BugDestination(this, outputRowMeta);
         }
         if (!source.hasMore()) {
             setOutputDone();
-            com.mozilla.bugzilla_etl.di.RebuilderBugSource.counter.print();
-            com.mozilla.bugzilla_etl.di.RebuilderBugSource.printConflictCounts();
+            com.mozilla.bugzilla_etl.di.bug.RebuilderBugSource.counter.print();
+            com.mozilla.bugzilla_etl.di.bug.RebuilderBugSource.printConflictCounts();
             return false;
         }
         destination.send(source.receive());

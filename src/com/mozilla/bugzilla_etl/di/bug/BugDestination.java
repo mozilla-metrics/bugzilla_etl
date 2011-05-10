@@ -38,6 +38,41 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.base;
+package com.mozilla.bugzilla_etl.di.bug;
 
-public enum PersistenceState { NEW, DIRTY, SAVED }
+import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.di.core.row.RowMeta;
+import org.pentaho.di.trans.steps.userdefinedjavaclass.TransformClassBase;
+
+import com.mozilla.bugzilla_etl.di.AbstractDestination;
+import com.mozilla.bugzilla_etl.model.bug.Bug;
+import com.mozilla.bugzilla_etl.model.bug.BugFields;
+import com.mozilla.bugzilla_etl.model.bug.BugVersion;
+
+public class BugDestination extends AbstractDestination<Bug> {
+
+    public BugDestination(TransformClassBase fromStep, RowMeta out) { super(fromStep, out); }
+
+    @Override
+    public void send(Bug bug) throws KettleException {
+        for (BugVersion version : bug) {
+            output.cell(BugFields.Bug.ID).set(bug.id());
+            output.cell(BugFields.Bug.REPORTED_BY).set(bug.reporter());
+            output.cell(BugFields.Bug.CREATION_DATE).set(bug.creationDate());
+            output.cell(BugFields.Activity.MODIFICATION_DATE).set(version.from());
+            output.cell(BugFields.Activity.EXPIRATION_DATE).set(version.to());
+            output.cell(BugFields.Activity.ANNOTATION).set(version.annotation());
+            output.cell(BugFields.Activity.MODIFIED_BY).set(version.author());
+            output.cell(BugFields.Activity.PERSISTENCE_STATE).set(version.persistenceState());
+
+            for (BugFields.Facet facet : BugFields.Facet.values()) {
+                output.cell(facet).set(version.facets().get(facet));
+            }
+            for (BugFields.Measurement measurement : BugFields.Measurement.values()) {
+                output.cell(measurement).set(version.measurements().get(measurement));
+            }
+            output.next();
+        }
+    }
+
+}

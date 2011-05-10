@@ -1,4 +1,4 @@
-package com.mozilla.bugzilla_etl.base;
+package com.mozilla.bugzilla_etl.lily;
 
 
 public interface Failable<E extends Exception> {

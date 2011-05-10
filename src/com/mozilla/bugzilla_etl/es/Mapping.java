@@ -48,10 +48,10 @@ import java.util.Map;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import com.mozilla.bugzilla_etl.base.Assert;
-import com.mozilla.bugzilla_etl.base.Converters;
-import com.mozilla.bugzilla_etl.base.Fields;
-import com.mozilla.bugzilla_etl.base.Converters.Converter;
-import com.mozilla.bugzilla_etl.base.Fields.Field;
+import com.mozilla.bugzilla_etl.di.Converters;
+import com.mozilla.bugzilla_etl.di.Converters.Converter;
+import com.mozilla.bugzilla_etl.model.Field;
+import com.mozilla.bugzilla_etl.model.bug.BugFields;
 
 
 interface Mapping<T extends Field> {
@@ -63,47 +63,47 @@ interface Mapping<T extends Field> {
     XContentBuilder append(XContentBuilder builder, T field, Object value)
         throws IOException;
 
-    static class BugMapping extends BaseMapping<Fields.Bug> {
+    static class BugMapping extends BaseMapping<BugFields.Bug> {
 
         public static final String TYPE = "bug";
 
         BugMapping() {
             conversions =
-                new EnumMap<Fields.Bug, Conv>(Fields.Bug.class);
-            conversions.put(Fields.Bug.ID,            Conv.INTEGER);
-            conversions.put(Fields.Bug.REPORTED_BY,   Conv.STRING);
-            conversions.put(Fields.Bug.CREATION_DATE, Conv.DATE);
+                new EnumMap<BugFields.Bug, Conv>(BugFields.Bug.class);
+            conversions.put(BugFields.Bug.ID,            Conv.INTEGER);
+            conversions.put(BugFields.Bug.REPORTED_BY,   Conv.STRING);
+            conversions.put(BugFields.Bug.CREATION_DATE, Conv.DATE);
         }
     }
 
 
-    static class VersionMapping extends BaseMapping<Fields.Version> {
+    static class VersionMapping extends BaseMapping<BugFields.Activity> {
         VersionMapping() {
             conversions =
-                new EnumMap<Fields.Version, Conv>(Fields.Version.class);
-            conversions.put(Fields.Version.BUG_ID,            Conv.UNUSED);
-            conversions.put(Fields.Version.PERSISTENCE_STATE, Conv.UNUSED);
-            conversions.put(Fields.Version.MODIFIED_BY,       Conv.STRING);
-            conversions.put(Fields.Version.ANNOTATION,        Conv.STRING);
-            conversions.put(Fields.Version.MODIFICATION_DATE, Conv.DATE);
-            conversions.put(Fields.Version.EXPIRATION_DATE,   Conv.DATE);
+                new EnumMap<BugFields.Activity, Conv>(BugFields.Activity.class);
+            conversions.put(BugFields.Activity.BUG_ID,            Conv.UNUSED);
+            conversions.put(BugFields.Activity.PERSISTENCE_STATE, Conv.UNUSED);
+            conversions.put(BugFields.Activity.MODIFIED_BY,       Conv.STRING);
+            conversions.put(BugFields.Activity.ANNOTATION,        Conv.STRING);
+            conversions.put(BugFields.Activity.MODIFICATION_DATE, Conv.DATE);
+            conversions.put(BugFields.Activity.EXPIRATION_DATE,   Conv.DATE);
         }
     }
 
 
-    static class FacetMapping extends BaseMapping<Fields.Facet> {
+    static class FacetMapping extends BaseMapping<BugFields.Facet> {
         FacetMapping() {
-            final EnumMap<Fields.Facet, Conv> c =
-                new EnumMap<Fields.Facet, Conv>(Fields.Facet.class);
-            c.put(Fields.Facet.KEYWORDS,                       Conv.STRINGLIST);
-            c.put(Fields.Facet.FLAGS,                          Conv.STRINGLIST);
-            c.put(Fields.Facet.MODIFIED_FIELDS,                Conv.STRINGLIST);
-            c.put(Fields.Facet.STATUS_WHITEBOARD_ITEMS,        Conv.STRINGLIST);
-            c.put(Fields.Facet.CHANGES,                        Conv.STRINGLIST);
-            c.put(Fields.Facet.MAJOR_STATUS_LAST_CHANGED_DATE, Conv.DATE);
-            c.put(Fields.Facet.STATUS_LAST_CHANGED_DATE,       Conv.DATE);
+            final EnumMap<BugFields.Facet, Conv> c =
+                new EnumMap<BugFields.Facet, Conv>(BugFields.Facet.class);
+            c.put(BugFields.Facet.KEYWORDS,                       Conv.STRINGLIST);
+            c.put(BugFields.Facet.FLAGS,                          Conv.STRINGLIST);
+            c.put(BugFields.Facet.MODIFIED_FIELDS,                Conv.STRINGLIST);
+            c.put(BugFields.Facet.STATUS_WHITEBOARD_ITEMS,        Conv.STRINGLIST);
+            c.put(BugFields.Facet.CHANGES,                        Conv.STRINGLIST);
+            c.put(BugFields.Facet.MAJOR_STATUS_LAST_CHANGED_DATE, Conv.DATE);
+            c.put(BugFields.Facet.STATUS_LAST_CHANGED_DATE,       Conv.DATE);
             // The others are all single strings:
-            for (Fields.Facet field : Fields.Facet.values()) {
+            for (BugFields.Facet field : BugFields.Facet.values()) {
                 if (c.containsKey(field)) continue;
                 c.put(field, Conv.STRING);
             }
@@ -112,7 +112,7 @@ interface Mapping<T extends Field> {
 
         @Override
         public XContentBuilder append(XContentBuilder builder,
-                                      Fields.Facet field, Object value) throws IOException {
+                                      BugFields.Facet field, Object value) throws IOException {
             Assert.check(value == null || value instanceof String);
             String facet = (String) value;
             switch (conversions.get(field)) {
@@ -139,11 +139,11 @@ interface Mapping<T extends Field> {
     }
 
 
-    static class MeasurementMapping extends BaseMapping<Fields.Measurement> {
+    static class MeasurementMapping extends BaseMapping<BugFields.Measurement> {
         public MeasurementMapping() {
             conversions =
-                new EnumMap<Fields.Measurement, Conv>(Fields.Measurement.class);
-            for (Fields.Measurement field : Fields.Measurement.values()) {
+                new EnumMap<BugFields.Measurement, Conv>(BugFields.Measurement.class);
+            for (BugFields.Measurement field : BugFields.Measurement.values()) {
                 conversions.put(field, Conv.INTEGER);
             }
         }

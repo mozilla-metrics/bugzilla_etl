@@ -44,6 +44,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
+import com.mozilla.bugzilla_etl.model.bug.Bug;
+
 
 /** Special purpose counters for step statistics and diagnostics. */
 public class Counter {

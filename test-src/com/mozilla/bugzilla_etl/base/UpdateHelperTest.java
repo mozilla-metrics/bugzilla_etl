@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.mozilla.bugzilla_etl.model.bug.Bug;
+
 import static org.junit.Assert.assertEquals;
 
 public class UpdateHelperTest {

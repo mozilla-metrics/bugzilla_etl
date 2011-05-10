@@ -38,52 +38,31 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.base;
+package com.mozilla.bugzilla_etl.model.bug;
 
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.mozilla.bugzilla_etl.base.Converters.Converter;
-import com.mozilla.bugzilla_etl.base.Fields.Facet;
-import com.mozilla.bugzilla_etl.base.Fields.Measurement;
+import com.mozilla.bugzilla_etl.base.Assert;
+import com.mozilla.bugzilla_etl.base.Pair;
+import com.mozilla.bugzilla_etl.di.Converters;
+import com.mozilla.bugzilla_etl.di.Converters.Converter;
+import com.mozilla.bugzilla_etl.model.Entity;
+
 
 /** A bug with its invariant properties and all of its versions. */
-public class Bug implements Iterable<Version> {
+public class Bug extends Entity<Bug, BugVersion> {
 
     public Bug(Long id, String reporter, Date creationDate) {
-        Assert.nonNull(id, reporter);
-        this.id = id;
-        this.reporter = reporter;
-        this.creationDate = creationDate;
-        versions = new LinkedList<Version>();
+        super(id, reporter, creationDate);
     }
-
-    private static final long DAY = 24*60*60*1000;
-    private static final boolean DEBUG_INCREMENTAL_UPDATE = false;
-
-    private final Long id;
-    private final String reporter;
-    private final Date creationDate;
-    private final LinkedList<Version> versions;
-
-    private final UpdateHelper helper = new UpdateHelper();
-
-    public Long id() { return id; }
-    public String reporter() { return reporter; }
-    public Date creationDate() { return creationDate; }
-    public int numVersions() { return versions.size(); }
-
-    @Override
-    public Iterator<Version> iterator() { return versions.iterator(); }
 
     @Override
     public int hashCode() {
@@ -107,80 +86,10 @@ public class Bug implements Iterable<Version> {
         return versions.equals(other.versions);
     }
 
-    /**
-     * Steal all versions of the given bug and prepend them to this bug.
-     * Both bugs must be for the same bugzilla bug id, the existing bug's versions should be
-     * persistent.
-     */
-    public void baseUpon(final Bug existingBug) {
-        Assert.check(id.equals(existingBug.id()));
-        final LinkedList<Version> existingVersions = existingBug.versions;
-
-        if (DEBUG_INCREMENTAL_UPDATE) {
-            System.out.print("\n");
-            System.out.format("[REBASE  ] Checking bug #%d\n", id);
-        }
-
-        final Version mostRecentExistingVersion = existingVersions.getLast();
-        if (versions.getLast().from().before(mostRecentExistingVersion.from())) {
-            System.out.format("Index version of bug #%d newer than version to import (OK).\n", id);
-        }
-
-        // Tell me a ton about this so I can make sure it works
-        if (DEBUG_INCREMENTAL_UPDATE) {
-            System.out.format("[REBASE >] %s\n", this);
-            for (Version version : this) System.out.format("[NEW     ] %s\n", version);
-            System.out.format("[UPON >>>] %s\n", existingBug);
-            for (Version version : existingBug) System.out.format("[EXISTING] %s\n", version);
-        }
-
-        // Discard any versions we might have rebuilt locally that are also in the existing bug.
-        // this can happen if an incremental update is run for a start time that was already
-        // included in a (incremental) import.
-        //
-        while (!versions.isEmpty() &&
-               !versions.getFirst().from().after(mostRecentExistingVersion.from())) {
-            if (DEBUG_INCREMENTAL_UPDATE) System.out.format("[.DELETE ] %s\n", versions.getFirst());
-            versions.removeFirst();
-        }
-
-        ListIterator<Version> reverse = existingVersions.listIterator(existingVersions.size());
-        boolean isMostRecent = true;
-        while (reverse.hasPrevious()) {
-            Version previous = reverse.previous();
-            if (isMostRecent && !versions.isEmpty()) {
-                previous = previous.update("", versions.getFirst().from());
-            }
-            isMostRecent = false;
-            if (DEBUG_INCREMENTAL_UPDATE) System.out.format("[.PREPEND] %s\n", previous);
-            prepend(previous);
-        }
-
-        if (DEBUG_INCREMENTAL_UPDATE) {
-            for (Version version : this) System.out.format("[RESULT  ] %s\n", version);
-        }
-    }
-
-    public void prepend(Version earlierVersion) {
-        Assert.nonNull(earlierVersion);
-        Assert.check(versions.isEmpty() || !versions.peek().from().before(earlierVersion.to()));
-        versions.addFirst(earlierVersion);
-    }
-
-    public void append(Version laterVersion) {
-        Assert.nonNull(laterVersion);
-        Assert.check(versions.isEmpty() || !versions.getLast().to().after(laterVersion.from()));
-        versions.addLast(laterVersion);
-    }
-
-    public boolean neverSaved() {
-        return versions.getFirst().persistenceState() == PersistenceState.NEW;
-    }
-
     @Override
     public String toString() {
         final StringBuilder versionsVis = new StringBuilder(versions.size());
-        for (final Version version : versions) {
+        for (final BugVersion version : versions) {
             switch (version.persistenceState()) {
                 case SAVED: versionsVis.append('.'); break;
                 case DIRTY: versionsVis.append('#'); break;
@@ -193,12 +102,13 @@ public class Bug implements Iterable<Version> {
     }
 
     /**
-     * Traverse the bug history from past to present and figure out what the value of individual
-     * computed facets and measurements should be.
+     * Traverse the bug history from past to present and figure out what the
+     * value of individual computed facets and measurements should be.
      *
-     * Flags are changed from their incremental representation to their full representation.
+     * Flags are changed from their incremental representation to their full
+     * representation.
      *
-     * @param majorStatusTable A mapping from status names to major status names.
+     * @param majorStatusTable Mapping from status names to major status names
      */
     public void updateFacetsAndMeasurements(final Map<String, String> majorStatusTable,
                                             final Date now) {
@@ -210,7 +120,7 @@ public class Bug implements Iterable<Version> {
         // and no change for days_open_accumulated
         boolean isLatest;
 
-        Map<Facet, String> previousFacets = Version.createFacets();
+        Map<BugFields.Facet, String> previousFacets = BugVersion.createFacets();
         Date statusLastChanged = creationDate;
         Date majorStatusLastChanged = creationDate;
         long msInStatus = 0;
@@ -218,14 +128,14 @@ public class Bug implements Iterable<Version> {
         long msOpenAccumulated = 0;
         int timesReopened = 0;
 
-        for (Version version : this) {
+        for (BugVersion version : this) {
 
             isLatest = version.to().after(now);
 
-            final Map<Facet, String> facets = version.facets();
-            final Map<Measurement, Long> measurements = version.measurements();
+            final Map<BugFields.Facet, String> facets = version.facets();
+            final Map<BugFields.Measurement, Long> measurements = version.measurements();
 
-            String status = facets.get(Facet.STATUS);
+            String status = facets.get(BugFields.Facet.STATUS);
             String majorStatus = majorStatusTable.get(status);
             if (majorStatus == null) {
                 status = helper.fixKnownBrokenStatus(id).name();
@@ -233,50 +143,50 @@ public class Bug implements Iterable<Version> {
             }
 
             // Previous status and major status are equal to the version before....
-            if (previousFacets.get(Facet.PREVIOUS_STATUS) != null) {
-                facets.put(Facet.PREVIOUS_STATUS,
-                           previousFacets.get(Facet.PREVIOUS_STATUS));
-                if (previousFacets.get(Facet.PREVIOUS_MAJOR_STATUS) != null) {
-                    facets.put(Facet.PREVIOUS_MAJOR_STATUS,
-                               previousFacets.get(Facet.PREVIOUS_MAJOR_STATUS));
+            if (previousFacets.get(BugFields.Facet.PREVIOUS_STATUS) != null) {
+                facets.put(BugFields.Facet.PREVIOUS_STATUS,
+                           previousFacets.get(BugFields.Facet.PREVIOUS_STATUS));
+                if (previousFacets.get(BugFields.Facet.PREVIOUS_MAJOR_STATUS) != null) {
+                    facets.put(BugFields.Facet.PREVIOUS_MAJOR_STATUS,
+                               previousFacets.get(BugFields.Facet.PREVIOUS_MAJOR_STATUS));
                 }
             }
 
             // ...unless something changes to this version.
             long previousStatusDays = -1;
             long previousMajorStatusDays = -1;
-            if (number > 1 && !status.equals(previousFacets.get(Facet.STATUS))) {
-                facets.put(Facet.PREVIOUS_STATUS, previousFacets.get(Facet.STATUS));
+            if (number > 1 && !status.equals(previousFacets.get(BugFields.Facet.STATUS))) {
+                facets.put(BugFields.Facet.PREVIOUS_STATUS, previousFacets.get(BugFields.Facet.STATUS));
                 previousStatusDays = msInStatus/DAY;
                 msInStatus = 0;
                 statusLastChanged = version.from();
-                if (!majorStatus.equals(previousFacets.get(Facet.MAJOR_STATUS))) {
-                    facets.put(Facet.PREVIOUS_MAJOR_STATUS, previousFacets.get(Facet.MAJOR_STATUS));
+                if (!majorStatus.equals(previousFacets.get(BugFields.Facet.MAJOR_STATUS))) {
+                    facets.put(BugFields.Facet.PREVIOUS_MAJOR_STATUS, previousFacets.get(BugFields.Facet.MAJOR_STATUS));
                     if (Status.valueOf(status) == Status.REOPENED) ++timesReopened;
                     previousMajorStatusDays = msInMajorStatus/DAY;
                     msInMajorStatus = 0;
                     majorStatusLastChanged = version.from();
                 }
             }
-            facets.put(Facet.MAJOR_STATUS, majorStatus);
-            facets.put(Facet.STATUS_LAST_CHANGED_DATE,
+            facets.put(BugFields.Facet.MAJOR_STATUS, majorStatus);
+            facets.put(BugFields.Facet.STATUS_LAST_CHANGED_DATE,
                        Converters.DATE.format(statusLastChanged));
-            facets.put(Facet.MAJOR_STATUS_LAST_CHANGED_DATE,
+            facets.put(BugFields.Facet.MAJOR_STATUS_LAST_CHANGED_DATE,
                        Converters.DATE.format(majorStatusLastChanged));
 
 
             // Itemize the status whiteboard so that users do not have to worry about brackets.
             {
-                final String whiteboard = facets.get(Facet.STATUS_WHITEBOARD);
+                final String whiteboard = facets.get(BugFields.Facet.STATUS_WHITEBOARD);
                 final List<String> items = helper.whiteboardItems(whiteboard);
-                facets.put(Facet.STATUS_WHITEBOARD_ITEMS,
+                facets.put(BugFields.Facet.STATUS_WHITEBOARD_ITEMS,
                            Converters.STATUS_WHITEBOARD_ITEMS.format(items));
             }
 
             // The modified fields are computed after all other facets have been processed.
             final Pair<String, String> changes = helper.changes(previousFacets, facets);
-            facets.put(Facet.CHANGES, changes.first());
-            facets.put(Facet.MODIFIED_FIELDS, changes.second());
+            facets.put(BugFields.Facet.CHANGES, changes.first());
+            facets.put(BugFields.Facet.MODIFIED_FIELDS, changes.second());
 
             // Compute remaining measurements
             final long duration = version.to().getTime() - version.from().getTime();
@@ -286,19 +196,19 @@ public class Bug implements Iterable<Version> {
                 msOpenAccumulated += duration;
             }
 
-            measurements.put(Measurement.DAYS_IN_PREVIOUS_STATUS,
+            measurements.put(BugFields.Measurement.DAYS_IN_PREVIOUS_STATUS,
                              Long.valueOf(previousStatusDays));
-            measurements.put(Measurement.DAYS_IN_PREVIOUS_MAJOR_STATUS,
+            measurements.put(BugFields.Measurement.DAYS_IN_PREVIOUS_MAJOR_STATUS,
                              Long.valueOf(previousMajorStatusDays));
-            measurements.put(Measurement.DAYS_IN_STATUS,
+            measurements.put(BugFields.Measurement.DAYS_IN_STATUS,
                              Long.valueOf(isLatest ? -1 : msInStatus/DAY));
-            measurements.put(Measurement.DAYS_IN_MAJOR_STATUS,
+            measurements.put(BugFields.Measurement.DAYS_IN_MAJOR_STATUS,
                              Long.valueOf(isLatest ? -1 : msInMajorStatus/DAY));
-            measurements.put(Measurement.DAYS_OPEN_ACCUMULATED,
+            measurements.put(BugFields.Measurement.DAYS_OPEN_ACCUMULATED,
                              Long.valueOf(msOpenAccumulated/DAY));
-            measurements.put(Measurement.TIMES_REOPENED,
+            measurements.put(BugFields.Measurement.TIMES_REOPENED,
                              Long.valueOf(timesReopened));
-            measurements.put(Measurement.NUMBER,
+            measurements.put(BugFields.Measurement.NUMBER,
                              Long.valueOf(number));
 
             previousFacets = facets;
@@ -306,6 +216,8 @@ public class Bug implements Iterable<Version> {
         }
 
     }
+
+    private final UpdateHelper helper = new UpdateHelper();
 
     public static class UpdateHelper {
 
@@ -331,22 +243,20 @@ public class Bug implements Iterable<Version> {
         }
 
         /**
-         * While modified_fields will just contain field names, changes is a list of actual changes.
-         * For single value fields, it produces items like this:
-         * "status:RESOLVED"
-         * The "TO" values for single value fields are not included.
-         * For multivalue fields it produces elements like:
-         * "-flags=previous-flag"
-         * "+keywords=new_keyword"
+         * While modified_fields will just contain field names, changes is a
+         * list of actual changes. For single value fields, it produces items
+         * like this: "status:RESOLVED" The "TO" values for single value fields
+         * are not included. For multivalue fields it produces elements like:
+         * "-flags=previous-flag" "+keywords=new_keyword"
          *
-         * @return a pair of strings. The first string is the facet "changes", the second is the
-         *         facet "modified_fields".
+         * @return a pair of strings. The first string is the facet "changes",
+         *         the second is the facet "modified_fields".
          */
-        public Pair<String, String> changes(final Map<Facet, String> fromFacets,
-                                            final Map<Facet, String> toFacets) {
+        public Pair<String, String> changes(final Map<BugFields.Facet, String> fromFacets,
+                                            final Map<BugFields.Facet, String> toFacets) {
             final List<String> changes = new LinkedList<String>();
             final List<String> modified = new java.util.LinkedList<String>();
-            for (final Facet facet : Facet.values()) {
+            for (final BugFields.Facet facet : BugFields.Facet.values()) {
                 final String from = fromFacets.get(facet);
                 final String to = toFacets.get(facet);
                 switch (facet) {
@@ -359,12 +269,12 @@ public class Bug implements Iterable<Version> {
                 if (equals(from, to)) continue;
 
                 final String name = facet.name().toLowerCase();
-                if (facet != Facet.STATUS_WHITEBOARD_ITEMS) {
+                if (facet != BugFields.Facet.STATUS_WHITEBOARD_ITEMS) {
                     modified.add(name);
                 }
 
                 final Converter<List<String>> csvConverter = new Converters.CsvConverter();
-                if (facet == Facet.KEYWORDS || facet == Facet.FLAGS || facet == Facet.STATUS_WHITEBOARD_ITEMS) {
+                if (facet == BugFields.Facet.KEYWORDS || facet == BugFields.Facet.FLAGS || facet == BugFields.Facet.STATUS_WHITEBOARD_ITEMS) {
                     List<String> fromItems = Collections.emptyList();
                     List<String> toItems = Collections.emptyList();
                     if (from != null) fromItems = csvConverter.parse(from);
@@ -393,7 +303,7 @@ public class Bug implements Iterable<Version> {
 
         // This happens for five very old bugs, so we just handle them by their known ids.
         public final Status fixKnownBrokenStatus(Long id) {
-            // :BMO: This should go to a configuration file so as to be mozilla-only.
+            // :BMO: This should go to a configuration file...
             switch ((int)id.longValue()) {
                 case 11720: case 11721: case 20015: return Status.NEW;
                 case 19936: case 19952:             return Status.CLOSED;
@@ -404,6 +314,7 @@ public class Bug implements Iterable<Version> {
         }
 
         public final Status.Major fixKnownBrokenMajorStatus(Long id) {
+            // :BMO: This should go to a configuration file...
             switch ((int)id.longValue()) {
                 case 11720: case 11721: case 20015: return Status.Major.OPEN;
                 case 19936: case 19952:             return Status.Major.CLOSED;

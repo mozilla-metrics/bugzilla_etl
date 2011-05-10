@@ -38,33 +38,32 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.di;
-
-import org.pentaho.di.core.exception.KettleException;
-import org.pentaho.di.core.row.RowMeta;
-import org.pentaho.di.trans.steps.userdefinedjavaclass.TransformClassBase;
-
-import com.mozilla.bugzilla_etl.base.Fields;
-import com.mozilla.bugzilla_etl.base.Flag;
+package com.mozilla.bugzilla_etl.model.bug;
 
 /**
- * Send flags (ID, NAME, STATUS) onto a pdi hop
+ * Possible status values.
+ * Sometimes specific status values have to be referenced in code (e.g. to count the number of times
+ * an individual bug was re-opened, or to determined how long it was open at all.
+ *
+ * While it is not as good to have these values in source code as to use them from the db, this is
+ * still better than using string values, as breaking references can be reported by the compiler.
  */
-public class FlagDestination extends AbstractDestination<Flag> {
+public enum Status {
 
-    public FlagDestination(TransformClassBase fromStep, RowMeta out) { super(fromStep, out); }
+    UNCONFIRMED(Major.OPEN),
+    NEW(Major.OPEN),
+    ASSIGNED(Major.OPEN),
+    RESOLVED(Major.CLOSED),
+    VERIFIED(Major.CLOSED),
+    REOPENED(Major.OPEN),
+    CLOSED(Major.CLOSED);
 
-    @Override
-    public void send(Flag flag) throws KettleException {
-        output.cell(Fields.Flag.ID).set(flag.id());
-        output.cell(Fields.Flag.NAME).set(flag.name());
-        output.cell(Fields.Flag.STATUS).set(flag.status());
-        output.next();
+    public enum Major { 
+        OPEN,
+        // We have this as a regular status as well, that's fine.
+        CLOSED 
     }
 
-    @Override public void flush() throws KettleException {
-        // TODO Auto-generated method stub
-        
-    }
-
+    public final Major major;
+    Status(Major majorStatus) { major = majorStatus; }
 }

@@ -38,7 +38,7 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.di.steps;                                                   // snip
+package com.mozilla.bugzilla_etl.di.bug.steps;                                                   // snip
                                                                                              // snip
                                                                                              // snip
 import org.pentaho.di.core.RowSet;                                                           // snip
@@ -70,14 +70,14 @@ public class WriteBugsToEsStep extends TransformClassBase {                     
      * Output step(s):
      *    (none)
      */
-    private com.mozilla.bugzilla_etl.di.BugSource source;
+    private com.mozilla.bugzilla_etl.di.bug.BugSource source;
     private com.mozilla.bugzilla_etl.es.BugDestination destination;
 
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
         if (first) {
             first = false;
             RowSet input = (RowSet)this.getInputRowSets().get(0);
-            source = new com.mozilla.bugzilla_etl.di.BugSource(this, input);
+            source = new com.mozilla.bugzilla_etl.di.bug.BugSource(this, input);
             final String esNodes = getParameter("T_ES_NODES");
             destination = new com.mozilla.bugzilla_etl.es.BugDestination(System.out,
                                                                          esNodes);

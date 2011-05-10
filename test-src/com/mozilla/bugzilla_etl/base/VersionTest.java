@@ -45,6 +45,25 @@
 package com.mozilla.bugzilla_etl.base;
 
 
+import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.ASSIGNED_TO;
+import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.COMPONENT;
+import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.FLAGS;
+import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.KEYWORDS;
+import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.MAJOR_STATUS;
+import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.OPSYS;
+import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.PREVIOUS_MAJOR_STATUS;
+import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.PREVIOUS_STATUS;
+import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.PRIORITY;
+import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.PRODUCT;
+import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.RESOLUTION;
+import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.SEVERITY;
+import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.STATUS;
+import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.STATUS_WHITEBOARD;
+import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.TARGET_MILESTONE;
+import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.VERSION;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -57,10 +76,9 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.TimeZone;
 
-import com.mozilla.bugzilla_etl.base.Fields.Facet;
-
-import static com.mozilla.bugzilla_etl.base.Fields.Facet.*;
-import static org.junit.Assert.*;
+import com.mozilla.bugzilla_etl.model.bug.Bug;
+import com.mozilla.bugzilla_etl.model.bug.BugFields;
+import com.mozilla.bugzilla_etl.model.bug.BugVersion;
 
 public abstract class VersionTest {
 
@@ -84,8 +102,8 @@ public abstract class VersionTest {
     class State {
         final String author;
         final Date date;
-        final EnumMap<Facet, String> state;
-        State(Cast author, Calendar cal, EnumMap<Facet, String> state) {
+        final EnumMap<BugFields.Facet, String> state;
+        State(Cast author, Calendar cal, EnumMap<BugFields.Facet, String> state) {
             this.author = author.addy;
             this.date = cal.getTime();
             this.state = state.clone();
@@ -100,7 +118,7 @@ public abstract class VersionTest {
     private final String REPORTER = Cast.BILLY.name();
     /** The bug creation date as "extracted" from a record in the bugs table. */
     private final Date CREATION_DATE;
-    
+
 
     /** Describes the states either found looking at the bugs table, or rebuilding activities. */
     protected final List<State> states;
@@ -126,7 +144,7 @@ public abstract class VersionTest {
      * Prepare the test with a lot of predefined ready-to-use history information.
      */
     public VersionTest() {
-        
+
         final Calendar calendar = Calendar.getInstance(pacificTimeZone);
         calendar.set(1971,  1,  1,  0,  0,  0);
         calendar.clear(Calendar.MILLISECOND);
@@ -134,7 +152,7 @@ public abstract class VersionTest {
 
         calendar.set(2010,  7,  1, 22, 22, 22);
         CREATION_DATE = calendar.getTime();
-        
+
         majorStatusTable.put("UNCONFIRMED", "OPEN");
         majorStatusTable.put("NEW",         "OPEN");
         majorStatusTable.put("ASSIGNED",    "OPEN");
@@ -143,8 +161,8 @@ public abstract class VersionTest {
         majorStatusTable.put("VERIFIED",    "CLOSED");
         majorStatusTable.put("CLOSED",      "CLOSED");
 
-        EnumMap<Fields.Facet, String> facets =
-            new java.util.EnumMap<Fields.Facet, String>(Fields.Facet.class);
+        EnumMap<BugFields.Facet, String> facets =
+            new java.util.EnumMap<BugFields.Facet, String>(BugFields.Facet.class);
 
         final State[] defs = new State[Instant.values().length];
 
@@ -272,18 +290,18 @@ public abstract class VersionTest {
     }
 
     protected void assertBugsEquals(Bug expected, Bug actual) {
-        final Iterator<Version> as = expected.iterator(), bs = actual.iterator();
+        final Iterator<BugVersion> as = expected.iterator(), bs = actual.iterator();
         for (int i = 1; as.hasNext() && bs.hasNext(); ++i) {
-            final Version vExpected = as.next();
-            final Version vActual = bs.next();
+            final BugVersion vExpected = as.next();
+            final BugVersion vActual = bs.next();
             if (vExpected.equals(vActual)) continue;
             System.out.format("\n\nComparison of bugs failed due to mismatch at version %d.\n", i);
             System.out.format("\nExpected versions:\n");
             int j = 0;
-            for (Version vE : expected) System.out.format("%2d %s\n", ++j, vE);
+            for (BugVersion vE : expected) System.out.format("%2d %s\n", ++j, vE);
             System.out.format("\nActual versions:\n");
             j = 0;
-            for (Version vA : actual) System.out.format("%2d %s\n", ++j, vA);
+            for (BugVersion vA : actual) System.out.format("%2d %s\n", ++j, vA);
             fail();
         }
         if (as.hasNext()) Assert.unreachable("Too few versions! Next should be: %s", as.next());
@@ -307,7 +325,7 @@ public abstract class VersionTest {
         final ListIterator<State> iterator =
             states.listIterator(states.size());
         Bug bug = null;
-        Version leastRecentChange = null;
+        BugVersion leastRecentChange = null;
 
         while (iterator.hasPrevious()) {
             final State def = iterator.previous();
@@ -315,7 +333,7 @@ public abstract class VersionTest {
             if (def.date.before(start)) break;
             if (bug == null || leastRecentChange == null) {
                 bug = new Bug(BUG_ID, REPORTER, CREATION_DATE);
-                leastRecentChange = Version.latest(bug, def.state, def.author, def.date, "first");
+                leastRecentChange = BugVersion.latest(bug, def.state, def.author, def.date, "first");
                 bug.prepend(leastRecentChange);
                 continue;
             }

@@ -47,23 +47,21 @@ import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.trans.steps.userdefinedjavaclass.FieldHelper;
 
 import com.mozilla.bugzilla_etl.base.Assert;
-import com.mozilla.bugzilla_etl.base.Fields.Family;
-import com.mozilla.bugzilla_etl.base.Fields.Bug;
-import com.mozilla.bugzilla_etl.base.Fields.Field;
-import com.mozilla.bugzilla_etl.base.Fields.Flag;
-import com.mozilla.bugzilla_etl.base.Fields.Facet;
-import com.mozilla.bugzilla_etl.base.Fields.Measurement;
-import com.mozilla.bugzilla_etl.base.Fields.User;
-import com.mozilla.bugzilla_etl.base.Fields.Version;
+import com.mozilla.bugzilla_etl.model.Family;
+import com.mozilla.bugzilla_etl.model.Field;
+import com.mozilla.bugzilla_etl.model.attachment.AttachmentFields;
+import com.mozilla.bugzilla_etl.model.bug.BugFields;
 
 
 /**
  * Provides the field helpers that are needed for the Input/Output api.
- * This class does for PDI integration roughly what Types does for Lily integration. Whenever fields
- * are added/removed, this class should be checked.
+ * This class does for PDI integration roughly what Types does for Lily
+ * integration. Whenever groups of fields ("families") are added/removed, this
+ * class should be checked.
  *
- * Using various EnumMaps for the individual field types causes some boilerplate code, but allows
- * for constant time access (without hashing) and for a certain degree of type safety.
+ * Using various EnumMaps for the individual field types causes some
+ * boilerplate code, but allows for constant time access (without hashing) and
+ * for a certain degree of type safety.
  */
 class Helpers {
 
@@ -74,7 +72,8 @@ class Helpers {
         return familyHelpers(field).get(field);
     }
 
-    public FieldHelper helper(Facet facet, Facet.Column column) {
+    public FieldHelper helper(BugFields.Facet facet,
+                              BugFields.Facet.Column column) {
         if (!facetHelpers.get(facet).containsKey(column)) {
             facetHelpers.get(facet).put(column,
                                         new FieldHelper(rowMeta, facet.columnNames.get(column)));
@@ -89,20 +88,22 @@ class Helpers {
         // Ensure that we create maps for all families.
         for (Family family : Family.values()) {
             switch (family) {
-                case BUG:         prepare(Bug.class,         family); break;
-                case VERSION:     prepare(Version.class,     family); break;
-                case MEASUREMENT: prepare(Measurement.class, family); break;
-                case FLAG:        prepare(Flag.class,        family); break;
-                case FACET:       prepare(Facet.class,       family); break;
-                case USER:        prepare(User.class,        family); break;
+                case BUG:         prepare(BugFields.Bug.class,         family); break;
+                case BUG_ACTIVITY:     prepare(BugFields.Activity.class,    family); break;
+                case MEASUREMENT: prepare(BugFields.Measurement.class, family); break;
+                case FACET:       prepare(BugFields.Facet.class,       family); break;
+                case ATTACHMENT:     prepare(AttachmentFields.Attachment.class, family); break;
+                case ATTACH_FACET:   prepare(AttachmentFields.Facet.class, family); break;
+                case ATTACH_MEASURE: prepare(AttachmentFields.Measurement.class, family); break;
+                case ATTACH_ACTIVITY: prepare(AttachmentFields.Activity.class, family); break;
                 default: Assert.unreachable();
             }
         }
 
         // Also create maps for the columns specific to facets in advance.
-        for (Facet facet : Facet.values()) {
-            Map<Facet.Column, FieldHelper> cache =
-                new EnumMap<Facet.Column, FieldHelper>(Facet.Column.class);
+        for (BugFields.Facet facet : BugFields.Facet.values()) {
+            Map<BugFields.Facet.Column, FieldHelper> cache =
+                new EnumMap<BugFields.Facet.Column, FieldHelper>(BugFields.Facet.Column.class);
             facetHelpers.put(facet, cache);
         }
     }
@@ -126,8 +127,8 @@ class Helpers {
         new EnumMap<Family, EnumMap<? extends Enum<?>, FieldHelper>>(Family.class);
 
     // Helpers for facets (which can have multiple input columns):
-    private final Map<Facet, Map<Facet.Column, FieldHelper>> facetHelpers =
-        new EnumMap<Facet, Map<Facet.Column, FieldHelper>>(Facet.class);
+    private final Map<BugFields.Facet, Map<BugFields.Facet.Column, FieldHelper>> facetHelpers =
+        new EnumMap<BugFields.Facet, Map<BugFields.Facet.Column, FieldHelper>>(BugFields.Facet.class);
 
     private final RowMetaInterface rowMeta;
 }

@@ -50,12 +50,12 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.transport.TransportAddress;
 
 import com.mozilla.bugzilla_etl.base.Assert;
-import com.mozilla.bugzilla_etl.base.Converters;
-import com.mozilla.bugzilla_etl.base.Fields;
+import com.mozilla.bugzilla_etl.di.Converters;
 import com.mozilla.bugzilla_etl.es.Mapping.BugMapping;
 import com.mozilla.bugzilla_etl.es.Mapping.FacetMapping;
 import com.mozilla.bugzilla_etl.es.Mapping.MeasurementMapping;
 import com.mozilla.bugzilla_etl.es.Mapping.VersionMapping;
+import com.mozilla.bugzilla_etl.model.bug.BugFields;
 
 
 abstract class AbstractEsClient {
@@ -91,9 +91,9 @@ abstract class AbstractEsClient {
     }
 
     // elasticsearch mapping helpers:
-    public static final Mapping<Fields.Bug> BUG = new BugMapping();
-    public static final Mapping<Fields.Facet> FACET = new FacetMapping();
-    public static final Mapping<Fields.Version> VERSION = new VersionMapping();
-    public static final Mapping<Fields.Measurement> MEASURE = new MeasurementMapping();
+    public static final Mapping<BugFields.Bug> BUG = new BugMapping();
+    public static final Mapping<BugFields.Facet> FACET = new FacetMapping();
+    public static final Mapping<BugFields.Activity> VERSION = new VersionMapping();
+    public static final Mapping<BugFields.Measurement> MEASURE = new MeasurementMapping();
     
 }

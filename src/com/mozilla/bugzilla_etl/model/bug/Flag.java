@@ -38,7 +38,9 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.base;
+package com.mozilla.bugzilla_etl.model.bug;
+
+import com.mozilla.bugzilla_etl.base.Assert;
 
 /**
  * A flag used by a bug. Has a name and status.

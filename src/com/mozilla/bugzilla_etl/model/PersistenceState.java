@@ -38,32 +38,6 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.base;
+package com.mozilla.bugzilla_etl.model;
 
-/**
- * Possible status values.
- * Sometimes specific status values have to be referenced in code (e.g. to count the number of times
- * an individual bug was re-opened, or to determined how long it was open at all.
- *
- * While it is not as good to have these values in source code as to use them from the db, this is
- * still better than using string values, as breaking references can be reported by the compiler.
- */
-public enum Status {
-
-    UNCONFIRMED(Major.OPEN),
-    NEW(Major.OPEN),
-    ASSIGNED(Major.OPEN),
-    RESOLVED(Major.CLOSED),
-    VERIFIED(Major.CLOSED),
-    REOPENED(Major.OPEN),
-    CLOSED(Major.CLOSED);
-
-    public enum Major { 
-        OPEN,
-        // We have this as a regular status as well, that's fine.
-        CLOSED 
-    }
-
-    public final Major major;
-    Status(Major majorStatus) { major = majorStatus; }
-}
+public enum PersistenceState { NEW, DIRTY, SAVED }

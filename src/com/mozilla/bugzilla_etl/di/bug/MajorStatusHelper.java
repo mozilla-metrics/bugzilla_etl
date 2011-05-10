@@ -38,7 +38,7 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.di;
+package com.mozilla.bugzilla_etl.di.bug;
 
 import java.util.Collections;
 import java.util.HashMap;

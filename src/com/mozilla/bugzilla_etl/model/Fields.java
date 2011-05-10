@@ -38,38 +38,16 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.di;
+package com.mozilla.bugzilla_etl.model;
 
-import org.pentaho.di.core.RowSet;
-import org.pentaho.di.core.exception.KettleException;
-import org.pentaho.di.core.exception.KettleStepException;
-import org.pentaho.di.trans.steps.userdefinedjavaclass.TransformClassBase;
 
-import com.mozilla.bugzilla_etl.base.Fields;
-import com.mozilla.bugzilla_etl.base.Flag;
-import com.mozilla.bugzilla_etl.base.Source;
-import com.mozilla.bugzilla_etl.di.io.Input;
+/**
+ * This collects all fields we are dealing with in a central place.
+ * <ul>
+ * <li>Not all of the fields are necessarily used in the warehouse.</li>
+ * <li>Not all of the fields necessarily occur as columns in bugzilla.</li>
+ * </ul>
+ */
+public class Fields {
 
-/** Read flags in the normalized form from a PDI hop. */
-public class FlagSource implements Source<Flag, KettleException> {
-
-    private final Input input;
-
-    public FlagSource(TransformClassBase toStep, RowSet inRows) throws KettleStepException {
-        input = new Input(toStep, inRows);
-    }
-
-    @Override
-    public boolean hasMore() {
-        return !input.empty();
-    }
-
-    @Override
-    public Flag receive() throws KettleException {
-        final Long id = input.cell(Fields.Flag.ID).longValue();
-        final String typeName = input.cell(Fields.Flag.NAME).stringValue();
-        final Flag.Status status = Flag.Status.valueOf(input.cell(Fields.Flag.STATUS).stringValue());
-        input.next();
-        return new Flag(id, typeName, status);
-    }
-}
+ }

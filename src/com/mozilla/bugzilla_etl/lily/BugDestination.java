@@ -62,16 +62,15 @@ import org.lilyproject.repository.api.TypeException;
 import org.lilyproject.repository.api.VersionNotFoundException;
 
 import com.mozilla.bugzilla_etl.base.Assert;
-import com.mozilla.bugzilla_etl.base.Bug;
-import com.mozilla.bugzilla_etl.base.Converters;
 import com.mozilla.bugzilla_etl.base.Counter;
 import com.mozilla.bugzilla_etl.base.Destination;
-import com.mozilla.bugzilla_etl.base.Failable;
-import com.mozilla.bugzilla_etl.base.Fields;
-import com.mozilla.bugzilla_etl.base.PersistenceState;
-import com.mozilla.bugzilla_etl.base.Version;
-import com.mozilla.bugzilla_etl.base.Converters.Converter;
+import com.mozilla.bugzilla_etl.di.Converters;
+import com.mozilla.bugzilla_etl.di.Converters.Converter;
 import com.mozilla.bugzilla_etl.lily.Types.Params;
+import com.mozilla.bugzilla_etl.model.PersistenceState;
+import com.mozilla.bugzilla_etl.model.bug.Bug;
+import com.mozilla.bugzilla_etl.model.bug.BugFields;
+import com.mozilla.bugzilla_etl.model.bug.BugVersion;
 
 public class BugDestination
 extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
@@ -118,7 +117,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
             // Create the (new) versions.
             // Create the real bug so it can be queried by its own ID for future incremental updates.
             long currentVersion = 0;
-            for (Version version : bug) {
+            for (BugVersion version : bug) {
                 ++currentVersion;
                 switch (version.persistenceState()) {
                     case SAVED:
@@ -156,7 +155,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
     
             // Create the fake versions so all historic versions are indexed.
             // This should be removed once we are able to index versions without vtags.
-            for (Version version : bug) send(bug, version);
+            for (BugVersion version : bug) send(bug, version);
         }
         catch(InterruptedException e) {
             log.format("Got interrupted trying to send [bug id='%s']\n", id);
@@ -206,7 +205,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
      * each version.
      * :TODO: Remove this once indexing for all versions is available.
      */
-    private void send(final Bug bug, final Version version) 
+    private void send(final Bug bug, final BugVersion version) 
     throws RepositoryException, InterruptedException {
 
         Assert.nonNull(bug.id(), version.from(), version.to(), version.annotation());
@@ -226,7 +225,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
             setVersionMutableFields(record, version);
             log.format("SEND historic#%s (v: %d) EXPIRATION DATE AFTER UPDATE: %s.\n", bug.id(),
                        record.getVersion(),
-                       record.getField(types.versionParams.get(Fields.Version.EXPIRATION_DATE).qname));
+                       record.getField(types.versionParams.get(BugFields.Activity.EXPIRATION_DATE).qname));
             record = repository.update(record, true, true);
             historicCounter.increment(Counter.Item.OLD_ZERO);
             return;
@@ -277,31 +276,31 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         Record record = repository.newRecord();
         record.setId(id);
         record.setRecordType(bugType.getName(), null);
-        record.setField(types.bugParams.get(Fields.Bug.ID).qname, bug.id());
-        record.setField(types.bugParams.get(Fields.Bug.REPORTED_BY).qname, bug.reporter());
-        Assert.nonNull(types.bugParams.get(Fields.Bug.CREATION_DATE),
-                       types.bugParams.get(Fields.Bug.CREATION_DATE).qname,
+        record.setField(types.bugParams.get(BugFields.Bug.ID).qname, bug.id());
+        record.setField(types.bugParams.get(BugFields.Bug.REPORTED_BY).qname, bug.reporter());
+        Assert.nonNull(types.bugParams.get(BugFields.Bug.CREATION_DATE),
+                       types.bugParams.get(BugFields.Bug.CREATION_DATE).qname,
                        bug.creationDate());
-        record.setField(types.bugParams.get(Fields.Bug.CREATION_DATE).qname,
+        record.setField(types.bugParams.get(BugFields.Bug.CREATION_DATE).qname,
                         new DateTime(bug.creationDate().getTime()));
         return record;
     }
 
-    private void setVersionMutableFields(Record record, Version version) {
-        record.setField(types.versionParams.get(Fields.Version.EXPIRATION_DATE).qname,
+    private void setVersionMutableFields(Record record, BugVersion version) {
+        record.setField(types.versionParams.get(BugFields.Activity.EXPIRATION_DATE).qname,
                         new DateTime(version.to().getTime()));
-        record.setField(types.versionParams.get(Fields.Version.ANNOTATION).qname,
+        record.setField(types.versionParams.get(BugFields.Activity.ANNOTATION).qname,
                         version.annotation());
     }
 
-    private void setVersionFields(Record record, Version version) {
+    private void setVersionFields(Record record, BugVersion version) {
         record.setRecordType(bugType.getName(), null);
-        record.setField(types.versionParams.get(Fields.Version.MODIFIED_BY).qname,
+        record.setField(types.versionParams.get(BugFields.Activity.MODIFIED_BY).qname,
                         version.author());
-        record.setField(types.versionParams.get(Fields.Version.MODIFICATION_DATE).qname,
+        record.setField(types.versionParams.get(BugFields.Activity.MODIFICATION_DATE).qname,
                         new DateTime(version.from().getTime()));
-        for (final Entry<Fields.Facet, String> entry : version.facets().entrySet()) {
-            final Fields.Facet facet = entry.getKey();
+        for (final Entry<BugFields.Facet, String> entry : version.facets().entrySet()) {
+            final BugFields.Facet facet = entry.getKey();
             final Params params = types.facetParams.get(facet);
             if (params.type == types.strings) {
                 String value = entry.getValue();
@@ -320,7 +319,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
                 continue;
             }
         }
-        for (final Entry<Fields.Measurement, Long> entry : version.measurements().entrySet()) {
+        for (final Entry<BugFields.Measurement, Long> entry : version.measurements().entrySet()) {
             Long value = entry.getValue();
             Assert.nonNull(value);
             record.setField(types.measurementParams.get(entry.getKey()).qname, value);
@@ -343,7 +342,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         List<Record> all = repository.readVersions(id, number, latest.getVersion(), emptyList);
         long recordNumber;
         int i = all.size();
-        QName numberOName = types.measurementParams.get(Fields.Measurement.NUMBER).qname;
+        QName numberOName = types.measurementParams.get(BugFields.Measurement.NUMBER).qname;
         do {
             --i;
             final Record record = all.get(i);

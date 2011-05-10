@@ -9,14 +9,13 @@ import org.elasticsearch.client.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 
-import com.mozilla.bugzilla_etl.base.Bug;
 import com.mozilla.bugzilla_etl.base.Destination;
-import com.mozilla.bugzilla_etl.base.Fields;
-import com.mozilla.bugzilla_etl.base.Fields.Facet;
-import com.mozilla.bugzilla_etl.base.Fields.Measurement;
-import com.mozilla.bugzilla_etl.base.PersistenceState;
-import com.mozilla.bugzilla_etl.base.Version;
 import com.mozilla.bugzilla_etl.es.Mapping.BugMapping;
+import com.mozilla.bugzilla_etl.model.PersistenceState;
+import com.mozilla.bugzilla_etl.model.bug.Bug;
+import com.mozilla.bugzilla_etl.model.bug.BugFields;
+import com.mozilla.bugzilla_etl.model.bug.BugVersion;
+
 
 public class BugDestination extends AbstractEsClient
                             implements Destination<Bug, Exception> {
@@ -35,7 +34,7 @@ public class BugDestination extends AbstractEsClient
             batchSize = 0;
         }
 
-        for (final Version version : bug) {
+        for (final BugVersion version : bug) {
             if (version.persistenceState() == PersistenceState.SAVED) continue;
             bulk.add(request(version));
             ++batchSize;
@@ -66,28 +65,28 @@ public class BugDestination extends AbstractEsClient
     }
 
 
-    private IndexRequest request(final Version version) throws IOException {
+    private IndexRequest request(final BugVersion version) throws IOException {
 
         XContentBuilder out = XContentFactory.jsonBuilder();
         out.startObject();
-        BUG.append(out, Fields.Bug.ID, version.bug().id());
-        BUG.append(out, Fields.Bug.REPORTED_BY, version.bug().reporter());
-        BUG.append(out, Fields.Bug.CREATION_DATE, version.bug().creationDate());
-        VERSION.append(out, Fields.Version.MODIFIED_BY, version.author());
-        VERSION.append(out, Fields.Version.MODIFICATION_DATE, version.from());
-        VERSION.append(out, Fields.Version.EXPIRATION_DATE, version.to());
-        VERSION.append(out, Fields.Version.ANNOTATION, version.annotation());
-        for (Facet facet : Facet.values()) {
+        BUG.append(out, BugFields.Bug.ID, version.entity().id());
+        BUG.append(out, BugFields.Bug.REPORTED_BY, version.entity().reporter());
+        BUG.append(out, BugFields.Bug.CREATION_DATE, version.entity().creationDate());
+        VERSION.append(out, BugFields.Activity.MODIFIED_BY, version.author());
+        VERSION.append(out, BugFields.Activity.MODIFICATION_DATE, version.from());
+        VERSION.append(out, BugFields.Activity.EXPIRATION_DATE, version.to());
+        VERSION.append(out, BugFields.Activity.ANNOTATION, version.annotation());
+        for (BugFields.Facet facet : BugFields.Facet.values()) {
             FACET.append(out, facet, version.facets().get(facet));
         }
-        for (Measurement measure : Measurement.values()) {
+        for (BugFields.Measurement measure : BugFields.Measurement.values()) {
             MEASURE.append(out, measure, version.measurements().get(measure));
         }
         out.endObject();
 
         final String id =
-            new StringBuilder().append(version.bug().id()).append('.')
-            .append(version.measurements().get(Measurement.NUMBER)).toString();
+            new StringBuilder().append(version.entity().id()).append('.')
+            .append(version.measurements().get(BugFields.Measurement.NUMBER)).toString();
 
         return client.prepareIndex(index(), BugMapping.TYPE)
                      .setId(id)
