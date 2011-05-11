@@ -60,8 +60,8 @@ import com.mozilla.bugzilla_etl.model.Entity;
 /** A bug with its invariant properties and all of its versions. */
 public class Bug extends Entity<Bug, BugVersion> {
 
-    public Bug(Long id, String reporter, Date creationDate) {
-        super(id, reporter, creationDate);
+    public Bug(Long id, String creator, Date creationDate) {
+        super(id, creator, creationDate);
     }
 
     @Override

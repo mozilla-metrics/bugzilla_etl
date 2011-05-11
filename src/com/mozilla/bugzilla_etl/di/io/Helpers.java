@@ -81,6 +81,15 @@ class Helpers {
         return facetHelpers.get(facet).get(column);
     }
 
+    public FieldHelper helper(AttachmentFields.Facet facet,
+                              AttachmentFields.Facet.Column column) {
+        if (!attachmentFacetHelpers.get(facet).containsKey(column)) {
+            attachmentFacetHelpers.get(facet).put(column,
+                                        new FieldHelper(rowMeta, facet.columnNames.get(column)));
+        }
+        return attachmentFacetHelpers.get(facet).get(column);
+    }
+
     Helpers(RowMetaInterface rowMeta) {
         Assert.nonNull(rowMeta);
         this.rowMeta = rowMeta;
@@ -129,6 +138,10 @@ class Helpers {
     // Helpers for facets (which can have multiple input columns):
     private final Map<BugFields.Facet, Map<BugFields.Facet.Column, FieldHelper>> facetHelpers =
         new EnumMap<BugFields.Facet, Map<BugFields.Facet.Column, FieldHelper>>(BugFields.Facet.class);
+
+    // Helpers for attachment facets.
+    private final Map<AttachmentFields.Facet, Map<AttachmentFields.Facet.Column, FieldHelper>> attachmentFacetHelpers =
+        new EnumMap<AttachmentFields.Facet, Map<AttachmentFields.Facet.Column, FieldHelper>>(AttachmentFields.Facet.class);
 
     private final RowMetaInterface rowMeta;
 }

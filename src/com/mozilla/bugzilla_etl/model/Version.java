@@ -10,10 +10,10 @@ public abstract class Version<E extends Entity<E, V>,
 
     protected final E entity;
 
-    public Version(E bug, String author, String maybeAnnotation, Date from,
+    public Version(E entity, String author, String maybeAnnotation, Date from,
                    Date to, PersistenceState persistenceState) {
-        Assert.nonNull(bug, author, from, to, persistenceState);
-        this.entity = bug;
+        Assert.nonNull(entity, author, from, to, persistenceState);
+        this.entity = entity;
         this.author = author;
         this.annotation = maybeAnnotation;
         this.from = from;

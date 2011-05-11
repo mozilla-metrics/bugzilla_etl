@@ -38,10 +38,28 @@ public abstract class Entity<E extends Entity<E, V>,
 
     public Iterator<V> iterator() { return versions.iterator(); }
 
+    public void prepend(V earlierVersion) {
+        Assert.nonNull(earlierVersion);
+        Assert.check(versions.isEmpty() || !versions.peek().from().before(earlierVersion.to()));
+        versions.addFirst(earlierVersion);
+    }
+
+    public void append(V laterVersion) {
+        Assert.nonNull(laterVersion);
+        Assert.check(versions.isEmpty() || !versions.getLast().to().after(laterVersion.from()));
+        versions.addLast(laterVersion);
+    }
+
+    public boolean isNew() {
+        return versions.getFirst().persistenceState() == PersistenceState.NEW;
+    }
+
     /**
      * Steal all versions of the given entity and prepend them to this one.
      * Both entities must be for the same bugzilla id, the existing entity's
      * versions should be persisted already (hence "existing").
+     * The last existing version might be changed during this process. In this
+     * case it is marked as dirty.
      */
     public void baseUpon(final E existing) {
         Assert.check(id.equals(existing.id()));
@@ -49,7 +67,7 @@ public abstract class Entity<E extends Entity<E, V>,
 
         if (DEBUG_INCREMENTAL_UPDATE) {
             System.out.print("\n");
-            System.out.format("[REBASE  ] Checking bug #%d\n", id);
+            System.out.format("[REBASE  ] Checking #%d\n", id);
         }
 
         final V mostRecentExistingVersion = existingVersions.getLast();
@@ -65,13 +83,14 @@ public abstract class Entity<E extends Entity<E, V>,
             for (V version : existing) System.out.format("[EXISTING] %s\n", version);
         }
 
-        // Discard any versions we might have rebuilt locally that are also in the existing bug.
-        // this can happen if an incremental update is run for a start time that was already
-        // included in a (incremental) import.
-        //
+        // Discard any versions we might have rebuilt locally that are also in
+        // the existing bug. This can happen if an incremental update is run
+        // for a start time that is overlapped by a previous update/import run.
         while (!versions.isEmpty() &&
                !versions.getFirst().from().after(mostRecentExistingVersion.from())) {
-            if (DEBUG_INCREMENTAL_UPDATE) System.out.format("[.DELETE ] %s\n", versions.getFirst());
+            if (DEBUG_INCREMENTAL_UPDATE) {
+                System.out.format("[.DELETE ] %s\n", versions.getFirst());
+            }
             versions.removeFirst();
         }
 
@@ -83,29 +102,15 @@ public abstract class Entity<E extends Entity<E, V>,
                 previous = previous.update("", versions.getFirst().from());
             }
             isMostRecent = false;
-            if (DEBUG_INCREMENTAL_UPDATE) System.out.format("[.PREPEND] %s\n", previous);
+            if (DEBUG_INCREMENTAL_UPDATE) {
+                System.out.format("[.PREPEND] %s\n", previous);
+            }
             prepend(previous);
         }
 
         if (DEBUG_INCREMENTAL_UPDATE) {
             for (V version : this) System.out.format("[RESULT  ] %s\n", version);
         }
-    }
-
-    public void prepend(V earlierVersion) {
-        Assert.nonNull(earlierVersion);
-        Assert.check(versions.isEmpty() || !versions.peek().from().before(earlierVersion.to()));
-        versions.addFirst(earlierVersion);
-    }
-
-    public void append(V laterVersion) {
-        Assert.nonNull(laterVersion);
-        Assert.check(versions.isEmpty() || !versions.getLast().to().after(laterVersion.from()));
-        versions.addLast(laterVersion);
-    }
-
-    public boolean neverSaved() {
-        return versions.getFirst().persistenceState() == PersistenceState.NEW;
     }
 
 }

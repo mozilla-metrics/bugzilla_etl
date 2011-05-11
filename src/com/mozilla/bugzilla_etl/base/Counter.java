@@ -81,10 +81,10 @@ public class Counter {
 
     public void count(Bug bug) {
         final int n = bug.numVersions();
-        if (bug.neverSaved()) counters.getAndIncrement(Item.NEW_TOTAL.ordinal());
+        if (bug.isNew()) counters.getAndIncrement(Item.NEW_TOTAL.ordinal());
         else counters.getAndIncrement(Item.OLD_TOTAL.ordinal());
         for (Item item : Item.values()) {
-            if (bug.neverSaved() == item.isNew && item.threshold >= n-1) {
+            if (bug.isNew() == item.isNew && item.threshold >= n-1) {
                 counters.getAndIncrement(item.ordinal());
                 break;
             }
