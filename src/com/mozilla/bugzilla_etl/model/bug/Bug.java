@@ -40,21 +40,17 @@
 
 package com.mozilla.bugzilla_etl.model.bug;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.base.Pair;
 import com.mozilla.bugzilla_etl.di.Converters;
-import com.mozilla.bugzilla_etl.di.Converters.Converter;
 import com.mozilla.bugzilla_etl.model.Entity;
 import com.mozilla.bugzilla_etl.model.PersistenceState;
 import com.mozilla.bugzilla_etl.model.Version;
@@ -123,7 +119,7 @@ public class Bug extends Entity<Bug, BugVersion, BugFields.Facet> {
         // and no change for days_open_accumulated
         boolean isLatest;
 
-        Map<BugFields.Facet, String> previousFacets = BugVersion.createFacets();
+        EnumMap<BugFields.Facet, String> previousFacets = BugVersion.createFacets();
         Date statusLastChanged = creationDate;
         Date majorStatusLastChanged = creationDate;
         long msInStatus = 0;
@@ -135,8 +131,8 @@ public class Bug extends Entity<Bug, BugVersion, BugFields.Facet> {
 
             isLatest = version.to().after(now);
 
-            final Map<BugFields.Facet, String> facets = version.facets();
-            final Map<BugFields.Measurement, Long> measurements = version.measurements();
+            final EnumMap<BugFields.Facet, String> facets = version.facets();
+            final EnumMap<BugFields.Measurement, Long> measurements = version.measurements();
 
             String status = facets.get(BugFields.Facet.STATUS);
             String majorStatus = majorStatusTable.get(status);
@@ -187,7 +183,7 @@ public class Bug extends Entity<Bug, BugVersion, BugFields.Facet> {
             }
 
             // The modified fields are computed after all other facets have been processed.
-            final Pair<String, String> changes = helper.changes(previousFacets, facets);
+            final Pair<String, String> changes = changes(previousFacets, facets);
             facets.put(BugFields.Facet.CHANGES, changes.first());
             facets.put(BugFields.Facet.MODIFIED_FIELDS, changes.second());
 
@@ -253,67 +249,6 @@ public class Bug extends Entity<Bug, BugVersion, BugFields.Facet> {
             return results;
         }
 
-        /**
-         * While modified_fields will just contain field names, changes is a
-         * list of actual changes. For single value fields, it produces items
-         * like this: "status:RESOLVED" The "TO" values for single value fields
-         * are not included. For multivalue fields it produces elements like:
-         * "-flags=previous-flag" "+keywords=new_keyword"
-         *
-         * @return a pair of strings. The first string is the facet "changes",
-         *         the second is the facet "modified_fields".
-         */
-        public Pair<String, String> changes(final Map<BugFields.Facet, String> fromFacets,
-                                            final Map<BugFields.Facet, String> toFacets) {
-            final List<String> changes = new LinkedList<String>();
-            final List<String> modified = new java.util.LinkedList<String>();
-            for (final BugFields.Facet facet : BugFields.Facet.values()) {
-                final String from = fromFacets.get(facet);
-                final String to = toFacets.get(facet);
-                switch (facet) {
-                    case MODIFIED_FIELDS:
-                    case CHANGES:
-                    case STATUS_LAST_CHANGED_DATE:
-                    case MAJOR_STATUS_LAST_CHANGED_DATE:
-                        continue;
-                }
-                if (equals(from, to)) continue;
-
-                final String name = facet.name().toLowerCase();
-                if (facet != BugFields.Facet.STATUS_WHITEBOARD_ITEMS) {
-                    modified.add(name);
-                }
-
-                final Converter<List<String>> csvConverter = new Converters.CsvConverter();
-                if (facet == BugFields.Facet.KEYWORDS
-                        || facet == BugFields.Facet.FLAGS
-                        || facet == BugFields.Facet.STATUS_WHITEBOARD_ITEMS) {
-                    List<String> fromItems = Collections.emptyList();
-                    List<String> toItems = Collections.emptyList();
-                    if (from != null) fromItems = csvConverter.parse(from);
-                    if (to != null) toItems = csvConverter.parse(to);
-                    final Set<String> fromLookup = new HashSet<String>(fromItems);
-                    final Set<String> toLookup = new HashSet<String>(toItems);
-                    for (final String item : fromItems) {
-                        if (!toLookup.contains(item)) changes.add("-" + name + "=" + item);
-                    }
-                    for (final String item : toItems) {
-                        if (!fromLookup.contains(item)) changes.add("+" + name + "=" + item);
-                    }
-                }
-                else  if (from != null && !from.equals("<empty>")) {
-                    changes.add(name + "=" + from);
-                }
-            }
-            return new Pair<String, String>(Converters.CHANGES.format(changes),
-                                            Converters.MODIFIED_FIELDS.format(modified));
-        }
-
-        public final boolean equals(Object a, Object b) {
-            if (a == null) return b == null;
-            return a.equals(b);
-        }
-
         // This happens for five very old bugs, so we just handle them by their known ids.
         public final Status fixKnownBrokenStatus(Long id) {
             // :BMO: This should go to a configuration file...
@@ -337,6 +272,33 @@ public class Bug extends Entity<Bug, BugVersion, BugFields.Facet> {
             }
         }
 
+    }
+
+    @Override protected boolean includeInModifiedFields(BugFields.Facet facet) {
+        return facet != BugFields.Facet.STATUS_WHITEBOARD_ITEMS;
+    }
+
+    @Override protected boolean includeInChanges(BugFields.Facet facet) {
+        switch (facet) {
+            case CHANGES:
+            case MODIFIED_FIELDS:
+            case STATUS_LAST_CHANGED_DATE:
+            case MAJOR_STATUS_LAST_CHANGED_DATE:
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    @Override protected boolean isMultivalue(BugFields.Facet facet) {
+        switch (facet) {
+            case KEYWORDS:
+            case FLAGS:
+            case STATUS_WHITEBOARD_ITEMS:
+                return true;
+            default:
+                return false;
+        }
     }
 
 }

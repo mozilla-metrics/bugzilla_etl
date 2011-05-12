@@ -11,7 +11,7 @@ import com.mozilla.bugzilla_etl.base.Assert;
 
 public abstract class Version<E extends Entity<E, V, FACET>,
                               V extends Version<E, V, FACET>,
-                              FACET extends Enum<FACET>> {
+                              FACET extends Enum<FACET> & Field> {
 
     protected final E entity;
 

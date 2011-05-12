@@ -75,4 +75,6 @@ public class Fields {
         Activity() { columnName = name().toLowerCase(); }
     }
 
+    public static enum Column { LATEST, FROM, TO, RESULT }
+
  }

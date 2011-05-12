@@ -55,6 +55,7 @@ import org.pentaho.di.trans.steps.userdefinedjavaclass.TransformClassBase;
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.base.Pair;
 import com.mozilla.bugzilla_etl.model.Field;
+import com.mozilla.bugzilla_etl.model.Fields;
 import com.mozilla.bugzilla_etl.model.attachment.AttachmentFields;
 import com.mozilla.bugzilla_etl.model.bug.BugFields;
 
@@ -107,7 +108,7 @@ public class Input {
             return new Cell(values, helpers.helper(field));
         }
 
-        public Cell cell(BugFields.Facet field, BugFields.Facet.Column column) {
+        public Cell cell(Field field, Fields.Column column) {
             return new Cell(values, helpers.helper(field, column));
         }
 
@@ -117,11 +118,11 @@ public class Input {
         return new Cell(current, helpers.helper(field));
     }
 
-    public Cell cell(BugFields.Facet field, BugFields.Facet.Column column) {
+    public Cell cell(BugFields.Facet field, Fields.Column column) {
         return new Cell(current, helpers.helper(field, column));
     }
 
-    public Cell cell(AttachmentFields.Facet field, AttachmentFields.Facet.Column column) {
+    public Cell cell(AttachmentFields.Facet field, Fields.Column column) {
         return new Cell(current, helpers.helper(field, column));
     }
 

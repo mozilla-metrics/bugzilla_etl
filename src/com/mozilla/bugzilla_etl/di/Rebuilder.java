@@ -13,26 +13,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
-import org.pentaho.di.core.RowSet;
 import org.pentaho.di.core.exception.KettleStepException;
 import org.pentaho.di.core.exception.KettleValueException;
-import org.pentaho.di.trans.steps.userdefinedjavaclass.TransformClassBase;
 
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.base.Lookup;
 import com.mozilla.bugzilla_etl.base.Pair;
 import com.mozilla.bugzilla_etl.di.Converters.Converter;
-import com.mozilla.bugzilla_etl.di.bug.MajorStatusHelper;
 import com.mozilla.bugzilla_etl.di.io.Input;
 import com.mozilla.bugzilla_etl.di.io.Input.Row;
 import com.mozilla.bugzilla_etl.model.Entity;
 import com.mozilla.bugzilla_etl.model.Field;
 import com.mozilla.bugzilla_etl.model.Fields;
 import com.mozilla.bugzilla_etl.model.Version;
-import com.mozilla.bugzilla_etl.model.bug.Bug;
-import com.mozilla.bugzilla_etl.model.bug.BugFields;
-import com.mozilla.bugzilla_etl.model.bug.BugFields.Facet;
-import com.mozilla.bugzilla_etl.model.bug.BugVersion;
 import com.mozilla.bugzilla_etl.model.bug.Flag;
 
 /**
@@ -65,8 +58,10 @@ public abstract class Rebuilder<E extends Entity<E, V, FACET>,
         this.flagConverter = flagsConverter;
     }
 
-    class Creation { Long id; String creator; Date date; };
+
+    public static class Creation { public Long id; public String creator; public Date date; };
     class State { EnumMap<FACET, String> facets; Map<String, FLAG> flags; };
+
 
     /**
      * Construct entity using the current row, and all subsequent rows that are
@@ -84,7 +79,7 @@ public abstract class Rebuilder<E extends Entity<E, V, FACET>,
                                getClass().getSimpleName(), creation.id);
         }
 
-        final E entity = get(creation);
+        final E entity = get(creation, input);
 
         // Keep current facet state and mutate it while walking the activities.
         // Keep flags state separate so it does not have to be parsed for every comparison.
@@ -99,11 +94,11 @@ public abstract class Rebuilder<E extends Entity<E, V, FACET>,
                                 ? creation.date
                                 : new Date(creation.date.getTime() - safetyDeltaMs);
                 entity.prepend(successor.predecessor(state.facets, creation.creator, safeDate,
-                                                  annotation("initial")));
+                                                     annotation("initial")));
             }
         }
         else {
-            // No activities yet: The entity from the entity table is the only new version.
+            // No activities yet: The date from the entity table is the only (new) version.
             // If this is an update append any existing versions. Advance to the next bug.
             entity.prepend(entity.latest(state.facets, creation.creator, creation.date,
                                          annotation("0 new activities")));
@@ -303,8 +298,8 @@ public abstract class Rebuilder<E extends Entity<E, V, FACET>,
         for (FACET facet : state.facets.keySet()) {
             if (isComputed(facet)) continue;
             // FIXME: use FROM/TO
-            final String toValue = activity.cell(facet).stringValue();
-            final String fromValue = activity.cell(facet).stringValue();
+            final String toValue = activity.cell(facet, Fields.Column.TO).stringValue();
+            final String fromValue = activity.cell(facet, Fields.Column.FROM).stringValue();
             if (fromValue.isEmpty() && toValue.isEmpty()) continue;
             if (facet == flagsFacet()) {
                 for (FLAG toFlag : flagConverter.parse(toValue)) {
@@ -367,12 +362,11 @@ public abstract class Rebuilder<E extends Entity<E, V, FACET>,
     }
 
     protected abstract void updateFacetsAndMeasurements(E entity, Date now);
-    protected abstract E get(Creation base);
     protected abstract EnumMap<FACET, String> createFacets();
     protected abstract boolean isComputed(FACET facet);
     protected abstract FACET flagsFacet();
 
-
+    protected abstract E get(Creation base, Input input) throws KettleValueException;
     protected abstract Creation base(Input input) throws KettleValueException;
 
     /**
@@ -426,49 +420,4 @@ public abstract class Rebuilder<E extends Entity<E, V, FACET>,
     private final Date now = new Date();
     private static final DateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm z");
     private final int safetyDeltaMs = 10;
-
-
-
-
-    public static class BugRebuilder extends Rebuilder<Bug, BugVersion, BugFields.Facet, Flag> {
-
-        public BugRebuilder(TransformClassBase step, Input input,
-                            RowSet majorStatusLookup, Lookup<Bug, ? extends Exception> bugLookup)
-        throws KettleStepException, KettleValueException {
-            super(input, bugLookup, Converters.FLAGS);
-            majorStatusTable = new MajorStatusHelper(step, majorStatusLookup).table();
-        }
-
-        @Override protected Creation base(final Input input) throws KettleValueException {
-            return new Creation() {{
-                date = input.cell(BugFields.Bug.CREATION_DATE).dateValue();
-                creator = input.cell(BugFields.Bug.REPORTED_BY).stringValue();
-                id = input.cell(BugFields.Bug.ID).longValue();
-            }};
-        }
-
-        @Override protected Bug get(Creation base) {
-            System.out.format("BugRebuilder: processing bug %s\n", base.id);
-            return new Bug(base.id, base.creator, base.date);
-        }
-
-        @Override protected void updateFacetsAndMeasurements(Bug bug, Date now) {
-            bug.updateFacetsAndMeasurements(majorStatusTable, now);
-        }
-
-        @Override protected EnumMap<Facet, String> createFacets() {
-            return BugVersion.createFacets();
-        }
-
-        @Override protected boolean isComputed(BugFields.Facet facet) {
-            return facet.isComputed;
-        }
-
-        @Override protected Facet flagsFacet() {
-            return Facet.FLAGS;
-        }
-
-        private final Map<String, String> majorStatusTable;
-
-    }
 }

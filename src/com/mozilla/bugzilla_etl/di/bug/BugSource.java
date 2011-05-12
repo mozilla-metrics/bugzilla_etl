@@ -102,7 +102,7 @@ public class BugSource extends AbstractSource<Bug> {
 
         final EnumMap<BugFields.Facet, String> facets = BugVersion.createFacets();
         for (BugFields.Facet field : BugFields.Facet.values()) {
-            facets.put(field, input.cell(field, BugFields.Facet.Column.RESULT).stringValue());
+            facets.put(field, input.cell(field, Fields.Column.RESULT).stringValue());
         }
         final EnumMap<BugFields.Measurement, Long> measurements = BugVersion.createMeasurements();
         for (BugFields.Measurement field : BugFields.Measurement.values()) {

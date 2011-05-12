@@ -333,7 +333,7 @@ public abstract class VersionTest {
             if (def.date.before(start)) break;
             if (bug == null || leastRecentChange == null) {
                 bug = new Bug(BUG_ID, REPORTER, CREATION_DATE);
-                leastRecentChange = BugVersion.latest(bug, def.state, def.author, def.date, "first");
+                leastRecentChange = bug.latest(def.state, def.author, def.date, "first");
                 bug.prepend(leastRecentChange);
                 continue;
             }

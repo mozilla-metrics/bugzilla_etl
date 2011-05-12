@@ -1,12 +1,19 @@
 package com.mozilla.bugzilla_etl.model;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 
 import com.mozilla.bugzilla_etl.base.Assert;
+import com.mozilla.bugzilla_etl.base.Pair;
+import com.mozilla.bugzilla_etl.di.Converters;
+import com.mozilla.bugzilla_etl.di.Converters.Converter;
 
 
 /**
@@ -15,7 +22,7 @@ import com.mozilla.bugzilla_etl.base.Assert;
  */
 public abstract class Entity<E extends Entity<E, V, FACET>,
                              V extends Version<E, V, FACET>,
-                             FACET extends Enum<FACET>> implements Iterable<V> {
+                             FACET extends Enum<FACET> & Field> implements Iterable<V> {
 
     protected static final long DAY = 24*60*60*1000;
     private static final boolean DEBUG_INCREMENTAL_UPDATE = false;
@@ -118,4 +125,66 @@ public abstract class Entity<E extends Entity<E, V, FACET>,
         }
     }
 
+
+
+
+    /**
+     * While modified_fields will just contain field names, changes is a
+     * list of actual changes. For single value fields, it produces items
+     * like this: "status:RESOLVED" for "FROM" values. The "TO" values
+     * are stored in the individual facets anyway.
+     *
+     * For multivalue fields it produces elements like:
+     * "-flags=previous-flag" "+keywords=new_keyword"
+     *
+     * @return a pair of strings. The first string is the facet "changes",
+     *         the second is the facet "modified_fields".
+     */
+    protected Pair<String, String> changes(final EnumMap<FACET, String> fromFacets,
+                                           final EnumMap<FACET, String> toFacets) {
+        final List<String> changes = new LinkedList<String>();
+        final List<String> modified = new java.util.LinkedList<String>();
+        for (final FACET facet : fromFacets.keySet()) {
+            if (!includeInChanges(facet)) continue;
+
+            final String from = fromFacets.get(facet);
+            final String to = toFacets.get(facet);
+            if (equals(from, to)) continue;
+
+            final String name = facet.name().toLowerCase();
+            if (includeInModifiedFields(facet)) {
+                modified.add(name);
+            }
+
+            final Converter<List<String>> csvConverter = new Converters.CsvConverter();
+            if (isMultivalue(facet)) {
+                List<String> fromItems = Collections.emptyList();
+                List<String> toItems = Collections.emptyList();
+                if (from != null) fromItems = csvConverter.parse(from);
+                if (to != null) toItems = csvConverter.parse(to);
+                final Set<String> fromLookup = new HashSet<String>(fromItems);
+                final Set<String> toLookup = new HashSet<String>(toItems);
+                for (final String item : fromItems) {
+                    if (!toLookup.contains(item)) changes.add("-" + name + "=" + item);
+                }
+                for (final String item : toItems) {
+                    if (!fromLookup.contains(item)) changes.add("+" + name + "=" + item);
+                }
+            }
+            else  if (from != null && !from.equals("<empty>")) {
+                changes.add(name + "=" + from);
+            }
+        }
+        return new Pair<String, String>(Converters.CHANGES.format(changes),
+                                        Converters.MODIFIED_FIELDS.format(modified));
+    }
+
+    public final boolean equals(Object a, Object b) {
+        if (a == null) return b == null;
+        return a.equals(b);
+    }
+
+    protected abstract boolean includeInModifiedFields(FACET facet);
+    protected abstract boolean includeInChanges(FACET facet);
+    protected abstract boolean isMultivalue(FACET field);
 }

@@ -49,6 +49,7 @@ import java.util.Date;
 import java.util.regex.Pattern;
 
 import com.mozilla.bugzilla_etl.base.Assert;
+import com.mozilla.bugzilla_etl.model.attachment.Request;
 import com.mozilla.bugzilla_etl.model.bug.Flag;
 
 public class Converters {
@@ -133,6 +134,36 @@ public class Converters {
             for (Flag flag : flags) {
                 if (!first) buffer.append(',');
                 buffer.append(flag.representation());
+                first = false;
+            }
+            return buffer.toString();
+        }
+    };
+
+    public static final Converter<List<Request>> REQUESTS = new Converter<List<Request>>(){
+        @Override
+        public List<Request> parse(String representation) {
+            Assert.nonNull(representation);
+            final List<Request> requests = new java.util.LinkedList<Request>();
+            if (representation.isEmpty()) return requests;
+            for (final String requestRepr : CSV_SPLITTER.split(representation)) {
+                try {
+                    requests.add(Request.fromRepresentation(requestRepr));
+                }
+                catch (IllegalArgumentException ex) {
+                    // Error parsing individual review request. Just give a message.
+                    System.out.format("WARNING: %s\n", ex.getMessage());
+                }
+            }
+            return requests;
+        }
+        @Override
+        public String format(List<Request> requests) {
+            final StringBuilder buffer = new StringBuilder();
+            boolean first = true;
+            for (Flag request : requests) {
+                if (!first) buffer.append(',');
+                buffer.append(request.representation());
                 first = false;
             }
             return buffer.toString();

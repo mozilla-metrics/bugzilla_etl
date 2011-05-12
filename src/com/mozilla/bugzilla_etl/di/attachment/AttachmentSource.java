@@ -92,7 +92,7 @@ public class AttachmentSource extends AbstractSource<Attachment> {
 
         final EnumMap<AttachmentFields.Facet, String> facets = AttachmentVersion.createFacets();
         for (AttachmentFields.Facet field : AttachmentFields.Facet.values()) {
-            facets.put(field, input.cell(field, AttachmentFields.Facet.Column.RESULT).stringValue());
+            facets.put(field, input.cell(field, Fields.Column.RESULT).stringValue());
         }
         final EnumMap<AttachmentFields.Measurement, Long> measurements = AttachmentVersion.createMeasurements();
         for (AttachmentFields.Measurement field : AttachmentFields.Measurement.values()) {

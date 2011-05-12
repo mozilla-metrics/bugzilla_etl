@@ -38,11 +38,10 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.di.bug;
+package com.mozilla.bugzilla_etl.di.attachment;
 
 import java.util.Date;
 import java.util.EnumMap;
-import java.util.Map;
 
 import org.pentaho.di.core.RowSet;
 import org.pentaho.di.core.exception.KettleStepException;
@@ -55,33 +54,22 @@ import com.mozilla.bugzilla_etl.di.AbstractSource;
 import com.mozilla.bugzilla_etl.di.Converters;
 import com.mozilla.bugzilla_etl.di.Rebuilder;
 import com.mozilla.bugzilla_etl.di.io.Input;
-import com.mozilla.bugzilla_etl.model.bug.Bug;
-import com.mozilla.bugzilla_etl.model.bug.BugFields;
-import com.mozilla.bugzilla_etl.model.bug.BugVersion;
-import com.mozilla.bugzilla_etl.model.bug.Flag;
-import com.mozilla.bugzilla_etl.model.bug.BugFields.Facet;
+import com.mozilla.bugzilla_etl.model.attachment.Attachment;
+import com.mozilla.bugzilla_etl.model.attachment.AttachmentFields;
+import com.mozilla.bugzilla_etl.model.attachment.AttachmentVersion;
+import com.mozilla.bugzilla_etl.model.attachment.Request;
 
 
-/**
- * Does the work for the Rebuild-History Step.
- *
- * Incoming Bugs are represented by a table that contains current bug status on the left side,
- * and incremental changes on the right side (by date desc). From those incremental changes, bug
- * versions are constructed. Changed fields replace fields in their predecessor version.
- *
- * There is some special treatment for flags: In the activity table, incremental changes for
- * flags are logged per flag. This means that we also have to reconstruct the set of effective flags
- * in reverse order.
- */
-public class RebuilderBugSource extends AbstractSource<Bug> {
+/** Does the work for the Rebuild-History Step (attachments). */
+public class RebuilderAttachmentSource extends AbstractSource<Attachment> {
 
-    public RebuilderBugSource(TransformClassBase step,
-                              RowSet bugs,
-                              RowSet majorStatusLookup,
-                              final Lookup<Bug, ? extends Exception> bugLookup)
-    throws KettleStepException, KettleValueException {
+    public RebuilderAttachmentSource(TransformClassBase step,
+                                     RowSet bugs,
+                                     RowSet majorStatusLookup,
+                                     final Lookup<Attachment, ? extends Exception> lookup)
+    throws KettleStepException {
         super(step, bugs);
-        rebuilder = new BugRebuilder(step, input, majorStatusLookup, bugLookup);
+        rebuilder = new AttachmentRebuilder(step, input, majorStatusLookup, lookup);
     }
 
     /** Are there more bugs in the input? */
@@ -92,13 +80,15 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
 
     /** Assemble a versioned bug from bug state plus activities. */
     @Override
-    public Bug receive() throws KettleValueException, KettleStepException {
-        Bug bug = rebuilder.fromRows();
-        counter.count(bug, bug.isNew());
-        return bug;
+    public Attachment receive() throws KettleValueException, KettleStepException {
+        Attachment attachment = rebuilder.fromRows();
+        // FIXME: get useful value for isNew
+        boolean isNew = false;
+        counter.count(attachment, isNew);
+        return attachment;
     }
 
-    private final BugRebuilder rebuilder;
+    private final AttachmentRebuilder rebuilder;
     private final Counter counter = new Counter(getClass().getSimpleName());
 
     public void printDiagnostics() {
@@ -106,47 +96,44 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
         rebuilder.printConflictCounts();
     }
 
+    static class AttachmentRebuilder extends Rebuilder<Attachment, AttachmentVersion,
+                                                       AttachmentFields.Facet, Request> {
 
-    static class BugRebuilder extends Rebuilder<Bug, BugVersion, BugFields.Facet, Flag> {
-
-        public BugRebuilder(TransformClassBase step, Input input,
-                            RowSet majorStatusLookup, Lookup<Bug, ? extends Exception> bugLookup)
-        throws KettleStepException, KettleValueException {
-            super(input, bugLookup, Converters.FLAGS);
-            majorStatusTable = new MajorStatusHelper(step, majorStatusLookup).table();
+        public AttachmentRebuilder(TransformClassBase step, Input input, RowSet majorStatusLookup,
+                                   Lookup<Attachment, ? extends Exception> lookup) {
+            super(input, lookup, Converters.REQUESTS);
         }
 
         @Override protected Creation base(final Input input) throws KettleValueException {
             return new Creation() {{
-                date = input.cell(BugFields.Bug.CREATION_DATE).dateValue();
-                creator = input.cell(BugFields.Bug.REPORTED_BY).stringValue();
-                id = input.cell(BugFields.Bug.ID).longValue();
+                id = input.cell(AttachmentFields.Attachment.ID).longValue();
+                date = input.cell(AttachmentFields.Attachment.SUBMISSION_DATE).dateValue();
+                creator = input.cell(AttachmentFields.Attachment.SUBMITTED_BY).stringValue();
             }};
         }
 
-        @Override protected Bug get(final Creation base, final Input input)
+        @Override protected Attachment get(final Creation base, final Input input)
         throws KettleValueException {
-            System.out.format("BugRebuilder: processing bug %s\n", base.id);
-            return new Bug(base.id, base.creator, base.date);
+            System.out.format("AttachmentRebuilder: processing attachment %s\n", base.id);
+            final Long bugId = input.cell(AttachmentFields.Attachment.BUG_ID).longValue();
+            return new Attachment(base.id, bugId, base.creator, base.date);
         }
 
-        @Override protected void updateFacetsAndMeasurements(Bug bug, Date now) {
-            bug.updateFacetsAndMeasurements(majorStatusTable, now);
+        @Override protected void updateFacetsAndMeasurements(Attachment attachment, Date now) {
+            attachment.updateFacetsAndMeasurements(now);
         }
 
-        @Override protected EnumMap<Facet, String> createFacets() {
-            return BugVersion.createFacets();
+        @Override protected EnumMap<AttachmentFields.Facet, String> createFacets() {
+            return AttachmentVersion.createFacets();
         }
 
-        @Override protected boolean isComputed(BugFields.Facet facet) {
+        @Override protected boolean isComputed(AttachmentFields.Facet facet) {
             return facet.isComputed;
         }
 
-        @Override protected Facet flagsFacet() {
-            return Facet.FLAGS;
+        @Override protected AttachmentFields.Facet flagsFacet() {
+            return AttachmentFields.Facet.REQUESTS;
         }
-
-        private final Map<String, String> majorStatusTable;
 
     }
 }
