@@ -61,6 +61,7 @@ import com.mozilla.bugzilla_etl.di.Converters;
 import com.mozilla.bugzilla_etl.di.Converters.Converter;
 import com.mozilla.bugzilla_etl.di.bug.IBugLookup;
 import com.mozilla.bugzilla_etl.lily.Types.Params;
+import com.mozilla.bugzilla_etl.model.Fields;
 import com.mozilla.bugzilla_etl.model.PersistenceState;
 import com.mozilla.bugzilla_etl.model.bug.Bug;
 import com.mozilla.bugzilla_etl.model.bug.BugFields;
@@ -181,10 +182,10 @@ public class LilyBugLookup extends AbstractLilyClient implements IBugLookup {
                 bug,
                 facets,
                 measurements,
-                getString(fields, types.versionParams.get(BugFields.Activity.MODIFIED_BY)),
-                getString(fields, types.versionParams.get(BugFields.Activity.ANNOTATION)),
-                getDate(fields, types.versionParams.get(BugFields.Activity.MODIFICATION_DATE)),
-                getDate(fields, types.versionParams.get(BugFields.Activity.EXPIRATION_DATE)),
+                getString(fields, types.versionParams.get(Fields.Activity.MODIFIED_BY)),
+                getString(fields, types.versionParams.get(Fields.Activity.ANNOTATION)),
+                getDate(fields, types.versionParams.get(Fields.Activity.MODIFICATION_DATE)),
+                getDate(fields, types.versionParams.get(Fields.Activity.EXPIRATION_DATE)),
                 PersistenceState.SAVED
             ));
         }

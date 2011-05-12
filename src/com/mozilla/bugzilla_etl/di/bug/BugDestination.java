@@ -45,6 +45,7 @@ import org.pentaho.di.core.row.RowMeta;
 import org.pentaho.di.trans.steps.userdefinedjavaclass.TransformClassBase;
 
 import com.mozilla.bugzilla_etl.di.AbstractDestination;
+import com.mozilla.bugzilla_etl.model.Fields;
 import com.mozilla.bugzilla_etl.model.bug.Bug;
 import com.mozilla.bugzilla_etl.model.bug.BugFields;
 import com.mozilla.bugzilla_etl.model.bug.BugVersion;
@@ -59,11 +60,11 @@ public class BugDestination extends AbstractDestination<Bug> {
             output.cell(BugFields.Bug.ID).set(bug.id());
             output.cell(BugFields.Bug.REPORTED_BY).set(bug.reporter());
             output.cell(BugFields.Bug.CREATION_DATE).set(bug.creationDate());
-            output.cell(BugFields.Activity.MODIFICATION_DATE).set(version.from());
-            output.cell(BugFields.Activity.EXPIRATION_DATE).set(version.to());
-            output.cell(BugFields.Activity.ANNOTATION).set(version.annotation());
-            output.cell(BugFields.Activity.MODIFIED_BY).set(version.author());
-            output.cell(BugFields.Activity.PERSISTENCE_STATE).set(version.persistenceState());
+            output.cell(Fields.Activity.MODIFICATION_DATE).set(version.from());
+            output.cell(Fields.Activity.EXPIRATION_DATE).set(version.to());
+            output.cell(Fields.Activity.ANNOTATION).set(version.annotation());
+            output.cell(Fields.Activity.MODIFIED_BY).set(version.author());
+            output.cell(Fields.Activity.PERSISTENCE_STATE).set(version.persistenceState());
 
             for (BugFields.Facet facet : BugFields.Facet.values()) {
                 output.cell(facet).set(version.facets().get(facet));

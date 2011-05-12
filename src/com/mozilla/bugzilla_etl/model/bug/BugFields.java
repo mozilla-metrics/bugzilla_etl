@@ -10,32 +10,6 @@ import com.mozilla.bugzilla_etl.model.Field;
 
 public class BugFields {
 
-    /**
-     * Fields that provide (meta) data about an activity. These also serve as
-     * facets in the index.
-     * All of them come directly from the activities table in Bugzilla.
-     */
-    public static enum Activity implements Field {
-        BUG_ID("activity_bug_id"),
-        MODIFIED_BY,
-        MODIFICATION_DATE,
-        EXPIRATION_DATE,
-        ANNOTATION,
-        PERSISTENCE_STATE;
-
-        public String columnName;
-
-        @Override
-        public String columnName() { return columnName; }
-
-        @Override
-        public Family family() { return Family.BUG_ACTIVITY; }
-
-        Activity(String name) { columnName = name; }
-        Activity() { columnName = name().toLowerCase(); }
-    }
-
-
     /** Fields that provide (meta) data about a bug. All are non-versioned. */
     public static enum Bug implements Field {
         ID("bug_id"),
@@ -94,7 +68,7 @@ public class BugFields {
         public String columnName() { return columnNames.get(Column.RESULT); }
 
         @Override
-        public Family family() { return Family.FACET; }
+        public Family family() { return Family.BUG_FACET; }
 
         public final boolean isComputed;
 
@@ -198,7 +172,7 @@ public class BugFields {
         public String columnName() { return columnName; }
 
         @Override
-        public Family family() { return Family.MEASUREMENT; }
+        public Family family() { return Family.BUG_MEASURE; }
 
         Measurement(String name) { columnName = name; }
         Measurement() { columnName = name().toLowerCase(); }

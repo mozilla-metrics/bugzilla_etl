@@ -53,7 +53,7 @@ import org.pentaho.di.trans.steps.userdefinedjavaclass.TransformClassBase;
 
 import com.mozilla.bugzilla_etl.base.Assert;
 
-class MajorStatusHelper {
+public class MajorStatusHelper {
 
     private final Map<String, String> openByStatusTable;
 
@@ -72,7 +72,7 @@ class MajorStatusHelper {
         }
     }
 
-    Map<String, String> table() {
+    public Map<String, String> table() {
         return Collections.unmodifiableMap(openByStatusTable);
     }
 }

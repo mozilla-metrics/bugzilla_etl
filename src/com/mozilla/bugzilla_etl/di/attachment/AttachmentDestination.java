@@ -45,6 +45,7 @@ import org.pentaho.di.core.row.RowMeta;
 import org.pentaho.di.trans.steps.userdefinedjavaclass.TransformClassBase;
 
 import com.mozilla.bugzilla_etl.di.AbstractDestination;
+import com.mozilla.bugzilla_etl.model.Fields;
 import com.mozilla.bugzilla_etl.model.attachment.Attachment;
 import com.mozilla.bugzilla_etl.model.attachment.AttachmentVersion;
 import com.mozilla.bugzilla_etl.model.attachment.AttachmentFields;
@@ -61,11 +62,11 @@ public class AttachmentDestination extends AbstractDestination<Attachment> {
             output.cell(AttachmentFields.Attachment.BUG_ID).set(attachment.bugId());
             output.cell(AttachmentFields.Attachment.SUBMITTED_BY).set(attachment.reporter());
             output.cell(AttachmentFields.Attachment.SUBMISSION_DATE).set(attachment.creationDate());
-            output.cell(AttachmentFields.Activity.MODIFICATION_DATE).set(version.from());
-            output.cell(AttachmentFields.Activity.EXPIRATION_DATE).set(version.to());
-            output.cell(AttachmentFields.Activity.ANNOTATION).set(version.annotation());
-            output.cell(AttachmentFields.Activity.MODIFIED_BY).set(version.author());
-            output.cell(AttachmentFields.Activity.PERSISTENCE_STATE).set(version.persistenceState());
+            output.cell(Fields.Activity.MODIFICATION_DATE).set(version.from());
+            output.cell(Fields.Activity.EXPIRATION_DATE).set(version.to());
+            output.cell(Fields.Activity.ANNOTATION).set(version.annotation());
+            output.cell(Fields.Activity.MODIFIED_BY).set(version.author());
+            output.cell(Fields.Activity.PERSISTENCE_STATE).set(version.persistenceState());
 
             for (AttachmentFields.Facet facet : AttachmentFields.Facet.values()) {
                 output.cell(facet).set(version.facets().get(facet));

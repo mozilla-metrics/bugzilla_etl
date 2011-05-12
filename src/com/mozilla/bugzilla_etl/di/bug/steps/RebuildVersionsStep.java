@@ -76,8 +76,8 @@ public class RebuildVersionsStep extends TransformClassBase {                   
      * - If "LILY_ZK_NODES" is set, the lily repository will be used.
      * - Otherwise an error is raised.
      *
-     * Input: A stream of bugs and bug activities. 
-     *        The activities of each bug are grouped together. 
+     * Input: A stream of bugs and bug activities.
+     *        The activities of each bug are grouped together.
      * Output: A stream of complete bug versions.
      */
     private static final String IN_STEP = "Prepare History Input";
@@ -92,7 +92,7 @@ public class RebuildVersionsStep extends TransformClassBase {                   
             final RowMeta outputRowMeta = new RowMeta();
             data.outputRowMeta = outputRowMeta;
             meta.getFields(data.outputRowMeta, getStepname(), null, null, parent);
-            
+
             java.io.PrintStream log = System.out;
             String isInitialImport = getParameter("IS_IMPORT");
             String esNodes = getParameter("ES_NODES");
@@ -108,13 +108,13 @@ public class RebuildVersionsStep extends TransformClassBase {                   
             }
             else if (esNodes != null && esNodes.length() > 0) {
                 log.println("Rebuilder Lookup: elasticsearch");
-                lookup = 
+                lookup =
                     new com.mozilla.bugzilla_etl.es.BugLookup(log, esNodes);
             }
             else if (lilyZkNodes != null && lilyZkNodes.length() > 0) {
                 log.println("Rebuilder Lookup: Lily repository");
-                lookup = 
-                    new com.mozilla.bugzilla_etl.lily.LilyBugLookup(log, 
+                lookup =
+                    new com.mozilla.bugzilla_etl.lily.LilyBugLookup(log,
                                                                     lilyZkNodes);
             }
             else {
@@ -132,8 +132,7 @@ public class RebuildVersionsStep extends TransformClassBase {                   
         }
         if (!source.hasMore()) {
             setOutputDone();
-            com.mozilla.bugzilla_etl.di.bug.RebuilderBugSource.counter.print();
-            com.mozilla.bugzilla_etl.di.bug.RebuilderBugSource.printConflictCounts();
+            source.printDiagnostics();
             return false;
         }
         destination.send(source.receive());

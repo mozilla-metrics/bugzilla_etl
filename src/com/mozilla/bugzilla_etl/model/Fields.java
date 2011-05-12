@@ -50,4 +50,29 @@ package com.mozilla.bugzilla_etl.model;
  */
 public class Fields {
 
+    /**
+     * Fields that provide (meta) data about an activity. These also serve as
+     * facets in the index.
+     * All of them come directly from the activities table in Bugzilla.
+     */
+    public static enum Activity implements Field {
+        ENTITY_ID("activity_entity_id"),
+        MODIFIED_BY,
+        MODIFICATION_DATE,
+        EXPIRATION_DATE,
+        ANNOTATION,
+        PERSISTENCE_STATE;
+
+        public String columnName;
+
+        @Override
+        public String columnName() { return columnName; }
+
+        @Override
+        public Family family() { return Family.ACTIVITY; }
+
+        Activity(String name) { columnName = name; }
+        Activity() { columnName = name().toLowerCase(); }
+    }
+
  }

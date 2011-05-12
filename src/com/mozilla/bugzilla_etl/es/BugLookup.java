@@ -54,6 +54,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.di.bug.IBugLookup;
 import com.mozilla.bugzilla_etl.es.Mapping.BugMapping;
+import com.mozilla.bugzilla_etl.model.Fields;
 import com.mozilla.bugzilla_etl.model.PersistenceState;
 import com.mozilla.bugzilla_etl.model.bug.Bug;
 import com.mozilla.bugzilla_etl.model.bug.BugFields;
@@ -133,10 +134,10 @@ public class BugLookup extends AbstractEsClient implements IBugLookup {
                 bug,
                 facets,
                 measurements,
-                VERSION.string(BugFields.Activity.MODIFIED_BY, fields),
-                VERSION.string(BugFields.Activity.ANNOTATION, fields),
-                VERSION.date(BugFields.Activity.MODIFICATION_DATE, fields),
-                VERSION.date(BugFields.Activity.EXPIRATION_DATE, fields),
+                VERSION.string(Fields.Activity.MODIFIED_BY, fields),
+                VERSION.string(Fields.Activity.ANNOTATION, fields),
+                VERSION.date(Fields.Activity.MODIFICATION_DATE, fields),
+                VERSION.date(Fields.Activity.EXPIRATION_DATE, fields),
                 PersistenceState.SAVED
             ));
         }

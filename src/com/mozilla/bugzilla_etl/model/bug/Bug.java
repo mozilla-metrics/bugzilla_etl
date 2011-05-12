@@ -42,6 +42,7 @@ package com.mozilla.bugzilla_etl.model.bug;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,10 +56,12 @@ import com.mozilla.bugzilla_etl.base.Pair;
 import com.mozilla.bugzilla_etl.di.Converters;
 import com.mozilla.bugzilla_etl.di.Converters.Converter;
 import com.mozilla.bugzilla_etl.model.Entity;
+import com.mozilla.bugzilla_etl.model.PersistenceState;
+import com.mozilla.bugzilla_etl.model.Version;
 
 
 /** A bug with its invariant properties and all of its versions. */
-public class Bug extends Entity<Bug, BugVersion> {
+public class Bug extends Entity<Bug, BugVersion, BugFields.Facet> {
 
     public Bug(Long id, String creator, Date creationDate) {
         super(id, creator, creationDate);
@@ -217,6 +220,14 @@ public class Bug extends Entity<Bug, BugVersion> {
 
     }
 
+    public BugVersion latest(EnumMap<BugFields.Facet, String> facets,
+                             String creator, Date from, String annotation) {
+        Assert.nonNull(facets, creator, from);
+        return new BugVersion(this, facets,
+                              new EnumMap<BugFields.Measurement, Long>(BugFields.Measurement.class),
+                              creator, annotation, from, Version.TO_FUTURE, PersistenceState.NEW);
+    }
+
     private final UpdateHelper helper = new UpdateHelper();
 
     public static class UpdateHelper {
@@ -274,7 +285,9 @@ public class Bug extends Entity<Bug, BugVersion> {
                 }
 
                 final Converter<List<String>> csvConverter = new Converters.CsvConverter();
-                if (facet == BugFields.Facet.KEYWORDS || facet == BugFields.Facet.FLAGS || facet == BugFields.Facet.STATUS_WHITEBOARD_ITEMS) {
+                if (facet == BugFields.Facet.KEYWORDS
+                        || facet == BugFields.Facet.FLAGS
+                        || facet == BugFields.Facet.STATUS_WHITEBOARD_ITEMS) {
                     List<String> fromItems = Collections.emptyList();
                     List<String> toItems = Collections.emptyList();
                     if (from != null) fromItems = csvConverter.parse(from);
@@ -325,5 +338,6 @@ public class Bug extends Entity<Bug, BugVersion> {
         }
 
     }
+
 }
 

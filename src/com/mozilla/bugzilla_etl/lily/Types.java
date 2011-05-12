@@ -111,7 +111,7 @@ class Types {
 
     final EnumMap<Types.VTag, Params> vTagParams;
     final EnumMap<BugFields.Bug, Params> bugParams;
-    final EnumMap<BugFields.Activity, Params> versionParams;
+    final EnumMap<Fields.Activity, Params> versionParams;
     final EnumMap<BugFields.Facet, Params> facetParams;
     final EnumMap<BugFields.Measurement, Params> measurementParams;
     final ValueType longs;
@@ -149,7 +149,7 @@ class Types {
         final Map<Class<? extends Enum<?>>, EnumMap<? extends Enum<?>, Params>> allParams =
             new HashMap<Class<? extends Enum<?>>, EnumMap<? extends Enum<?>, Params>>();
         allParams.put(BugFields.Bug.class, bugParams);
-        allParams.put(BugFields.Activity.class, versionParams);
+        allParams.put(Fields.Activity.class, versionParams);
         allParams.put(BugFields.Facet.class, facetParams);
         allParams.put(BugFields.Measurement.class, measurementParams);
         allParams.put(Types.VTag.class, vTagParams);
@@ -271,15 +271,15 @@ class Types {
         return bugParams;
     }
 
-    private EnumMap<BugFields.Activity, Params> versionParams() {
-        final EnumMap<BugFields.Activity, Params> versionParams =
-            new EnumMap<BugFields.Activity, Params>(BugFields.Activity.class);
-        versionParams.put(BugFields.Activity.BUG_ID, Params.UNUSED);
-        versionParams.put(BugFields.Activity.PERSISTENCE_STATE, Params.UNUSED);
-        add(versionParams, BugFields.Activity.ANNOTATION,        strings, Scope.VERSIONED_MUTABLE, false);
-        add(versionParams, BugFields.Activity.MODIFIED_BY,       strings, Scope.VERSIONED, true);
-        add(versionParams, BugFields.Activity.MODIFICATION_DATE, dates,   Scope.VERSIONED, true);
-        add(versionParams, BugFields.Activity.EXPIRATION_DATE,   dates,   Scope.VERSIONED_MUTABLE, true);
+    private EnumMap<Fields.Activity, Params> versionParams() {
+        final EnumMap<Fields.Activity, Params> versionParams =
+            new EnumMap<Fields.Activity, Params>(Fields.Activity.class);
+        versionParams.put(Fields.Activity.ENTITY_ID, Params.UNUSED);
+        versionParams.put(Fields.Activity.PERSISTENCE_STATE, Params.UNUSED);
+        add(versionParams, Fields.Activity.ANNOTATION,        strings, Scope.VERSIONED_MUTABLE, false);
+        add(versionParams, Fields.Activity.MODIFIED_BY,       strings, Scope.VERSIONED, true);
+        add(versionParams, Fields.Activity.MODIFICATION_DATE, dates,   Scope.VERSIONED, true);
+        add(versionParams, Fields.Activity.EXPIRATION_DATE,   dates,   Scope.VERSIONED_MUTABLE, true);
         return versionParams;
     }
 

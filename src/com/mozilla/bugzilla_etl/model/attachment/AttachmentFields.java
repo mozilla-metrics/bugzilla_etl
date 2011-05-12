@@ -10,28 +10,6 @@ import com.mozilla.bugzilla_etl.model.Field;
 
 public class AttachmentFields {
 
-    /** Meta data about attachment activity. Most of the time reviews. */
-    public static enum Activity implements Field {
-        ATTACHMENT_ID("activity_attachment_id"),
-        MODIFIED_BY,
-        MODIFICATION_DATE,
-        EXPIRATION_DATE,
-        ANNOTATION,
-        PERSISTENCE_STATE;
-
-        public String columnName;
-
-        @Override
-        public String columnName() { return columnName; }
-
-        @Override
-        public Family family() { return Family.BUG_ACTIVITY; }
-
-        Activity(String name) { columnName = name; }
-        Activity() { columnName = name().toLowerCase(); }
-    }
-
-
     /** Version-independent data on an attachment. */
     public static enum Attachment implements Field {
         ID("attachment_id"),
@@ -69,7 +47,7 @@ public class AttachmentFields {
         public String columnName() { return columnNames.get(Column.RESULT); }
 
         @Override
-        public Family family() { return Family.FACET; }
+        public Family family() { return Family.BUG_FACET; }
 
         public final boolean isComputed;
 
@@ -107,7 +85,7 @@ public class AttachmentFields {
         public String columnName() { return columnName; }
 
         @Override
-        public Family family() { return Family.MEASUREMENT; }
+        public Family family() { return Family.BUG_MEASURE; }
 
         Measurement(String name) { columnName = name; }
         Measurement() { columnName = name().toLowerCase(); }

@@ -47,7 +47,6 @@ import org.lilyproject.repository.api.Repository;
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.model.bug.Bug;
 import com.mozilla.bugzilla_etl.model.bug.BugVersion;
-import com.mozilla.bugzilla_etl.model.bug.Flag;
 
 /** Encapsultes the patterns by which repository ids are generated. */
 class Ids {
@@ -71,14 +70,6 @@ class Ids {
         return forVersion(bugId, version.from().getTime());
     }
 
-    /** Generate an id for this flag (no matter if already persisted or not). */
-    final RecordId id(Flag flag) {
-        final StringBuilder buffer = new StringBuilder();
-        return generator.newRecordId(buffer.append(flag.status().indicator)
-                                           .append(' ')
-                                           .append(flag.id()).toString());
-    }
-
     protected String id(final Long bugId, final Long versionIdentifier) {
         final String prefix = String.format("%06d", bugId);
         final String suffix = (versionIdentifier != null) ? versionIdentifier.toString() : "";
@@ -88,7 +79,7 @@ class Ids {
         dest.append(suffix);
         return dest.toString();
       }
-    
+
     final RecordId forBug(final Long bugzillaBugId) {
         Assert.nonNull(bugzillaBugId);
         return generator.newRecordId(id(bugzillaBugId, null));

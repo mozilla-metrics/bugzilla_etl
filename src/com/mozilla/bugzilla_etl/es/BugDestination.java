@@ -11,6 +11,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 
 import com.mozilla.bugzilla_etl.base.Destination;
 import com.mozilla.bugzilla_etl.es.Mapping.BugMapping;
+import com.mozilla.bugzilla_etl.model.Fields;
 import com.mozilla.bugzilla_etl.model.PersistenceState;
 import com.mozilla.bugzilla_etl.model.bug.Bug;
 import com.mozilla.bugzilla_etl.model.bug.BugFields;
@@ -72,10 +73,10 @@ public class BugDestination extends AbstractEsClient
         BUG.append(out, BugFields.Bug.ID, version.entity().id());
         BUG.append(out, BugFields.Bug.REPORTED_BY, version.entity().reporter());
         BUG.append(out, BugFields.Bug.CREATION_DATE, version.entity().creationDate());
-        VERSION.append(out, BugFields.Activity.MODIFIED_BY, version.author());
-        VERSION.append(out, BugFields.Activity.MODIFICATION_DATE, version.from());
-        VERSION.append(out, BugFields.Activity.EXPIRATION_DATE, version.to());
-        VERSION.append(out, BugFields.Activity.ANNOTATION, version.annotation());
+        VERSION.append(out, Fields.Activity.MODIFIED_BY, version.author());
+        VERSION.append(out, Fields.Activity.MODIFICATION_DATE, version.from());
+        VERSION.append(out, Fields.Activity.EXPIRATION_DATE, version.to());
+        VERSION.append(out, Fields.Activity.ANNOTATION, version.annotation());
         for (BugFields.Facet facet : BugFields.Facet.values()) {
             FACET.append(out, facet, version.facets().get(facet));
         }

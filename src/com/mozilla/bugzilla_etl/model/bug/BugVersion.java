@@ -58,7 +58,7 @@ import com.mozilla.bugzilla_etl.model.Version;
  * Versions are mostly immutable, except for their facets and measurements which are modified by
  * {@link Bug#updateFacetsAndMeasurements()}.
  */
-public class BugVersion extends Version<Bug, BugVersion> {
+public class BugVersion extends Version<Bug, BugVersion, BugFields.Facet> {
 
     /** Helps to create fields for new versions. */
     public static EnumMap<BugFields.Facet, String> createFacets() {
@@ -86,6 +86,7 @@ public class BugVersion extends Version<Bug, BugVersion> {
                               author, maybeAnnotation, from, this.from,
                               PersistenceState.NEW);
     }
+
     /**
      * Create a new version from a complete set of information.
      */
@@ -185,18 +186,10 @@ public class BugVersion extends Version<Bug, BugVersion> {
                              author);
     }
 
-
-    /** Given a bug, create a new "latest" version for that bug. */
-    public static BugVersion latest(final Bug bug, final EnumMap<BugFields.Facet, String> facets, final String author, final Date from, final String maybeAnnotation) {
-        Assert.nonNull(bug, facets, author, from);
-        return new BugVersion(bug, facets, new EnumMap<BugFields.Measurement, Long>(BugFields.Measurement.class), author,
-                           maybeAnnotation, from, theFuture, PersistenceState.NEW);
-    }
-
-    protected static final Date theFuture;
-
     final EnumMap<BugFields.Facet, String> facets;
     final EnumMap<BugFields.Measurement, Long> measurements;
+
+    protected static final Date theFuture;
     private static final DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z");
     static {
         Date date = null;

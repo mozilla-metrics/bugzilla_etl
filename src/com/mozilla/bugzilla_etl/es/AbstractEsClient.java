@@ -55,6 +55,7 @@ import com.mozilla.bugzilla_etl.es.Mapping.BugMapping;
 import com.mozilla.bugzilla_etl.es.Mapping.FacetMapping;
 import com.mozilla.bugzilla_etl.es.Mapping.MeasurementMapping;
 import com.mozilla.bugzilla_etl.es.Mapping.VersionMapping;
+import com.mozilla.bugzilla_etl.model.Fields;
 import com.mozilla.bugzilla_etl.model.bug.BugFields;
 
 
@@ -93,7 +94,7 @@ abstract class AbstractEsClient {
     // elasticsearch mapping helpers:
     public static final Mapping<BugFields.Bug> BUG = new BugMapping();
     public static final Mapping<BugFields.Facet> FACET = new FacetMapping();
-    public static final Mapping<BugFields.Activity> VERSION = new VersionMapping();
+    public static final Mapping<Fields.Activity> VERSION = new VersionMapping();
     public static final Mapping<BugFields.Measurement> MEASURE = new MeasurementMapping();
     
 }

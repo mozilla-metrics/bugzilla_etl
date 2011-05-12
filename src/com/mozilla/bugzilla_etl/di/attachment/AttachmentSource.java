@@ -51,6 +51,7 @@ import org.pentaho.di.trans.steps.userdefinedjavaclass.TransformClassBase;
 
 import com.mozilla.bugzilla_etl.base.Counter;
 import com.mozilla.bugzilla_etl.di.AbstractSource;
+import com.mozilla.bugzilla_etl.model.Fields;
 import com.mozilla.bugzilla_etl.model.PersistenceState;
 import com.mozilla.bugzilla_etl.model.attachment.Attachment;
 import com.mozilla.bugzilla_etl.model.attachment.AttachmentFields;
@@ -82,12 +83,12 @@ public class AttachmentSource extends AbstractSource<Attachment> {
     }
 
     private AttachmentVersion versionFromRow(Attachment bug) throws KettleValueException {
-        final String author = input.cell(AttachmentFields.Activity.MODIFIED_BY).stringValue();
-        final String annotation = input.cell(AttachmentFields.Activity.ANNOTATION).stringValue();
-        final Date from = input.cell(AttachmentFields.Activity.MODIFICATION_DATE).dateValue();
-        final Date to = input.cell(AttachmentFields.Activity.EXPIRATION_DATE).dateValue();
+        final String author = input.cell(Fields.Activity.MODIFIED_BY).stringValue();
+        final String annotation = input.cell(Fields.Activity.ANNOTATION).stringValue();
+        final Date from = input.cell(Fields.Activity.MODIFICATION_DATE).dateValue();
+        final Date to = input.cell(Fields.Activity.EXPIRATION_DATE).dateValue();
         final PersistenceState persistenceState
-            = input.cell(AttachmentFields.Activity.PERSISTENCE_STATE).enumValue(PersistenceState.class);
+            = input.cell(Fields.Activity.PERSISTENCE_STATE).enumValue(PersistenceState.class);
 
         final EnumMap<AttachmentFields.Facet, String> facets = AttachmentVersion.createFacets();
         for (AttachmentFields.Facet field : AttachmentFields.Facet.values()) {

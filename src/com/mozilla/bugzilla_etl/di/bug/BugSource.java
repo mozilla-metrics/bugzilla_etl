@@ -51,6 +51,7 @@ import org.pentaho.di.trans.steps.userdefinedjavaclass.TransformClassBase;
 
 import com.mozilla.bugzilla_etl.base.Counter;
 import com.mozilla.bugzilla_etl.di.AbstractSource;
+import com.mozilla.bugzilla_etl.model.Fields;
 import com.mozilla.bugzilla_etl.model.PersistenceState;
 import com.mozilla.bugzilla_etl.model.bug.Bug;
 import com.mozilla.bugzilla_etl.model.bug.BugFields;
@@ -78,7 +79,7 @@ public class BugSource extends AbstractSource<Bug> {
     public Bug receive() throws KettleException {
         final Long bugId = input.cell(BugFields.Bug.ID).longValue();
 
-        final Bug bug = new Bug(bugId, 
+        final Bug bug = new Bug(bugId,
                                 input.cell(BugFields.Bug.REPORTED_BY).stringValue(),
                                 input.cell(BugFields.Bug.CREATION_DATE).dateValue());
 
@@ -87,17 +88,17 @@ public class BugSource extends AbstractSource<Bug> {
             bug.append(versionFromRow(bug));
         }
 
-        counter.count(bug);
+        counter.count(bug, bug.isNew());
         return bug;
     }
 
     private BugVersion versionFromRow(Bug bug) throws KettleValueException {
-        final String author = input.cell(BugFields.Activity.MODIFIED_BY).stringValue();
-        final String annotation = input.cell(BugFields.Activity.ANNOTATION).stringValue();
-        final Date from = input.cell(BugFields.Activity.MODIFICATION_DATE).dateValue();
-        final Date to = input.cell(BugFields.Activity.EXPIRATION_DATE).dateValue();
+        final String author = input.cell(Fields.Activity.MODIFIED_BY).stringValue();
+        final String annotation = input.cell(Fields.Activity.ANNOTATION).stringValue();
+        final Date from = input.cell(Fields.Activity.MODIFICATION_DATE).dateValue();
+        final Date to = input.cell(Fields.Activity.EXPIRATION_DATE).dateValue();
         final PersistenceState persistenceState
-            = input.cell(BugFields.Activity.PERSISTENCE_STATE).enumValue(PersistenceState.class);
+            = input.cell(Fields.Activity.PERSISTENCE_STATE).enumValue(PersistenceState.class);
 
         final EnumMap<BugFields.Facet, String> facets = BugVersion.createFacets();
         for (BugFields.Facet field : BugFields.Facet.values()) {

@@ -67,6 +67,7 @@ import com.mozilla.bugzilla_etl.base.Destination;
 import com.mozilla.bugzilla_etl.di.Converters;
 import com.mozilla.bugzilla_etl.di.Converters.Converter;
 import com.mozilla.bugzilla_etl.lily.Types.Params;
+import com.mozilla.bugzilla_etl.model.Fields;
 import com.mozilla.bugzilla_etl.model.PersistenceState;
 import com.mozilla.bugzilla_etl.model.bug.Bug;
 import com.mozilla.bugzilla_etl.model.bug.BugFields;
@@ -90,7 +91,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
     /**
      * Save this bug into the repository.
      * :TODO: Use only LilyCMS versioning when indexing becomes available independently from vtags.
-     * @throws InterruptedException 
+     * @throws InterruptedException
      * @throws TypeException
      * @throws VersionNotFoundException
      * @throws RecordException
@@ -145,14 +146,14 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
                         Assert.unreachable();
                 }
             }
-            counter.count(bug);
+            counter.count(bug, bug.isNew());
             String latest = "<N.A.>";
             if (record != null && record.getVersion() != null) {
                 latest = record.getVersion().toString();
             }
             log.format("SEND DONE [bug id='%s', versions='%d', latest='%s']\n",
                                        id, currentVersion, latest);
-    
+
             // Create the fake versions so all historic versions are indexed.
             // This should be removed once we are able to index versions without vtags.
             for (BugVersion version : bug) send(bug, version);
@@ -165,7 +166,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
                    bug.id(), bug.numVersions());
     }
 
-    void doCreate(final Record record, final RecordId id) 
+    void doCreate(final Record record, final RecordId id)
     throws RepositoryException, InterruptedException {
         waitForIt(new Failable<RepositoryException>() {
             public void tryIt() throws RepositoryException, InterruptedException {
@@ -177,7 +178,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         });
     }
 
-    void doAppend(final Record record, final RecordId id) 
+    void doAppend(final Record record, final RecordId id)
     throws RepositoryException, InterruptedException {
         waitForIt(new Failable<RepositoryException>() {
             public void tryIt() throws RepositoryException, InterruptedException {
@@ -188,7 +189,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
         });
     }
 
-    void doReplace(final Record record, final RecordId id) 
+    void doReplace(final Record record, final RecordId id)
     throws RepositoryException, InterruptedException {
         waitForIt(new Failable<RepositoryException>() {
             public void tryIt() throws RepositoryException, InterruptedException {
@@ -205,7 +206,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
      * each version.
      * :TODO: Remove this once indexing for all versions is available.
      */
-    private void send(final Bug bug, final BugVersion version) 
+    private void send(final Bug bug, final BugVersion version)
     throws RepositoryException, InterruptedException {
 
         Assert.nonNull(bug.id(), version.from(), version.to(), version.annotation());
@@ -225,7 +226,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
             setVersionMutableFields(record, version);
             log.format("SEND historic#%s (v: %d) EXPIRATION DATE AFTER UPDATE: %s.\n", bug.id(),
                        record.getVersion(),
-                       record.getField(types.versionParams.get(BugFields.Activity.EXPIRATION_DATE).qname));
+                       record.getField(types.versionParams.get(Fields.Activity.EXPIRATION_DATE).qname));
             record = repository.update(record, true, true);
             historicCounter.increment(Counter.Item.OLD_ZERO);
             return;
@@ -287,17 +288,17 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
     }
 
     private void setVersionMutableFields(Record record, BugVersion version) {
-        record.setField(types.versionParams.get(BugFields.Activity.EXPIRATION_DATE).qname,
+        record.setField(types.versionParams.get(Fields.Activity.EXPIRATION_DATE).qname,
                         new DateTime(version.to().getTime()));
-        record.setField(types.versionParams.get(BugFields.Activity.ANNOTATION).qname,
+        record.setField(types.versionParams.get(Fields.Activity.ANNOTATION).qname,
                         version.annotation());
     }
 
     private void setVersionFields(Record record, BugVersion version) {
         record.setRecordType(bugType.getName(), null);
-        record.setField(types.versionParams.get(BugFields.Activity.MODIFIED_BY).qname,
+        record.setField(types.versionParams.get(Fields.Activity.MODIFIED_BY).qname,
                         version.author());
-        record.setField(types.versionParams.get(BugFields.Activity.MODIFICATION_DATE).qname,
+        record.setField(types.versionParams.get(Fields.Activity.MODIFICATION_DATE).qname,
                         new DateTime(version.from().getTime()));
         for (final Entry<BugFields.Facet, String> entry : version.facets().entrySet()) {
             final BugFields.Facet facet = entry.getKey();
@@ -334,7 +335,7 @@ extends AbstractLilyClient implements Destination<Bug, RepositoryException> {
      * Retrieve all records and return the latest version with the given number.
      *
      * This is needed to update the correct DIRTY version after a bug record has been recreated.
-     * @throws InterruptedException 
+     * @throws InterruptedException
      */
     private Record bugAtNumber(final RecordId id, final long number)
     throws RepositoryException, InterruptedException {

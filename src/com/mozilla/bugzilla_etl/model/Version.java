@@ -1,12 +1,17 @@
 package com.mozilla.bugzilla_etl.model;
 
+import java.text.ParseException;
 import java.util.Date;
+import java.util.EnumMap;
+
+import org.apache.commons.lang.time.DateUtils;
 
 import com.mozilla.bugzilla_etl.base.Assert;
 
 
-public abstract class Version<E extends Entity<E, V>,
-                              V extends Version<E, V>> {
+public abstract class Version<E extends Entity<E, V, FACET>,
+                              V extends Version<E, V, FACET>,
+                              FACET extends Enum<FACET>> {
 
     protected final E entity;
 
@@ -20,6 +25,17 @@ public abstract class Version<E extends Entity<E, V>,
         this.to = to;
         this.persistenceState = persistenceState;
     }
+
+
+    /**
+     * @const
+     * Create a new version that is valid until this version becomes valid.
+     * Measurements, computed facets and flags will still have to be computed.
+     */
+    public abstract V predecessor(final EnumMap<FACET, String> facets,
+                                  final String author,
+                                  final Date from,
+                                  String maybeAnnotation);
 
     public E entity() { return entity; }
 
@@ -49,4 +65,11 @@ public abstract class Version<E extends Entity<E, V>,
     protected final PersistenceState persistenceState;
 
 
+    public static final Date TO_FUTURE;
+    static {
+        Date date = null;
+        try { date = DateUtils.parseDate("2199-12-31", new String[]{"yyyy-MM-dd"}); }
+        catch (ParseException e) { Assert.unreachable(); }
+        TO_FUTURE = date;
+    }
 }

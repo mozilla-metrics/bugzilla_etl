@@ -1,6 +1,7 @@
 package com.mozilla.bugzilla_etl.model;
 
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -12,8 +13,9 @@ import com.mozilla.bugzilla_etl.base.Assert;
  * Generic versioned entity.
  * Something that has a unique ID, a creator, and versions.
  */
-public abstract class Entity<E extends Entity<E, V>,
-                             V extends Version<E, V>> implements Iterable<V> {
+public abstract class Entity<E extends Entity<E, V, FACET>,
+                             V extends Version<E, V, FACET>,
+                             FACET extends Enum<FACET>> implements Iterable<V> {
 
     protected static final long DAY = 24*60*60*1000;
     private static final boolean DEBUG_INCREMENTAL_UPDATE = false;
@@ -53,6 +55,9 @@ public abstract class Entity<E extends Entity<E, V>,
     public boolean isNew() {
         return versions.getFirst().persistenceState() == PersistenceState.NEW;
     }
+
+    public abstract V latest(EnumMap<FACET, String> facets,
+                             String creator, Date from, String annotation);
 
     /**
      * Steal all versions of the given entity and prepend them to this one.

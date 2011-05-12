@@ -10,7 +10,7 @@ import com.mozilla.bugzilla_etl.model.attachment.AttachmentFields.Facet;
 import com.mozilla.bugzilla_etl.model.attachment.AttachmentFields.Measurement;
 
 
-public class AttachmentVersion extends Version<Attachment, AttachmentVersion> {
+public class AttachmentVersion extends Version<Attachment, AttachmentVersion, AttachmentFields.Facet> {
 
     @Override public AttachmentVersion update(String newAnnotation, Date newTo) {
         PersistenceState newState = PersistenceState.NEW;

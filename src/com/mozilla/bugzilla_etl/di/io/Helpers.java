@@ -49,6 +49,7 @@ import org.pentaho.di.trans.steps.userdefinedjavaclass.FieldHelper;
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.model.Family;
 import com.mozilla.bugzilla_etl.model.Field;
+import com.mozilla.bugzilla_etl.model.Fields;
 import com.mozilla.bugzilla_etl.model.attachment.AttachmentFields;
 import com.mozilla.bugzilla_etl.model.bug.BugFields;
 
@@ -97,14 +98,13 @@ class Helpers {
         // Ensure that we create maps for all families.
         for (Family family : Family.values()) {
             switch (family) {
-                case BUG:         prepare(BugFields.Bug.class,         family); break;
-                case BUG_ACTIVITY:     prepare(BugFields.Activity.class,    family); break;
-                case MEASUREMENT: prepare(BugFields.Measurement.class, family); break;
-                case FACET:       prepare(BugFields.Facet.class,       family); break;
-                case ATTACHMENT:     prepare(AttachmentFields.Attachment.class, family); break;
-                case ATTACH_FACET:   prepare(AttachmentFields.Facet.class, family); break;
-                case ATTACH_MEASURE: prepare(AttachmentFields.Measurement.class, family); break;
-                case ATTACH_ACTIVITY: prepare(AttachmentFields.Activity.class, family); break;
+                case ACTIVITY: prepare(Fields.Activity.class, family); break;
+                case BUG: prepare(BugFields.Bug.class, family); break;
+                case BUG_MEASURE: prepare(BugFields.Measurement.class, family); break;
+                case BUG_FACET: prepare(BugFields.Facet.class, family); break;
+                case ATTACHMENT: prepare(AttachmentFields.Attachment.class, family); break;
+                case ATTACHMENT_FACET: prepare(AttachmentFields.Facet.class, family); break;
+                case ATTACHMENT_MEASURE: prepare(AttachmentFields.Measurement.class, family); break;
                 default: Assert.unreachable();
             }
         }

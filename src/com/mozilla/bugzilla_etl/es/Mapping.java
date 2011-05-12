@@ -51,6 +51,7 @@ import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.di.Converters;
 import com.mozilla.bugzilla_etl.di.Converters.Converter;
 import com.mozilla.bugzilla_etl.model.Field;
+import com.mozilla.bugzilla_etl.model.Fields;
 import com.mozilla.bugzilla_etl.model.bug.BugFields;
 
 
@@ -77,16 +78,16 @@ interface Mapping<T extends Field> {
     }
 
 
-    static class VersionMapping extends BaseMapping<BugFields.Activity> {
+    static class VersionMapping extends BaseMapping<Fields.Activity> {
         VersionMapping() {
             conversions =
-                new EnumMap<BugFields.Activity, Conv>(BugFields.Activity.class);
-            conversions.put(BugFields.Activity.BUG_ID,            Conv.UNUSED);
-            conversions.put(BugFields.Activity.PERSISTENCE_STATE, Conv.UNUSED);
-            conversions.put(BugFields.Activity.MODIFIED_BY,       Conv.STRING);
-            conversions.put(BugFields.Activity.ANNOTATION,        Conv.STRING);
-            conversions.put(BugFields.Activity.MODIFICATION_DATE, Conv.DATE);
-            conversions.put(BugFields.Activity.EXPIRATION_DATE,   Conv.DATE);
+                new EnumMap<Fields.Activity, Conv>(Fields.Activity.class);
+            conversions.put(Fields.Activity.ENTITY_ID,            Conv.UNUSED);
+            conversions.put(Fields.Activity.PERSISTENCE_STATE, Conv.UNUSED);
+            conversions.put(Fields.Activity.MODIFIED_BY,       Conv.STRING);
+            conversions.put(Fields.Activity.ANNOTATION,        Conv.STRING);
+            conversions.put(Fields.Activity.MODIFICATION_DATE, Conv.DATE);
+            conversions.put(Fields.Activity.EXPIRATION_DATE,   Conv.DATE);
         }
     }
 

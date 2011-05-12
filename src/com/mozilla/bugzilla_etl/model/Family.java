@@ -2,11 +2,11 @@ package com.mozilla.bugzilla_etl.model;
 
 public enum Family {
     BUG,
-    BUG_ACTIVITY,
-    FACET,
-    MEASUREMENT,
+    ACTIVITY,
+    BUG_FACET,
+    BUG_MEASURE,
     ATTACHMENT,
     ATTACH_ACTIVITY,
-    ATTACH_FACET,
-    ATTACH_MEASURE
+    ATTACHMENT_FACET,
+    ATTACHMENT_MEASURE
 }

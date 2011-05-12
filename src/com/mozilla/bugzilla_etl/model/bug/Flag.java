@@ -52,7 +52,7 @@ public class Flag {
         REQUESTED('?'),
         APPROVED('+'),
         DENIED('-'),
-        
+
         // Example: "...-needed" flags for maintainance releases in BMO
         NA('/');
         public final char indicator;
@@ -67,53 +67,45 @@ public class Flag {
         Status(char indicator) { this.indicator = indicator; }
     }
 
-    public Long id() { return id; }
-    public String name() { return type; }
+    public String name() { return name; }
     public Status status() { return status; }
 
-    private final String type;
+    private final String name;
     private final Status status;
-    private final Long id;
 
     public static Flag fromRepresentation(String representation) {
         // Strip any requestee, currently not used.
         final int requesteePos = representation.indexOf('(');
         if (requesteePos != -1) representation = representation.substring(0, requesteePos);
-        
+
         final int lastPos = representation.length() -1;
         if (lastPos <= 0) {
             final String message = String.format("Could not parse flag '%s'",
                                                  representation);
             throw new IllegalArgumentException(message);
         }
-        Assert.check(lastPos > 0);        
+        Assert.check(lastPos > 0);
         final Status status = Status.forIndicator(representation.charAt(lastPos));
 
         if (status == Status.NA) {
-            // :BMO: Special case: There is a field overflow in Bug 448640 ("flag-spam").
-            if(representation.equals("in-testsu")) return new Flag("in-testsuite", Status.REQUESTED);
+            // :BMO: There is a field overflow in Bug 448640 ("flag-spam").
+            if(representation.equals("in-testsu")) {
+                return new Flag("in-testsuite", Status.REQUESTED);
+            }
             return new Flag(representation, status);
         }
-        
+
         return new Flag(representation.substring(0, lastPos), status);
     }
 
-    public Flag(final String flagType, final Status status) {
-        Assert.nonNull(flagType, status);
-        this.id = null;
-        this.type = flagType;
-        this.status = status;
-    }
-
-    public Flag(final Long id, final String flagType, final Status status) {
-        Assert.nonNull(id, flagType, status);
-        this.id = id;
-        this.type = flagType;
+    public Flag(final String name, final Status status) {
+        Assert.nonNull(name, status);
+        this.name = name;
         this.status = status;
     }
 
     public String representation() {
-        return (status == Status.NA) ? type : (type + status.indicator);
+        return (status == Status.NA) ? name : (name + status.indicator);
     }
 
     @Override

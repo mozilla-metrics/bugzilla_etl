@@ -44,7 +44,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
-import com.mozilla.bugzilla_etl.model.bug.Bug;
+import com.mozilla.bugzilla_etl.model.Entity;
 
 
 /** Special purpose counters for step statistics and diagnostics. */
@@ -60,8 +60,8 @@ public class Counter {
         OLD_MEDIUM(false, 10, "old with 6-10 activity"),
         NEW_HIGH(true, Integer.MAX_VALUE, "new with 10+ activity"),
         OLD_HIGH(false, Integer.MAX_VALUE, "old with 10+ activity"),
-        NEW_TOTAL(true, -1, "New Bugs"),
-        OLD_TOTAL(false, -1, "Old Bugs");
+        NEW_TOTAL(true, -1, "New"),
+        OLD_TOTAL(false, -1, "Old");
 
         boolean isNew;
         int threshold;
@@ -79,12 +79,12 @@ public class Counter {
         this.label = label;
     }
 
-    public void count(Bug bug) {
-        final int n = bug.numVersions();
-        if (bug.isNew()) counters.getAndIncrement(Item.NEW_TOTAL.ordinal());
+    public void count(Entity<?, ?, ?> entity, boolean isNew) {
+        final int n = entity.numVersions();
+        if (isNew) counters.getAndIncrement(Item.NEW_TOTAL.ordinal());
         else counters.getAndIncrement(Item.OLD_TOTAL.ordinal());
         for (Item item : Item.values()) {
-            if (bug.isNew() == item.isNew && item.threshold >= n-1) {
+            if (isNew == item.isNew && item.threshold >= n-1) {
                 counters.getAndIncrement(item.ordinal());
                 break;
             }
