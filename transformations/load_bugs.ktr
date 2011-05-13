@@ -215,7 +215,7 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
 <parameter_description/>
 </usage_parameter></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>977</xloc>
+      <xloc>806</xloc>
       <yloc>655</yloc>
       <draw>Y</draw>
       </GUI>
@@ -796,7 +796,7 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartitio
     </data>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>1109</xloc>
+      <xloc>938</xloc>
       <yloc>579</yloc>
       <draw>Y</draw>
       </GUI>
@@ -1361,7 +1361,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
       </field>        <select_unspecified>N</select_unspecified>
     </fields>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>839</xloc>
+      <xloc>668</xloc>
       <yloc>580</yloc>
       <draw>Y</draw>
       </GUI>
@@ -1843,7 +1843,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 <parameter_description/>
 </usage_parameter></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>977</xloc>
+      <xloc>806</xloc>
       <yloc>580</yloc>
       <draw>Y</draw>
       </GUI>

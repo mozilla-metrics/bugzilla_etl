@@ -11,7 +11,7 @@
     <parameters>
         <parameter>
             <name>BUG_IDS_PARTITION</name>
-            <default_value>bug_id &gt;= 606001 and bug_id &lt; 606011</default_value>
+            <default_value>attachments.bug_id &gt;= 606001 and attachments.bug_id &lt; 606011</default_value>
             <description>Partitioning to reduce memory and process time for big batch processing</description>
         </parameter>
         <parameter>
@@ -148,7 +148,7 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
     </attributes>
   </connection>
   <order>
-  <hop> <from>Calculate start date</from><to>Get new activities</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get new&#47;modified attachments</to><enabled>Y</enabled> </hop>  <hop> <from>Join bugs with activities</from><to>Set earliest flag no-activity bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Mark first&#47;last row</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Get Major Status Lookup</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get reviews for new&#47;modified attachments</to><enabled>Y</enabled> </hop>  <hop> <from>Get reviews for new&#47;modified attachments</from><to>Denormalise flags</to><enabled>Y</enabled> </hop>  <hop> <from>Get new&#47;modified attachments</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Denormalise flags</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Prepare History Input</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Set earliest flag no-activity bugs</from><to>Prepare History Input</to><enabled>Y</enabled> </hop>  <hop> <from>Generate Rows</from><to>Calculate start date</to><enabled>Y</enabled> </hop>  <hop> <from>Join flags into bugs</from><to>Merge flags with cf_flags</to><enabled>Y</enabled> </hop>  <hop> <from>Clean Bug State</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Merge flags with cf_flags</from><to>Clean Bug State</to><enabled>Y</enabled> </hop>  <hop> <from>Rebuild Versions</from><to>Bulk Load To ES</to><enabled>Y</enabled> </hop>  <hop> <from>Get new activities</from><to>Denormalise activities</to><enabled>Y</enabled> </hop>  <hop> <from>Denormalise activities</from><to>Mark first&#47;last row</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Calculate start date</from><to>Get new activities</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get new&#47;modified attachments</to><enabled>Y</enabled> </hop>  <hop> <from>Join attachments with activities</from><to>Set earliest flag no-activity bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Mark first&#47;last row</from><to>Join attachments with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get reviews for new&#47;modified attachments</to><enabled>Y</enabled> </hop>  <hop> <from>Get reviews for new&#47;modified attachments</from><to>Denormalise flags</to><enabled>Y</enabled> </hop>  <hop> <from>Get new&#47;modified attachments</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Denormalise flags</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Prepare History Input</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Set earliest flag no-activity bugs</from><to>Prepare History Input</to><enabled>Y</enabled> </hop>  <hop> <from>Generate Rows</from><to>Calculate start date</to><enabled>Y</enabled> </hop>  <hop> <from>Rebuild Versions</from><to>Bulk Load To ES</to><enabled>Y</enabled> </hop>  <hop> <from>Get new activities</from><to>Denormalise activities</to><enabled>Y</enabled> </hop>  <hop> <from>Denormalise activities</from><to>Mark first&#47;last row</to><enabled>Y</enabled> </hop>  <hop> <from>Join flags into bugs</from><to>Join attachments with activities</to><enabled>Y</enabled> </hop>  </order>
   <step>
     <name>Bulk Load To ES</name>
     <type>UserDefinedJavaClass</type>
@@ -208,8 +208,8 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
     </fields><clear_result_fields>N</clear_result_fields>
 <info_steps></info_steps><target_steps></target_steps><usage_parameters></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>576</xloc>
-      <yloc>768</yloc>
+      <xloc>896</xloc>
+      <yloc>696</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -265,26 +265,6 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartitio
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>333</xloc>
       <yloc>82</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Clean Bug State</name>
-    <type>SelectValues</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>        <select_unspecified>N</select_unspecified>
-      <remove>        <name>flags_cf</name>
-      </remove>    </fields>     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>331</xloc>
-      <yloc>427</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -523,55 +503,6 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartitio
     </step>
 
   <step>
-    <name>Get Major Status Lookup</name>
-    <type>DataGrid</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>
-      <field>
-        <name>status_name</name>
-        <type>String</type>
-        <format/>
-        <currency/>
-        <decimal/>
-        <group/>
-        <length>-1</length>
-        <precision>-1</precision>
-      </field>
-      <field>
-        <name>status_isopen</name>
-        <type>Integer</type>
-        <format/>
-        <currency/>
-        <decimal/>
-        <group/>
-        <length>-1</length>
-        <precision>-1</precision>
-      </field>
-    </fields>
-    <data>
-      <line> <item>UNCONFIRMED</item><item>1</item> </line>
-      <line> <item>NEW</item><item>1</item> </line>
-      <line> <item>ASSIGNED</item><item>1</item> </line>
-      <line> <item>REOPENED</item><item>1</item> </line>
-      <line> <item>RESOLVED</item><item>0</item> </line>
-      <line> <item>VERIFIED</item><item>0</item> </line>
-      <line> <item>CLOSED</item><item>0</item> </line>
-    </data>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>708</xloc>
-      <yloc>651</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
     <name>Get new activities</name>
     <type>TableInput</type>
     <description/>
@@ -646,17 +577,16 @@ ORDER BY
     <connection>bugs</connection>
     <sql>SELECT
   1 AS attachments_const
-, attach_id AS attachment_id
-, ispatch
-, isobsolete
-, isurl
-, submitter.login_name as submitted_by
+, attachments.attach_id AS attachment_id
+, ispatch AS is_patch
+, isobsolete AS is_obsolete
+, isurl AS is_url
 , attachments.bug_id
-, bugs.creation_ts
+, submitter.login_name AS submitted_by
+, attachments.creation_ts AS submission_ts
 , CAST(DATE(attachments.creation_ts)+0 AS SIGNED INTEGER) AS created_on
 , CAST(TIME(attachments.creation_ts)+0 AS SIGNED INTEGER) AS created_at
-FROM 
-  attachments
+FROM attachments
 JOIN bugs ON attachments.bug_id = bugs.bug_id
 JOIN profiles submitter ON submitter.userid = attachments.submitter_id
 WHERE 
@@ -696,11 +626,13 @@ ORDER BY
   f.attach_id AS attachment_id
 , concat( type.`name`, f.status ) as flag
 , &apos;flag&apos; as field_name
-FROM flags as f JOIN flagtypes as type on f.type_id = type.id
+FROM flags as f 
+JOIN flagtypes as type on f.type_id = type.id
+JOIN attachments on f.attach_id = attachments.attach_id
 WHERE type.target_type = &apos;a&apos; 
 and modification_date &gt; ?
 AND ${BUG_IDS_PARTITION}
-ORDER BY attach_id ASC
+ORDER BY attachment_id ASC
 </sql>
     <limit>0</limit>
     <lookup>Calculate start date</lookup>
@@ -716,7 +648,7 @@ ORDER BY attach_id ASC
     </step>
 
   <step>
-    <name>Join bugs with activities</name>
+    <name>Join attachments with activities</name>
     <type>MergeJoin</type>
     <description/>
     <distribute>Y</distribute>
@@ -726,7 +658,7 @@ ORDER BY attach_id ASC
            <schema_name/>
            </partitioning>
 <join_type>FULL OUTER</join_type>
-<step1>Clean Bug State</step1>
+<step1>Join flags into bugs</step1>
 <step2>Mark first&#47;last row</step2>
     <keys_1>
       <key>bug_id</key>
@@ -886,31 +818,6 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
     </step>
 
   <step>
-    <name>Merge flags with cf_flags</name>
-    <type>Janino</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-       <formula><field_name>flags</field_name>
-<formula_string>flags_cf.length() &gt; 0    ?   (flags_default != null ? flags_cf + &quot;, &quot; + flags_default : flags_cf)   :   flags_default</formula_string>
-<value_type>String</value_type>
-<value_length>-1</value_length>
-<value_precision>-1</value_precision>
-<replace_field/>
-</formula>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>332</xloc>
-      <yloc>354</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
     <name>Prepare History Input</name>
     <type>SelectValues</type>
     <description/>
@@ -920,19 +827,19 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
            <method>none</method>
            <schema_name/>
            </partitioning>
-    <fields>      <field>        <name>bug_id</name>
+    <fields>      <field>        <name>attachment_id</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-      </field>      <field>        <name>reported_by</name>
+      </field>      <field>        <name>submitted_by</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-      </field>      <field>        <name>creation_ts</name>
-        <rename>creation_date</rename>
+      </field>      <field>        <name>submission_ts</name>
+        <rename>submission_date</rename>
         <length>-2</length>
         <precision>-2</precision>
-      </field>      <field>        <name>activity_bug_id</name>
+      </field>      <field>        <name>activity_entity_id</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
@@ -944,6 +851,22 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
+      </field>      <field>        <name>mimetype</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>is_obsolete</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>is_patch</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>is_url</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
       </field>      <field>        <name>is_earliest_state</name>
         <rename/>
         <length>-2</length>
@@ -952,171 +875,63 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-      </field>      <field>        <name>bugs_const</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>assigned_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>component</name>
+      </field>      <field>        <name>attachments_const</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
       </field>      <field>        <name>flags</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>keywords</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>opsys</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>priority</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>product</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>resolution</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>severity</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>status</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>status_whiteboard</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>version</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>assigned_to_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>assigned_to_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>component_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>component_to</name>
-        <rename/>
+        <rename>requests</rename>
         <length>-2</length>
         <precision>-2</precision>
       </field>      <field>        <name>flags_from</name>
-        <rename/>
+        <rename>requests_from</rename>
         <length>-2</length>
         <precision>-2</precision>
       </field>      <field>        <name>flags_to</name>
+        <rename>requests_to</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>mimetype_from</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-      </field>      <field>        <name>keywords_from</name>
+      </field>      <field>        <name>mimetype_to</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-      </field>      <field>        <name>keywords_to</name>
+      </field>      <field>        <name>is_obsolete_from</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-      </field>      <field>        <name>opsys_from</name>
+      </field>      <field>        <name>is_obsolete_to</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-      </field>      <field>        <name>opsys_to</name>
+      </field>      <field>        <name>is_patch_from</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-      </field>      <field>        <name>priority_from</name>
+      </field>      <field>        <name>is_patch_to</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-      </field>      <field>        <name>priority_to</name>
+      </field>      <field>        <name>is_url_from</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-      </field>      <field>        <name>product_from</name>
+      </field>      <field>        <name>is_url_to</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-      </field>      <field>        <name>product_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>resolution_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>resolution_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>severity_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>severity_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>status_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>status_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>status_whiteboard_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>status_whiteboard_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>version_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>version_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>target_milestone</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>target_milestone_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>target_milestone_to</name>
+      </field>      <field>        <name>bug_id</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
       </field>        <select_unspecified>N</select_unspecified>
     </fields>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>332</xloc>
-      <yloc>652</yloc>
+      <xloc>652</xloc>
+      <yloc>580</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1217,6 +1032,16 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
     </definitions>
     <fields>
         <field>
+        <field_name>attachment_id</field_name>
+
+        <field_type>Integer</field_type>
+
+        <field_length>-1</field_length>
+
+        <field_precision>-1</field_precision>
+
+        </field>
+        <field>
         <field_name>bug_id</field_name>
 
         <field_type>Integer</field_type>
@@ -1227,7 +1052,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 
         </field>
         <field>
-        <field_name>reported_by</field_name>
+        <field_name>submitted_by</field_name>
 
         <field_type>String</field_type>
 
@@ -1237,7 +1062,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 
         </field>
         <field>
-        <field_name>creation_date</field_name>
+        <field_name>submission_date</field_name>
 
         <field_type>Date</field_type>
 
@@ -1287,7 +1112,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 
         </field>
         <field>
-        <field_name>assigned_to</field_name>
+        <field_name>mimetype</field_name>
 
         <field_type>String</field_type>
 
@@ -1297,7 +1122,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 
         </field>
         <field>
-        <field_name>changes</field_name>
+        <field_name>requests</field_name>
 
         <field_type>String</field_type>
 
@@ -1307,7 +1132,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 
         </field>
         <field>
-        <field_name>component</field_name>
+        <field_name>is_obsolete</field_name>
 
         <field_type>String</field_type>
 
@@ -1317,7 +1142,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 
         </field>
         <field>
-        <field_name>flags</field_name>
+        <field_name>is_patch</field_name>
 
         <field_type>String</field_type>
 
@@ -1327,229 +1152,9 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 
         </field>
         <field>
-        <field_name>keywords</field_name>
+        <field_name>is_url</field_name>
 
         <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>opsys</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>major_status</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>major_status_last_changed_date</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>modified_fields</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>previous_major_status</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>previous_status</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>priority</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>product</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>resolution</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>severity</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>status</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>status_last_changed_date</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>status_whiteboard</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>status_whiteboard_items</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>target_milestone</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>version</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>days_in_previous_major_status</field_name>
-
-        <field_type>Integer</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>days_in_previous_status</field_name>
-
-        <field_type>Integer</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>days_in_major_status</field_name>
-
-        <field_type>Integer</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>days_in_status</field_name>
-
-        <field_type>Integer</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>days_open_accumulated</field_name>
-
-        <field_type>Integer</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>times_reopened</field_name>
-
-        <field_type>Integer</field_type>
 
         <field_length>-1</field_length>
 
@@ -1585,8 +1190,8 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 <parameter_description/>
 </usage_parameter></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>576</xloc>
-      <yloc>652</yloc>
+      <xloc>896</xloc>
+      <yloc>580</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
