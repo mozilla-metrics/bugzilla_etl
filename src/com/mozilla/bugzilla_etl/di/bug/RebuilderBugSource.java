@@ -41,7 +41,6 @@
 package com.mozilla.bugzilla_etl.di.bug;
 
 import java.util.Date;
-import java.util.EnumMap;
 import java.util.Map;
 
 import org.pentaho.di.core.RowSet;
@@ -55,11 +54,12 @@ import com.mozilla.bugzilla_etl.di.AbstractSource;
 import com.mozilla.bugzilla_etl.di.Converters;
 import com.mozilla.bugzilla_etl.di.Rebuilder;
 import com.mozilla.bugzilla_etl.di.io.Input;
+import com.mozilla.bugzilla_etl.model.Printer;
 import com.mozilla.bugzilla_etl.model.bug.Bug;
 import com.mozilla.bugzilla_etl.model.bug.BugFields;
+import com.mozilla.bugzilla_etl.model.bug.BugFields.Facet;
 import com.mozilla.bugzilla_etl.model.bug.BugVersion;
 import com.mozilla.bugzilla_etl.model.bug.Flag;
-import com.mozilla.bugzilla_etl.model.bug.BugFields.Facet;
 
 
 /**
@@ -131,11 +131,8 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
         }
 
         @Override protected void updateFacetsAndMeasurements(Bug bug, Date now) {
+            Printer.print(bug);
             bug.updateFacetsAndMeasurements(majorStatusTable, now);
-        }
-
-        @Override protected EnumMap<Facet, String> createFacets() {
-            return BugVersion.createFacets();
         }
 
         @Override protected boolean isComputed(BugFields.Facet facet) {

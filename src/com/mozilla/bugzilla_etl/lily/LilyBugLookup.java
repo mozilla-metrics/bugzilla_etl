@@ -103,10 +103,10 @@ public class LilyBugLookup extends AbstractLilyClient implements IBugLookup {
             return null;
         }
 
-        
+
         List<Record> versionRecords;
         try {
-            versionRecords = repository.readVersions(id, new Long(1), record.getVersion(), 
+            versionRecords = repository.readVersions(id, new Long(1), record.getVersion(),
                                                      emptyList);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -152,7 +152,7 @@ public class LilyBugLookup extends AbstractLilyClient implements IBugLookup {
         for (final Record versionRecord : versionRecords) {
             final Map<QName, Object> fields = versionRecord.getFields();
 
-            final EnumMap<BugFields.Facet, String> facets = BugVersion.createFacets();
+            final EnumMap<BugFields.Facet, String> facets = bug.createFacets();
             for (BugFields.Facet facet : BugFields.Facet.values()) {
                 Params facetParams = types.facetParams.get(facet);
                 ValueType valueType = facetParams.type;
@@ -172,7 +172,7 @@ public class LilyBugLookup extends AbstractLilyClient implements IBugLookup {
                 Assert.unreachable("Unhandled valueType %s used for facet: %s", valueType, facet);
             }
 
-            final EnumMap<BugFields.Measurement, Long> measurements = BugVersion.createMeasurements();
+            final EnumMap<BugFields.Measurement, Long> measurements = bug.createMeasurements();
             for (BugFields.Measurement measurement : BugFields.Measurement.values()) {
                 measurements.put(measurement,
                                  getLong(fields, types.measurementParams.get(measurement)));

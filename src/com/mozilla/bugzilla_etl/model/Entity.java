@@ -60,11 +60,13 @@ public abstract class Entity<E extends Entity<E, V, FACET>,
     }
 
     public boolean isNew() {
-        return versions.getFirst().persistenceState() == PersistenceState.NEW;
+        return iterator().next().persistenceState() == PersistenceState.NEW;
     }
 
     public abstract V latest(EnumMap<FACET, String> facets,
                              String creator, Date from, String annotation);
+
+    public abstract EnumMap<FACET, String> createFacets();
 
     /**
      * Steal all versions of the given entity and prepend them to this one.
@@ -124,8 +126,6 @@ public abstract class Entity<E extends Entity<E, V, FACET>,
             for (V version : this) System.out.format("[RESULT  ] %s\n", version);
         }
     }
-
-
 
 
     /**

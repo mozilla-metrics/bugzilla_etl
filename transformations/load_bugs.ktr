@@ -176,15 +176,15 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
      * Output step(s):
      *    (none)
      */
-    private com.mozilla.bugzilla_etl.di.BugSource source;
+    private com.mozilla.bugzilla_etl.di.bug.BugSource source;
     private com.mozilla.bugzilla_etl.es.BugDestination destination;
 
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
         if (first) {
             first = false;
             RowSet input = (RowSet)this.getInputRowSets().get(0);
-            source = new com.mozilla.bugzilla_etl.di.BugSource(this, input);
-            final String esNodes = getVariable("ES_NODES");
+            source = new com.mozilla.bugzilla_etl.di.bug.BugSource(this, input);
+            final String esNodes = getParameter("ES_NODES");
             destination = new com.mozilla.bugzilla_etl.es.BugDestination(System.out,
                                                                          esNodes);
         }
@@ -210,10 +210,13 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
     </definitions>
     <fields>
     </fields><clear_result_fields>N</clear_result_fields>
-<info_steps></info_steps><target_steps></target_steps><usage_parameters></usage_parameters>     <cluster_schema/>
+<info_steps></info_steps><target_steps></target_steps><usage_parameters><usage_parameter><parameter_tag>ES_NODES</parameter_tag>
+<parameter_value>${ES_NODES}</parameter_value>
+<parameter_description/>
+</usage_parameter></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>733</xloc>
-      <yloc>768</yloc>
+      <xloc>977</xloc>
+      <yloc>655</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -793,8 +796,8 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartitio
     </data>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>865</xloc>
-      <yloc>651</yloc>
+      <xloc>1109</xloc>
+      <yloc>579</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1176,7 +1179,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
         <length>-2</length>
         <precision>-2</precision>
       </field>      <field>        <name>activity_bug_id</name>
-        <rename/>
+        <rename>activity_entity_id</rename>
         <length>-2</length>
         <precision>-2</precision>
       </field>      <field>        <name>bug_when</name>
@@ -1358,8 +1361,8 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
       </field>        <select_unspecified>N</select_unspecified>
     </fields>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>332</xloc>
-      <yloc>652</yloc>
+      <xloc>839</xloc>
+      <yloc>580</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1398,15 +1401,15 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
      * - If "LILY_ZK_NODES" is set, the lily repository will be used.
      * - Otherwise an error is raised.
      *
-     * Input: A stream of bugs and bug activities. 
-     *        The activities of each bug are grouped together. 
+     * Input: A stream of bugs and bug activities.
+     *        The activities of each bug are grouped together.
      * Output: A stream of complete bug versions.
      */
     private static final String IN_STEP = "Prepare History Input";
     private static final String IN_STEP_STATUS_LOOKUP = "Get Major Status Lookup";
-    private com.mozilla.bugzilla_etl.di.BugDestination destination;
-    private com.mozilla.bugzilla_etl.di.RebuilderBugSource source;
-    private com.mozilla.bugzilla_etl.di.IBugLookup lookup;
+    private com.mozilla.bugzilla_etl.di.bug.BugDestination destination;
+    private com.mozilla.bugzilla_etl.di.bug.RebuilderBugSource source;
+    private com.mozilla.bugzilla_etl.di.bug.IBugLookup lookup;
 
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
         if (first) {
@@ -1414,7 +1417,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
             final RowMeta outputRowMeta = new RowMeta();
             data.outputRowMeta = outputRowMeta;
             meta.getFields(data.outputRowMeta, getStepname(), null, null, parent);
-            
+
             java.io.PrintStream log = System.out;
             String isInitialImport = getParameter("IS_IMPORT");
             String esNodes = getParameter("ES_NODES");
@@ -1426,36 +1429,35 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
             ));
             if ("true".equals(isInitialImport)) {
                 log.println("Rebuilder Lookup: none (initial_import)");
-                lookup = new com.mozilla.bugzilla_etl.di.EmptyBugLookup();
+                lookup = new com.mozilla.bugzilla_etl.di.bug.EmptyBugLookup();
             }
             else if (esNodes != null && esNodes.length() > 0) {
                 log.println("Rebuilder Lookup: elasticsearch");
-                lookup = 
+                lookup =
                     new com.mozilla.bugzilla_etl.es.BugLookup(log, esNodes);
             }
             else if (lilyZkNodes != null && lilyZkNodes.length() > 0) {
                 log.println("Rebuilder Lookup: Lily repository");
-                lookup = 
-                    new com.mozilla.bugzilla_etl.lily.LilyBugLookup(log, 
+                lookup =
+                    new com.mozilla.bugzilla_etl.lily.LilyBugLookup(log,
                                                                     lilyZkNodes);
             }
             else {
                 logError("RebuildVersionStep Lookup Configuration Invalid!");
                 com.mozilla.bugzilla_etl.base.Assert.unreachable();
             }
-            source = new com.mozilla.bugzilla_etl.di.RebuilderBugSource(
+            source = new com.mozilla.bugzilla_etl.di.bug.RebuilderBugSource(
                          this,
                          findInputRowSet(IN_STEP),
                          findInputRowSet(IN_STEP_STATUS_LOOKUP),
                          lookup
             );
 
-            destination = new com.mozilla.bugzilla_etl.di.BugDestination(this, outputRowMeta);
+            destination = new com.mozilla.bugzilla_etl.di.bug.BugDestination(this, outputRowMeta);
         }
         if (!source.hasMore()) {
             setOutputDone();
-            com.mozilla.bugzilla_etl.di.RebuilderBugSource.counter.print();
-            com.mozilla.bugzilla_etl.di.RebuilderBugSource.printConflictCounts();
+            source.printDiagnostics();
             return false;
         }
         destination.send(source.receive());
@@ -1841,8 +1843,8 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 <parameter_description/>
 </usage_parameter></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>733</xloc>
-      <yloc>652</yloc>
+      <xloc>977</xloc>
+      <yloc>580</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

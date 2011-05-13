@@ -38,72 +38,38 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.es;
+package com.mozilla.bugzilla_etl.es.bug;
+
+import static com.mozilla.bugzilla_etl.es.Mappings.VERSION;
+import static com.mozilla.bugzilla_etl.es.bug.Mappings.BUG;
+import static com.mozilla.bugzilla_etl.es.bug.Mappings.FACET;
+import static com.mozilla.bugzilla_etl.es.bug.Mappings.MEASURE;
 
 import java.io.PrintStream;
 import java.util.EnumMap;
 import java.util.Map;
 
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
-import org.elasticsearch.index.query.xcontent.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.sort.SortOrder;
 
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.di.bug.IBugLookup;
-import com.mozilla.bugzilla_etl.es.Mapping.BugMapping;
+import com.mozilla.bugzilla_etl.es.AbstractLookup;
 import com.mozilla.bugzilla_etl.model.Fields;
 import com.mozilla.bugzilla_etl.model.PersistenceState;
 import com.mozilla.bugzilla_etl.model.bug.Bug;
 import com.mozilla.bugzilla_etl.model.bug.BugFields;
 import com.mozilla.bugzilla_etl.model.bug.BugVersion;
 
-
-public class BugLookup extends AbstractEsClient implements IBugLookup {
+public class BugLookup extends AbstractLookup<Bug, BugVersion, BugFields.Facet>
+implements IBugLookup {
 
     public BugLookup(final PrintStream log, final String esNodes) {
         super(log, esNodes);
     }
 
-    @Override
-    public Bug find(Long bugzillaId) {
-
-        final String index = index();
-        final String type = BugMapping.TYPE;
-
-        // Now we have only the "latest" bug versions, sorted ascending.
-        log.format("ES LOOKUP: Searching for bug %d.\n", bugzillaId);
-
-        final SearchResponse response =
-            client.prepareSearch(index).setTypes(type)
-            .setSearchType(SearchType.DEFAULT)
-            .setTimeout("5s")
-            .setQuery(QueryBuilders.fieldQuery(BugFields.Bug.ID.columnName(),
-                                               bugzillaId))
-            .setFrom(0).setSize(1024).setExplain(false)
-            .addSort(BugFields.Measurement.NUMBER.columnName(), SortOrder.ASC)
-            .execute()
-            .actionGet();
-
-        final SearchHits hits = response.getHits();
-        if (hits.getTotalHits() == 0) {
-            // Now we have only the "latest" bug versions, sorted ascending.
-            log.format("LOOKUP: Nothing found for bug %d\n", bugzillaId);
-            return null;
-        }
-
-        // Now we have only the "latest" bug versions, sorted ascending.
-        log.format("LOOKUP: Reconstructing bug %d from %s versions\n",
-                   bugzillaId, hits.totalHits());
-
-        return reconstruct(hits);
-    }
-
-
     /** Construct a Bug from its elasticsearch version records. */
-    private Bug reconstruct(final SearchHits hits) {
+    protected Bug reconstruct(final SearchHits hits) {
         Assert.nonNull(hits);
         Assert.check(hits.hits().length > 0);
 
@@ -119,12 +85,12 @@ public class BugLookup extends AbstractEsClient implements IBugLookup {
         for (final SearchHit hit : hits) {
             final Map<String, Object> fields = hit.getSource();
 
-            final EnumMap<BugFields.Facet, String> facets = BugVersion.createFacets();
+            final EnumMap<BugFields.Facet, String> facets = bug.createFacets();
             for (BugFields.Facet facet : BugFields.Facet.values()) {
                 facets.put(facet, FACET.string(facet, fields));
             }
 
-            final EnumMap<BugFields.Measurement, Long> measurements = BugVersion.createMeasurements();
+            final EnumMap<BugFields.Measurement, Long> measurements = bug.createMeasurements();
             for (BugFields.Measurement measurement : BugFields.Measurement.values()) {
                 measurements.put(measurement,
                                  MEASURE.integer(measurement, fields));
@@ -144,5 +110,8 @@ public class BugLookup extends AbstractEsClient implements IBugLookup {
         return bug;
     }
 
+    @Override protected String type() { return "bug"; }
+    @Override protected String idColumn() { return BugFields.Bug.ID.columnName(); }
+    @Override protected String numberColumn() { return BugFields.Measurement.NUMBER.columnName(); }
 
 }

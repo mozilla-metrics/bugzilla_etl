@@ -38,7 +38,7 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.di.bug.steps;                                               // snip
+package com.mozilla.bugzilla_etl.di.attachment.steps;                                        // snip
                                                                                              // snip
                                                                                              // snip
 import org.pentaho.di.core.RowSet;                                                           // snip
@@ -54,31 +54,31 @@ import org.pentaho.di.trans.steps.userdefinedjavaclass.UserDefinedJavaClassMeta;
                                                                                              // snip
 // Allow casts for Janino compatibility (no generic collections).                            // snip
 @SuppressWarnings("cast")                                                                    // snip
-public class WriteBugsToEsStep extends TransformClassBase {                                  // snip
+public class WriteAttachmentsToEsStep extends TransformClassBase {                           // snip
                                                                                              // step
-    public WriteBugsToEsStep(UserDefinedJavaClass parent,                                    // snip
-                             UserDefinedJavaClassMeta meta,                                  // snip
-                             UserDefinedJavaClassData data) throws KettleStepException {     // snip
+    public WriteAttachmentsToEsStep(UserDefinedJavaClass parent,                             // snip
+                                    UserDefinedJavaClassMeta meta,                           // snip
+                                    UserDefinedJavaClassData data)                           // snip
+    throws KettleStepException {                                                             // snip
         super(parent, meta, data);                                                           // snip
     }                                                                                        // snip
 
     /**
-     * source: {@link com.mozilla.bugzilla_etl.di.bug.steps.WriteBugsToEsStep}
+     * source: {@link com.mozilla.bugzilla_etl.di.attachments.steps.WriteAttachmentsToEsStep}
      *
-     * Input: A stream of bugs (normalized)
-     * Output step(s): (none)
+     * Input: A stream of attachments (normalized)
+     * Output: (none)
      */
-    private com.mozilla.bugzilla_etl.di.bug.BugSource source;
-    private com.mozilla.bugzilla_etl.es.bug.BugDestination destination;
+    private com.mozilla.bugzilla_etl.di.attachment.AttachmentSource source;
+    private com.mozilla.bugzilla_etl.es.attachment.AttachmentDestination destination;
 
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
         if (first) {
             first = false;
             RowSet input = (RowSet)this.getInputRowSets().get(0);
-            source = new com.mozilla.bugzilla_etl.di.bug.BugSource(this, input);
+            source = new com.mozilla.bugzilla_etl.di.attachment.AttachmentSource(this, input);
             final String esNodes = getParameter("ES_NODES");
-            destination = new com.mozilla.bugzilla_etl.es.bug.BugDestination(System.out,
-                                                                         esNodes);
+            destination = new com.mozilla.bugzilla_etl.es.attachment.AttachmentDestination(System.out, esNodes);
         }
         try {
             if (!source.hasMore()) {

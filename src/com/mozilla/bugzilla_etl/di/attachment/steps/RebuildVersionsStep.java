@@ -38,12 +38,12 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.di.bug.steps;                                                   // snip
+package com.mozilla.bugzilla_etl.di.attachment.steps;                                        // snip
                                                                                              // snip
                                                                                              // snip
-import org.pentaho.di.core.RowSet;                                                           // snip
 import org.pentaho.di.core.exception.KettleException;                                        // snip
 import org.pentaho.di.core.exception.KettleStepException;                                    // snip
+import org.pentaho.di.core.row.RowMeta;                                                      // snip
 import org.pentaho.di.trans.step.StepDataInterface;                                          // snip
 import org.pentaho.di.trans.step.StepMetaInterface;                                          // snip
 import org.pentaho.di.trans.steps.userdefinedjavaclass.TransformClassBase;                   // snip
@@ -52,54 +52,86 @@ import org.pentaho.di.trans.steps.userdefinedjavaclass.UserDefinedJavaClassData;
 import org.pentaho.di.trans.steps.userdefinedjavaclass.UserDefinedJavaClassMeta;             // snip
                                                                                              // snip
                                                                                              // snip
-// Allow casts for Janino compatibility (no generic collections).                            // snip
-@SuppressWarnings("cast")                                                                    // snip
-public class WriteBugsToLilyStep extends TransformClassBase {                                // snip
-                                                                                             // step
-    public WriteBugsToLilyStep(UserDefinedJavaClass parent,                                  // snip
+public class RebuildVersionsStep extends TransformClassBase {                                // snip
+                                                                                             // snip
+    public RebuildVersionsStep(UserDefinedJavaClass parent,                                  // snip
                                UserDefinedJavaClassMeta meta,                                // snip
                                UserDefinedJavaClassData data) throws KettleStepException {   // snip
         super(parent, meta, data);                                                           // snip
-    }                                                                                        // step
+    }                                                                                        // snip
 
     /**
-     * source: {@link com.mozilla.bugzilla_etl.di.steps.WriteBugsToLilyStep}
+     * source: {@link com.mozilla.bugzilla_etl.di.steps.RebuildVersionsStep}
      *
-     * Input step(s):
-     *    * 0: A stream of bugs (normalized)
-     * Output step(s):
-     *    (none)
+     * This class corresponds to the actual contents of the UserDefinedJavaClass
+     * step editor window. Remove the lines ending in "// snip" when pasting the
+     * contents there.
+     *
+     * Because it is compiled at Runtime by Janino, the language constructs are
+     * restricted: http://docs.codehaus.org/display/JANINO/Home#Home-limitations
+     *
+     * For incremental update of existing attachments, a lookup is used:
+     * - If "IS_IMPORT" is set, an empty dummy lookup is used.
+     * - If "ES_NODES" is set, the elasticsearch lookup is used.
+     * - Otherwise an error is raised.
+     *
+     * Input: A stream of attachments and bug/attachment activities.
+     *        The activities of each attachment are grouped together.
+     * Output: A stream of complete attachment versions.
      */
-    private com.mozilla.bugzilla_etl.di.bug.BugSource source;
-    private com.mozilla.bugzilla_etl.lily.BugDestination destination;
+    private static final String IN_STEP = "Prepare History Input";
+    private static final String IN_STEP_STATUS_LOOKUP = "Get Major Status Lookup";
+    private com.mozilla.bugzilla_etl.di.attachment.AttachmentDestination destination;
+    private com.mozilla.bugzilla_etl.di.attachment.RebuilderAttachmentSource source;
+    private com.mozilla.bugzilla_etl.di.attachment.IAttachmentLookup lookup;
 
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
         if (first) {
             first = false;
-            RowSet input = (RowSet)this.getInputRowSets().get(0);
-            source = new com.mozilla.bugzilla_etl.di.bug.BugSource(this, input);
-            final String lilyZkNodes = getParameter("LILY_ZK_NODES");
-            destination = new com.mozilla.bugzilla_etl.lily.BugDestination(System.out,
-                                                                           lilyZkNodes);
+            final RowMeta outputRowMeta = new RowMeta();
+            data.outputRowMeta = outputRowMeta;
+            meta.getFields(data.outputRowMeta, getStepname(), null, null, parent);
+
+            java.io.PrintStream log = System.out;
+            String isInitialImport = getParameter("IS_IMPORT");
+            String esNodes = getParameter("ES_NODES");
+
+            logBasic(String.format("Params: IS_IMPORT=%s, ES_NODES=%s",
+                                   new Object[]{isInitialImport, esNodes}));
+
+            if ("true".equals(isInitialImport)) {
+                log.println("Rebuilder Lookup: none (initial_import)");
+                lookup =
+                    new com.mozilla.bugzilla_etl.di.attachment.EmptyAttachmentLookup();
+            }
+            else if (esNodes != null && esNodes.length() > 0) {
+                log.println("Rebuilder Lookup: elasticsearch");
+                lookup =
+                    new com.mozilla.bugzilla_etl.es.attachment.AttachmentLookup(log, esNodes);
+            }
+            else {
+                logError("RebuildVersionsStep (Attachment) Lookup Configuration Invalid!");
+                com.mozilla.bugzilla_etl.base.Assert.unreachable();
+            }
+            source =
+                new com.mozilla.bugzilla_etl.di.attachment.RebuilderAttachmentSource(this,
+                                                                                     findInputRowSet(IN_STEP),
+                                                                                     lookup);
+
+            destination =
+                new com.mozilla.bugzilla_etl.di.attachment.AttachmentDestination(this, outputRowMeta);
         }
         if (!source.hasMore()) {
             setOutputDone();
-            com.mozilla.bugzilla_etl.di.bug.BugSource.counter.print();
-            com.mozilla.bugzilla_etl.lily.BugDestination.counter.print();
-            com.mozilla.bugzilla_etl.lily.BugDestination.historicCounter.print();
+            source.printDiagnostics();
             return false;
         }
-        try {
-            destination.send(source.receive());
-            incrementLinesWritten();
-        }
-        catch (org.lilyproject.repository.api.RepositoryException error) {
-            error.printStackTrace(System.out);
-            System.out.format("Repository Error (%s) (see stack trace above),",
-                              new Object[] { error.getClass().getSimpleName() });
-            throw new RuntimeException(error);
-        }
+        destination.send(source.receive());
         return true;
+    }
+
+    public static String[] getInfoSteps() {
+        return new String[] { IN_STEP_STATUS_LOOKUP };
     }
 
 }                                                                                            // snip

@@ -41,7 +41,6 @@
 package com.mozilla.bugzilla_etl.di.attachment;
 
 import java.util.Date;
-import java.util.EnumMap;
 
 import org.pentaho.di.core.RowSet;
 import org.pentaho.di.core.exception.KettleStepException;
@@ -64,12 +63,11 @@ import com.mozilla.bugzilla_etl.model.attachment.Request;
 public class RebuilderAttachmentSource extends AbstractSource<Attachment> {
 
     public RebuilderAttachmentSource(TransformClassBase step,
-                                     RowSet bugs,
-                                     RowSet majorStatusLookup,
+                                     RowSet attachments,
                                      final Lookup<Attachment, ? extends Exception> lookup)
     throws KettleStepException {
-        super(step, bugs);
-        rebuilder = new AttachmentRebuilder(step, input, majorStatusLookup, lookup);
+        super(step, attachments);
+        rebuilder = new AttachmentRebuilder(step, input, lookup);
     }
 
     /** Are there more bugs in the input? */
@@ -82,9 +80,7 @@ public class RebuilderAttachmentSource extends AbstractSource<Attachment> {
     @Override
     public Attachment receive() throws KettleValueException, KettleStepException {
         Attachment attachment = rebuilder.fromRows();
-        // FIXME: get useful value for isNew
-        boolean isNew = false;
-        counter.count(attachment, isNew);
+        counter.count(attachment, attachment.isNew());
         return attachment;
     }
 
@@ -99,7 +95,7 @@ public class RebuilderAttachmentSource extends AbstractSource<Attachment> {
     static class AttachmentRebuilder extends Rebuilder<Attachment, AttachmentVersion,
                                                        AttachmentFields.Facet, Request> {
 
-        public AttachmentRebuilder(TransformClassBase step, Input input, RowSet majorStatusLookup,
+        public AttachmentRebuilder(TransformClassBase step, Input input,
                                    Lookup<Attachment, ? extends Exception> lookup) {
             super(input, lookup, Converters.REQUESTS);
         }
@@ -121,10 +117,6 @@ public class RebuilderAttachmentSource extends AbstractSource<Attachment> {
 
         @Override protected void updateFacetsAndMeasurements(Attachment attachment, Date now) {
             attachment.updateFacetsAndMeasurements(now);
-        }
-
-        @Override protected EnumMap<AttachmentFields.Facet, String> createFacets() {
-            return AttachmentVersion.createFacets();
         }
 
         @Override protected boolean isComputed(AttachmentFields.Facet facet) {

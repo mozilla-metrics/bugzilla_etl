@@ -60,16 +60,6 @@ import com.mozilla.bugzilla_etl.model.Version;
  */
 public class BugVersion extends Version<Bug, BugVersion, BugFields.Facet> {
 
-    /** Helps to create fields for new versions. */
-    public static EnumMap<BugFields.Facet, String> createFacets() {
-        return new EnumMap<BugFields.Facet, String>(BugFields.Facet.class);
-    }
-
-    /** Helps to create fields for new versions. */
-    public static EnumMap<BugFields.Measurement, Long> createMeasurements() {
-        return new EnumMap<BugFields.Measurement, Long>(BugFields.Measurement.class);
-    }
-
     /**
      * @const
      * Create a new version that is valid until this version becomes valid.
@@ -82,7 +72,7 @@ public class BugVersion extends Version<Bug, BugVersion, BugFields.Facet> {
                                   String maybeAnnotation) {
         Assert.nonNull(author, facets, from);
         if (maybeAnnotation == null) maybeAnnotation = "";
-        return new BugVersion(this.entity, facets, BugVersion.createMeasurements(),
+        return new BugVersion(this.entity, facets, entity.createMeasurements(),
                               author, maybeAnnotation, from, this.from,
                               PersistenceState.NEW);
     }

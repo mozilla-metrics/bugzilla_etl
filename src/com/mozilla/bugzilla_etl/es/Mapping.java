@@ -47,113 +47,41 @@ import java.util.List;
 import java.util.Map;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
+
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.di.Converters;
 import com.mozilla.bugzilla_etl.di.Converters.Converter;
 import com.mozilla.bugzilla_etl.model.Field;
-import com.mozilla.bugzilla_etl.model.Fields;
-import com.mozilla.bugzilla_etl.model.bug.BugFields;
+import com.mozilla.bugzilla_etl.model.attachment.AttachmentFields;
 
 
-interface Mapping<T extends Field> {
+public interface Mapping<T extends Field> {
 
     String string(T field, Map<String, Object> fields);
     Date date(T field, Map<String, Object> fields);
     String csv(T field, Map<String, Object> fields);
     Long integer(T field, Map<String, Object> fields);
-    XContentBuilder append(XContentBuilder builder, T field, Object value)
-        throws IOException;
+    XContentBuilder append(XContentBuilder builder, T field, Object value) throws IOException;
 
-    static class BugMapping extends BaseMapping<BugFields.Bug> {
-
-        public static final String TYPE = "bug";
-
-        BugMapping() {
-            conversions =
-                new EnumMap<BugFields.Bug, Conv>(BugFields.Bug.class);
-            conversions.put(BugFields.Bug.ID,            Conv.INTEGER);
-            conversions.put(BugFields.Bug.REPORTED_BY,   Conv.STRING);
-            conversions.put(BugFields.Bug.CREATION_DATE, Conv.DATE);
-        }
-    }
-
-
-    static class VersionMapping extends BaseMapping<Fields.Activity> {
-        VersionMapping() {
-            conversions =
-                new EnumMap<Fields.Activity, Conv>(Fields.Activity.class);
-            conversions.put(Fields.Activity.ENTITY_ID,            Conv.UNUSED);
-            conversions.put(Fields.Activity.PERSISTENCE_STATE, Conv.UNUSED);
-            conversions.put(Fields.Activity.MODIFIED_BY,       Conv.STRING);
-            conversions.put(Fields.Activity.ANNOTATION,        Conv.STRING);
-            conversions.put(Fields.Activity.MODIFICATION_DATE, Conv.DATE);
-            conversions.put(Fields.Activity.EXPIRATION_DATE,   Conv.DATE);
-        }
-    }
-
-
-    static class FacetMapping extends BaseMapping<BugFields.Facet> {
-        FacetMapping() {
-            final EnumMap<BugFields.Facet, Conv> c =
-                new EnumMap<BugFields.Facet, Conv>(BugFields.Facet.class);
-            c.put(BugFields.Facet.KEYWORDS,                       Conv.STRINGLIST);
-            c.put(BugFields.Facet.FLAGS,                          Conv.STRINGLIST);
-            c.put(BugFields.Facet.MODIFIED_FIELDS,                Conv.STRINGLIST);
-            c.put(BugFields.Facet.STATUS_WHITEBOARD_ITEMS,        Conv.STRINGLIST);
-            c.put(BugFields.Facet.CHANGES,                        Conv.STRINGLIST);
-            c.put(BugFields.Facet.MAJOR_STATUS_LAST_CHANGED_DATE, Conv.DATE);
-            c.put(BugFields.Facet.STATUS_LAST_CHANGED_DATE,       Conv.DATE);
-            // The others are all single strings:
-            for (BugFields.Facet field : BugFields.Facet.values()) {
-                if (c.containsKey(field)) continue;
-                c.put(field, Conv.STRING);
+    static class AttachmentFacetMapping extends BaseMapping<AttachmentFields.Facet> {{
+        conversions = new EnumMap<AttachmentFields.Facet, Conv>(AttachmentFields.Facet.class) {{
+            for (AttachmentFields.Facet field : AttachmentFields.Facet.values()) {
+                switch (field) {
+                    case REQUESTS:
+                    case CHANGES:
+                        put(field, Conv.STRINGLIST); continue;
+                    default:
+                        put(field, Conv.STRING);
+                }
             }
-            conversions = c;
-        }
-
-        @Override
-        public XContentBuilder append(XContentBuilder builder,
-                                      BugFields.Facet field, Object value) throws IOException {
-            Assert.check(value == null || value instanceof String);
-            String facet = (String) value;
-            switch (conversions.get(field)) {
-                case DATE:
-                    Date date = Converters.DATE.parse(facet);
-                    if (date == null) return builder;
-                    return builder.field(field.columnName(), date);
-                case STRING:
-                    if (facet == null) facet = "<none>";
-                    return builder.field(field.columnName(), facet);
-                case STRINGLIST:
-                    List<String> values = csvConverter.parse(facet);
-                    if (values.size() == 0) return builder;
-                    builder.field(field.columnName()).startArray();
-                    for (String item : values) builder.value(item);
-                    return builder.endArray();
-                case UNUSED:
-                    return builder;
-                default:
-                    return Assert.unreachable(XContentBuilder.class);
-            }
-        }
-
-    }
+        }};
+    }}
 
 
-    static class MeasurementMapping extends BaseMapping<BugFields.Measurement> {
-        public MeasurementMapping() {
-            conversions =
-                new EnumMap<BugFields.Measurement, Conv>(BugFields.Measurement.class);
-            for (BugFields.Measurement field : BugFields.Measurement.values()) {
-                conversions.put(field, Conv.INTEGER);
-            }
-        }
+    public static enum Conv { STRING, STRINGLIST, DATE, INTEGER, UNUSED }
 
-    }
 
-    static enum Conv { STRING, STRINGLIST, DATE, INTEGER, UNUSED }
-
-    static abstract class BaseMapping<T extends Field> implements Mapping<T> {
+    public static abstract class BaseMapping<T extends Field> implements Mapping<T> {
 
         @Override
         public String string(T field, Map<String, Object> fields) {
@@ -249,5 +177,38 @@ interface Mapping<T extends Field> {
         protected Map<T, Conv> conversions;
 
     }
+
+
+    public static abstract class BaseFacetMapping<FACET extends Enum<FACET> & Field>
+    extends BaseMapping<FACET>{
+
+        @Override
+        public XContentBuilder append(XContentBuilder builder,
+                                      FACET field, Object value) throws IOException {
+            Assert.check(value == null || value instanceof String);
+            String facet = (String) value;
+            switch (conversions.get(field)) {
+                case DATE:
+                    Date date = Converters.DATE.parse(facet);
+                    if (date == null) return builder;
+                    return builder.field(field.columnName(), date);
+                case STRING:
+                    if (facet == null) facet = "<none>";
+                    return builder.field(field.columnName(), facet);
+                case STRINGLIST:
+                    List<String> values = csvConverter.parse(facet);
+                    if (values.size() == 0) return builder;
+                    builder.field(field.columnName()).startArray();
+                    for (String item : values) builder.value(item);
+                    return builder.endArray();
+                case UNUSED:
+                    return builder;
+                default:
+                    return Assert.unreachable(XContentBuilder.class);
+            }
+        }
+
+    }
+
 
 }

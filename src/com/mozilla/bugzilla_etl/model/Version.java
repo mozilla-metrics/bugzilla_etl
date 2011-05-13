@@ -3,6 +3,7 @@ package com.mozilla.bugzilla_etl.model;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.Map;
 
 import org.apache.commons.lang.time.DateUtils;
 
@@ -55,6 +56,7 @@ public abstract class Version<E extends Entity<E, V, FACET>,
      * is added.
      */
     public abstract V update(String newAnnotation, Date newTo);
+    public abstract Map<FACET, String> facets();
 
     protected final Date from;
     protected final Date to;

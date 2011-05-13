@@ -95,24 +95,15 @@ class Helpers {
 
     private class ColumnHelpers {
         final EnumMap<Column, FieldHelper> helpers = new EnumMap<Column, FieldHelper>(Column.class);
+        final String columnName;
 
-        private String columnName(Field field, Fields.Column column) {
-            final String columnName = field.columnName();
-            switch (column) {
-                case LATEST: return columnName;
-                case FROM: return columnName + "_from";
-                case TO: return columnName + "_fo";
-                case RESULT: return columnName;
-                default: return Assert.unreachable(String.class, "Invalid column.");
-            }
-        }
-
-        ColumnHelpers(final Field field) {
-            for (Column c : Column.values())
-                helpers.put(Column.FROM, new FieldHelper(rowMeta, columnName(field, c)));
+        private ColumnHelpers(Field field) {
+            columnName = field.columnName();
         }
 
         FieldHelper get(final Column column) {
+            if (helpers.get(column) == null)
+                helpers.put(column, new FieldHelper(rowMeta, columnName));
             return helpers.get(column);
         }
     }

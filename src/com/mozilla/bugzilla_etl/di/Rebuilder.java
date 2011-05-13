@@ -83,7 +83,7 @@ public abstract class Rebuilder<E extends Entity<E, V, FACET>,
 
         // Keep current facet state and mutate it while walking the activities.
         // Keep flags state separate so it does not have to be parsed for every comparison.
-        final State state = stateFromEntityTable(input.row());
+        final State state = stateFromEntityTable(entity, input.row());
         boolean rowContainsActivity = input.cell(Fields.Activity.ENTITY_ID).longValue() != null;
         if (rowContainsActivity) {
             processActivitiesRows(entity, state);
@@ -297,7 +297,6 @@ public abstract class Rebuilder<E extends Entity<E, V, FACET>,
         final PrintStream out = System.out;
         for (FACET facet : state.facets.keySet()) {
             if (isComputed(facet)) continue;
-            // FIXME: use FROM/TO
             final String toValue = activity.cell(facet, Fields.Column.TO).stringValue();
             final String fromValue = activity.cell(facet, Fields.Column.FROM).stringValue();
             if (fromValue.isEmpty() && toValue.isEmpty()) continue;
@@ -362,7 +361,6 @@ public abstract class Rebuilder<E extends Entity<E, V, FACET>,
     }
 
     protected abstract void updateFacetsAndMeasurements(E entity, Date now);
-    protected abstract EnumMap<FACET, String> createFacets();
     protected abstract boolean isComputed(FACET facet);
     protected abstract FACET flagsFacet();
 
@@ -384,10 +382,10 @@ public abstract class Rebuilder<E extends Entity<E, V, FACET>,
      * @const
      * @return The current state, from the entity table and referenced tables.
      */
-    State stateFromEntityTable(Input.Row row) throws KettleValueException {
+    State stateFromEntityTable(E entity, Input.Row row) throws KettleValueException {
         // Use the "left leg" (latest bug state from bugzilla) to construct the "current" version.
-        final EnumMap<FACET, String> facetState = createFacets();
-        final Map<String, FLAG> flagState = new java.util.HashMap<String, FLAG>();
+        final EnumMap<FACET, String> facetState = entity.createFacets();
+        final Map<String, FLAG> flagState = new HashMap<String, FLAG>();
         for (FACET facet : facetState.keySet()) {
             if (isComputed(facet)) continue;
             String value = row.cell(facet).stringValue();

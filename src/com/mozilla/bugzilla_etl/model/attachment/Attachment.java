@@ -88,4 +88,18 @@ public class Attachment extends Entity<Attachment, AttachmentVersion, Facet> {
         return facet == Facet.REQUESTS;
     }
 
+
+    @Override public EnumMap<Facet, String> createFacets() {
+        return new EnumMap<Facet, String>(Facet.class) {{
+            for (Facet f : Facet.values()) put(f, null);
+        }};
+    }
+
+
+    public EnumMap<Measurement, Long> createMeasurements() {
+        return new EnumMap<Measurement, Long>(Measurement.class) {{
+            for (Measurement m : Measurement.values()) put(m, null);
+        }};
+    }
+
 }

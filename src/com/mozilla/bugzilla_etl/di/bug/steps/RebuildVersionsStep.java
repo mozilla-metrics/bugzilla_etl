@@ -38,7 +38,7 @@
  * ***** END LICENSE BLOCK *****
  */
 
-package com.mozilla.bugzilla_etl.di.bug.steps;                                                   // snip
+package com.mozilla.bugzilla_etl.di.bug.steps;                                               // snip
                                                                                              // snip
                                                                                              // snip
 import org.pentaho.di.core.exception.KettleException;                                        // snip
@@ -108,8 +108,7 @@ public class RebuildVersionsStep extends TransformClassBase {                   
             }
             else if (esNodes != null && esNodes.length() > 0) {
                 log.println("Rebuilder Lookup: elasticsearch");
-                lookup =
-                    new com.mozilla.bugzilla_etl.es.BugLookup(log, esNodes);
+                lookup = new com.mozilla.bugzilla_etl.es.bug.BugLookup(log, esNodes);
             }
             else if (lilyZkNodes != null && lilyZkNodes.length() > 0) {
                 log.println("Rebuilder Lookup: Lily repository");

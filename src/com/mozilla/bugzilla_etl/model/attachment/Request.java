@@ -2,6 +2,10 @@ package com.mozilla.bugzilla_etl.model.attachment;
 
 import com.mozilla.bugzilla_etl.model.bug.Flag;
 
+
+/**
+ * A bugzilla review request.
+ */
 public class Request extends Flag {
 
     private final String requestee;

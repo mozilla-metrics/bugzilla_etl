@@ -54,6 +54,8 @@ import com.mozilla.bugzilla_etl.di.Converters;
 import com.mozilla.bugzilla_etl.model.Entity;
 import com.mozilla.bugzilla_etl.model.PersistenceState;
 import com.mozilla.bugzilla_etl.model.Version;
+import com.mozilla.bugzilla_etl.model.bug.BugFields.Facet;
+import com.mozilla.bugzilla_etl.model.bug.BugFields.Measurement;
 
 
 /** A bug with its invariant properties and all of its versions. */
@@ -119,7 +121,7 @@ public class Bug extends Entity<Bug, BugVersion, BugFields.Facet> {
         // and no change for days_open_accumulated
         boolean isLatest;
 
-        EnumMap<BugFields.Facet, String> previousFacets = BugVersion.createFacets();
+        EnumMap<BugFields.Facet, String> previousFacets = createFacets();
         Date statusLastChanged = creationDate;
         Date majorStatusLastChanged = creationDate;
         long msInStatus = 0;
@@ -216,6 +218,7 @@ public class Bug extends Entity<Bug, BugVersion, BugFields.Facet> {
 
     }
 
+
     public BugVersion latest(EnumMap<BugFields.Facet, String> facets,
                              String creator, Date from, String annotation) {
         Assert.nonNull(facets, creator, from);
@@ -223,6 +226,20 @@ public class Bug extends Entity<Bug, BugVersion, BugFields.Facet> {
                               new EnumMap<BugFields.Measurement, Long>(BugFields.Measurement.class),
                               creator, annotation, from, Version.TO_FUTURE, PersistenceState.NEW);
     }
+
+    public EnumMap<BugFields.Facet, String> createFacets() {
+        return new EnumMap<BugFields.Facet, String>(BugFields.Facet.class) {{
+            for (Facet facet : BugFields.Facet.values()) put(facet, null);
+        }};
+    }
+
+    public EnumMap<BugFields.Measurement, Long> createMeasurements() {
+        return new EnumMap<BugFields.Measurement, Long>(BugFields.Measurement.class) {{
+            for (Measurement measure : BugFields.Measurement.values()) put(measure, null);
+        }};
+    }
+
+
 
     private final UpdateHelper helper = new UpdateHelper();
 

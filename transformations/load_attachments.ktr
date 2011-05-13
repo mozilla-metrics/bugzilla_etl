@@ -100,7 +100,7 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
       <xloc>600</xloc>
       <yloc>21</yloc>
       <width>454</width>
-      <heigth>55</heigth>
+      <heigth>74</heigth>
       <fontname>Ariel</fontname>
       <fontsize>12</fontsize>
       <fontbold>N</fontbold>
@@ -110,28 +110,6 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
       <fontcolorblue>0</fontcolorblue>
       <backgroundcolorred>255</backgroundcolorred>
       <backgroundcolorgreen>255</backgroundcolorgreen>
-      <backgroundcolorblue>0</backgroundcolorblue>
-      <bordercolorred>100</bordercolorred>
-      <bordercolorgreen>100</bordercolorgreen>
-      <bordercolorblue>100</bordercolorblue>
-      <drawshadow>Y</drawshadow>
-    </notepad>
-    <notepad>
-      <note>:TODO: separare requestee &#47; flag,
-generate requester from modified_by + flag type</note>
-      <xloc>453</xloc>
-      <yloc>381</yloc>
-      <width>249</width>
-      <heigth>34</heigth>
-      <fontname>Lucida Grande</fontname>
-      <fontsize>10</fontsize>
-      <fontbold>N</fontbold>
-      <fontitalic>N</fontitalic>
-      <fontcolorred>0</fontcolorred>
-      <fontcolorgreen>0</fontcolorgreen>
-      <fontcolorblue>0</fontcolorblue>
-      <backgroundcolorred>255</backgroundcolorred>
-      <backgroundcolorgreen>165</backgroundcolorgreen>
       <backgroundcolorblue>0</backgroundcolorblue>
       <bordercolorred>100</bordercolorred>
       <bordercolorgreen>100</bordercolorgreen>
@@ -190,24 +168,21 @@ generate requester from modified_by + flag type</note>
 
         <class_source><![CDATA[
     /**
-     * source: {@link com.mozilla.bugzilla_etl.di.steps.WriteBugsToEsStep}
+     * source: {@link com.mozilla.bugzilla_etl.di.attachments.steps.WriteAttachmentsToEsStep}
      *
-     * Input step(s):
-     *    * 0: A stream of bugs (normalized)
-     * Output step(s):
-     *    (none)
+     * Input: A stream of attachments (normalized)
+     * Output: (none)
      */
-    private com.mozilla.bugzilla_etl.di.BugSource source;
-    private com.mozilla.bugzilla_etl.es.BugDestination destination;
+    private com.mozilla.bugzilla_etl.di.attachment.AttachmentSource source;
+    private com.mozilla.bugzilla_etl.es.attachment.AttachmentDestination destination;
 
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
         if (first) {
             first = false;
             RowSet input = (RowSet)this.getInputRowSets().get(0);
-            source = new com.mozilla.bugzilla_etl.di.BugSource(this, input);
-            final String esNodes = getVariable("ES_NODES");
-            destination = new com.mozilla.bugzilla_etl.es.BugDestination(System.out,
-                                                                         esNodes);
+            source = new com.mozilla.bugzilla_etl.di.attachment.AttachmentSource(this, input);
+            final String esNodes = getParameter("ES_NODES");
+            destination = new com.mozilla.bugzilla_etl.es.attachment.AttachmentDestination(System.out, esNodes);
         }
         try {
             if (!source.hasMore()) {
@@ -310,6 +285,178 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartitio
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>331</xloc>
       <yloc>427</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Denormalise activities</name>
+    <type>Denormaliser</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+      <key_field>field_name</key_field>
+      <group>
+        <field>
+          <name>activity_bug_id</name>
+          </field>
+        <field>
+          <name>bug_when</name>
+          </field>
+        <field>
+          <name>modified_by</name>
+          </field>
+        </group>
+      <fields>
+        <field>
+          <field_name>removed</field_name>
+          <key_value>flags</key_value>
+          <target_name>flags_from</target_name>
+          <target_type>String</target_type>
+          <target_format/>
+          <target_length>-1</target_length>
+          <target_precision>-1</target_precision>
+          <target_decimal_symbol/>
+          <target_grouping_symbol/>
+          <target_currency_symbol/>
+          <target_null_string/>
+          <target_aggregation_type>CONCAT_COMMA</target_aggregation_type>
+          </field>
+        <field>
+          <field_name>added</field_name>
+          <key_value>flags</key_value>
+          <target_name>flags_to</target_name>
+          <target_type>String</target_type>
+          <target_format/>
+          <target_length>-1</target_length>
+          <target_precision>-1</target_precision>
+          <target_decimal_symbol/>
+          <target_grouping_symbol/>
+          <target_currency_symbol/>
+          <target_null_string/>
+          <target_aggregation_type>CONCAT_COMMA</target_aggregation_type>
+          </field>
+        <field>
+          <field_name>removed</field_name>
+          <key_value>attachments.isobsolete</key_value>
+          <target_name>is_obsolete_from</target_name>
+          <target_type>String</target_type>
+          <target_format/>
+          <target_length>-1</target_length>
+          <target_precision>-1</target_precision>
+          <target_decimal_symbol/>
+          <target_grouping_symbol/>
+          <target_currency_symbol/>
+          <target_null_string/>
+          <target_aggregation_type>-</target_aggregation_type>
+          </field>
+        <field>
+          <field_name>added</field_name>
+          <key_value>attachments.isobsolete</key_value>
+          <target_name>is_obsolete_to</target_name>
+          <target_type>String</target_type>
+          <target_format/>
+          <target_length>-1</target_length>
+          <target_precision>-1</target_precision>
+          <target_decimal_symbol/>
+          <target_grouping_symbol/>
+          <target_currency_symbol/>
+          <target_null_string/>
+          <target_aggregation_type>-</target_aggregation_type>
+          </field>
+        <field>
+          <field_name>removed</field_name>
+          <key_value>attachments.ispatch</key_value>
+          <target_name>is_patch_from</target_name>
+          <target_type>String</target_type>
+          <target_format/>
+          <target_length>-1</target_length>
+          <target_precision>-1</target_precision>
+          <target_decimal_symbol/>
+          <target_grouping_symbol/>
+          <target_currency_symbol/>
+          <target_null_string/>
+          <target_aggregation_type>-</target_aggregation_type>
+          </field>
+        <field>
+          <field_name>added</field_name>
+          <key_value>attachments.ispatch</key_value>
+          <target_name>is_patch_to</target_name>
+          <target_type>String</target_type>
+          <target_format/>
+          <target_length>-1</target_length>
+          <target_precision>-1</target_precision>
+          <target_decimal_symbol/>
+          <target_grouping_symbol/>
+          <target_currency_symbol/>
+          <target_null_string/>
+          <target_aggregation_type>-</target_aggregation_type>
+          </field>
+        <field>
+          <field_name>removed</field_name>
+          <key_value>isurl</key_value>
+          <target_name>is_url_from</target_name>
+          <target_type>String</target_type>
+          <target_format/>
+          <target_length>-1</target_length>
+          <target_precision>-1</target_precision>
+          <target_decimal_symbol/>
+          <target_grouping_symbol/>
+          <target_currency_symbol/>
+          <target_null_string/>
+          <target_aggregation_type>-</target_aggregation_type>
+          </field>
+        <field>
+          <field_name>added</field_name>
+          <key_value>isurl</key_value>
+          <target_name>is_url_to</target_name>
+          <target_type>String</target_type>
+          <target_format/>
+          <target_length>-1</target_length>
+          <target_precision>-1</target_precision>
+          <target_decimal_symbol/>
+          <target_grouping_symbol/>
+          <target_currency_symbol/>
+          <target_null_string/>
+          <target_aggregation_type>-</target_aggregation_type>
+          </field>
+        <field>
+          <field_name>removed</field_name>
+          <key_value>attachments.mimetype</key_value>
+          <target_name>mimetype_from</target_name>
+          <target_type>String</target_type>
+          <target_format/>
+          <target_length>-1</target_length>
+          <target_precision>-1</target_precision>
+          <target_decimal_symbol/>
+          <target_grouping_symbol/>
+          <target_currency_symbol/>
+          <target_null_string/>
+          <target_aggregation_type>-</target_aggregation_type>
+          </field>
+        <field>
+          <field_name>added</field_name>
+          <key_value>attachments.mimetype</key_value>
+          <target_name>mimetype_to</target_name>
+          <target_type>String</target_type>
+          <target_format/>
+          <target_length>-1</target_length>
+          <target_precision>-1</target_precision>
+          <target_decimal_symbol/>
+          <target_grouping_symbol/>
+          <target_currency_symbol/>
+          <target_null_string/>
+          <target_aggregation_type>-</target_aggregation_type>
+          </field>
+        </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>546</xloc>
+      <yloc>278</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -425,40 +572,6 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartitio
     </step>
 
   <step>
-    <name>Get reviews for new&#47;modified attachments</name>
-    <type>TableInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <connection>bugs</connection>
-    <sql>SELECT
-  f.attach_id AS attachment_id
-, concat( type.`name`, f.status ) as flag
-, &apos;flag&apos; as field_name
-FROM flags as f JOIN flagtypes as type on f.type_id = type.id
-WHERE type.target_type = &apos;a&apos; 
-and modification_date &gt; ?
-AND ${BUG_IDS_PARTITION}
-ORDER BY attach_id ASC
-</sql>
-    <limit>0</limit>
-    <lookup>Calculate start date</lookup>
-    <execute_each_row>N</execute_each_row>
-    <variables_active>Y</variables_active>
-    <lazy_conversion_active>N</lazy_conversion_active>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>81</xloc>
-      <yloc>204</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
     <name>Get new activities</name>
     <type>TableInput</type>
     <description/>
@@ -564,6 +677,40 @@ ORDER BY
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>332</xloc>
       <yloc>202</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Get reviews for new&#47;modified attachments</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>bugs</connection>
+    <sql>SELECT
+  f.attach_id AS attachment_id
+, concat( type.`name`, f.status ) as flag
+, &apos;flag&apos; as field_name
+FROM flags as f JOIN flagtypes as type on f.type_id = type.id
+WHERE type.target_type = &apos;a&apos; 
+and modification_date &gt; ?
+AND ${BUG_IDS_PARTITION}
+ORDER BY attach_id ASC
+</sql>
+    <limit>0</limit>
+    <lookup>Calculate start date</lookup>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>Y</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>81</xloc>
+      <yloc>204</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1002,21 +1149,20 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
      * Because it is compiled at Runtime by Janino, the language constructs are
      * restricted: http://docs.codehaus.org/display/JANINO/Home#Home-limitations
      *
-     * For incremental update of existing bugs, a lookup is used:
+     * For incremental update of existing attachments, a lookup is used:
      * - If "IS_IMPORT" is set, an empty dummy lookup is used.
      * - If "ES_NODES" is set, the elasticsearch lookup is used.
-     * - If "LILY_ZK_NODES" is set, the lily repository will be used.
      * - Otherwise an error is raised.
      *
-     * Input: A stream of bugs and bug activities. 
-     *        The activities of each bug are grouped together. 
-     * Output: A stream of complete bug versions.
+     * Input: A stream of attachments and bug/attachment activities.
+     *        The activities of each attachment are grouped together.
+     * Output: A stream of complete attachment versions.
      */
     private static final String IN_STEP = "Prepare History Input";
     private static final String IN_STEP_STATUS_LOOKUP = "Get Major Status Lookup";
-    private com.mozilla.bugzilla_etl.di.BugDestination destination;
-    private com.mozilla.bugzilla_etl.di.RebuilderBugSource source;
-    private com.mozilla.bugzilla_etl.di.IBugLookup lookup;
+    private com.mozilla.bugzilla_etl.di.attachment.AttachmentDestination destination;
+    private com.mozilla.bugzilla_etl.di.attachment.RebuilderAttachmentSource source;
+    private com.mozilla.bugzilla_etl.di.attachment.IAttachmentLookup lookup;
 
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
         if (first) {
@@ -1024,48 +1170,39 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
             final RowMeta outputRowMeta = new RowMeta();
             data.outputRowMeta = outputRowMeta;
             meta.getFields(data.outputRowMeta, getStepname(), null, null, parent);
-            
+
             java.io.PrintStream log = System.out;
             String isInitialImport = getParameter("IS_IMPORT");
             String esNodes = getParameter("ES_NODES");
-            String lilyZkNodes = getParameter("LILY_ZK_NODES");
 
-            logBasic(String.format(
-                    "Params: IS_IMPORT=%s, ES_NODES=%s, LILY_ZK_NODES=%s",
-                    new Object[]{isInitialImport, esNodes, lilyZkNodes}
-            ));
+            logBasic(String.format("Params: IS_IMPORT=%s, ES_NODES=%s",
+                                   new Object[]{isInitialImport, esNodes}));
+
             if ("true".equals(isInitialImport)) {
                 log.println("Rebuilder Lookup: none (initial_import)");
-                lookup = new com.mozilla.bugzilla_etl.di.EmptyBugLookup();
+                lookup =
+                    new com.mozilla.bugzilla_etl.di.attachment.EmptyAttachmentLookup();
             }
             else if (esNodes != null && esNodes.length() > 0) {
                 log.println("Rebuilder Lookup: elasticsearch");
-                lookup = 
-                    new com.mozilla.bugzilla_etl.es.BugLookup(log, esNodes);
-            }
-            else if (lilyZkNodes != null && lilyZkNodes.length() > 0) {
-                log.println("Rebuilder Lookup: Lily repository");
-                lookup = 
-                    new com.mozilla.bugzilla_etl.lily.LilyBugLookup(log, 
-                                                                    lilyZkNodes);
+                lookup =
+                    new com.mozilla.bugzilla_etl.es.attachment.AttachmentLookup(log, esNodes);
             }
             else {
-                logError("RebuildVersionStep Lookup Configuration Invalid!");
+                logError("RebuildVersionsStep (Attachment) Lookup Configuration Invalid!");
                 com.mozilla.bugzilla_etl.base.Assert.unreachable();
             }
-            source = new com.mozilla.bugzilla_etl.di.RebuilderBugSource(
-                         this,
-                         findInputRowSet(IN_STEP),
-                         findInputRowSet(IN_STEP_STATUS_LOOKUP),
-                         lookup
-            );
+            source =
+                new com.mozilla.bugzilla_etl.di.attachment.RebuilderAttachmentSource(this,
+                                                                                     findInputRowSet(IN_STEP),
+                                                                                     lookup);
 
-            destination = new com.mozilla.bugzilla_etl.di.BugDestination(this, outputRowMeta);
+            destination =
+                new com.mozilla.bugzilla_etl.di.attachment.AttachmentDestination(this, outputRowMeta);
         }
         if (!source.hasMore()) {
             setOutputDone();
-            com.mozilla.bugzilla_etl.di.RebuilderBugSource.counter.print();
-            com.mozilla.bugzilla_etl.di.RebuilderBugSource.printConflictCounts();
+            source.printDiagnostics();
             return false;
         }
         destination.send(source.receive());
@@ -1446,9 +1583,6 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 </usage_parameter><usage_parameter><parameter_tag>IS_IMPORT</parameter_tag>
 <parameter_value>${IS_IMPORT}</parameter_value>
 <parameter_description/>
-</usage_parameter><usage_parameter><parameter_tag>LILY_ZK_NODES</parameter_tag>
-<parameter_value>${LILY_ZK_NODES}</parameter_value>
-<parameter_description/>
 </usage_parameter></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>576</xloc>
@@ -1478,178 +1612,6 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>332</xloc>
       <yloc>580</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Denormalise activities</name>
-    <type>Denormaliser</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-      <key_field>field_name</key_field>
-      <group>
-        <field>
-          <name>activity_bug_id</name>
-          </field>
-        <field>
-          <name>bug_when</name>
-          </field>
-        <field>
-          <name>modified_by</name>
-          </field>
-        </group>
-      <fields>
-        <field>
-          <field_name>removed</field_name>
-          <key_value>flags</key_value>
-          <target_name>flags_from</target_name>
-          <target_type>String</target_type>
-          <target_format/>
-          <target_length>-1</target_length>
-          <target_precision>-1</target_precision>
-          <target_decimal_symbol/>
-          <target_grouping_symbol/>
-          <target_currency_symbol/>
-          <target_null_string/>
-          <target_aggregation_type>CONCAT_COMMA</target_aggregation_type>
-          </field>
-        <field>
-          <field_name>added</field_name>
-          <key_value>flags</key_value>
-          <target_name>flags_to</target_name>
-          <target_type>String</target_type>
-          <target_format/>
-          <target_length>-1</target_length>
-          <target_precision>-1</target_precision>
-          <target_decimal_symbol/>
-          <target_grouping_symbol/>
-          <target_currency_symbol/>
-          <target_null_string/>
-          <target_aggregation_type>CONCAT_COMMA</target_aggregation_type>
-          </field>
-        <field>
-          <field_name>removed</field_name>
-          <key_value>attachments.isobsolete</key_value>
-          <target_name>is_obsolete_from</target_name>
-          <target_type>String</target_type>
-          <target_format/>
-          <target_length>-1</target_length>
-          <target_precision>-1</target_precision>
-          <target_decimal_symbol/>
-          <target_grouping_symbol/>
-          <target_currency_symbol/>
-          <target_null_string/>
-          <target_aggregation_type>-</target_aggregation_type>
-          </field>
-        <field>
-          <field_name>added</field_name>
-          <key_value>attachments.isobsolete</key_value>
-          <target_name>is_obsolete_to</target_name>
-          <target_type>String</target_type>
-          <target_format/>
-          <target_length>-1</target_length>
-          <target_precision>-1</target_precision>
-          <target_decimal_symbol/>
-          <target_grouping_symbol/>
-          <target_currency_symbol/>
-          <target_null_string/>
-          <target_aggregation_type>-</target_aggregation_type>
-          </field>
-        <field>
-          <field_name>removed</field_name>
-          <key_value>attachments.ispatch</key_value>
-          <target_name>is_patch_from</target_name>
-          <target_type>String</target_type>
-          <target_format/>
-          <target_length>-1</target_length>
-          <target_precision>-1</target_precision>
-          <target_decimal_symbol/>
-          <target_grouping_symbol/>
-          <target_currency_symbol/>
-          <target_null_string/>
-          <target_aggregation_type>-</target_aggregation_type>
-          </field>
-        <field>
-          <field_name>added</field_name>
-          <key_value>attachments.ispatch</key_value>
-          <target_name>is_patch_to</target_name>
-          <target_type>String</target_type>
-          <target_format/>
-          <target_length>-1</target_length>
-          <target_precision>-1</target_precision>
-          <target_decimal_symbol/>
-          <target_grouping_symbol/>
-          <target_currency_symbol/>
-          <target_null_string/>
-          <target_aggregation_type>-</target_aggregation_type>
-          </field>
-        <field>
-          <field_name>removed</field_name>
-          <key_value>isurl</key_value>
-          <target_name>is_url_from</target_name>
-          <target_type>String</target_type>
-          <target_format/>
-          <target_length>-1</target_length>
-          <target_precision>-1</target_precision>
-          <target_decimal_symbol/>
-          <target_grouping_symbol/>
-          <target_currency_symbol/>
-          <target_null_string/>
-          <target_aggregation_type>-</target_aggregation_type>
-          </field>
-        <field>
-          <field_name>added</field_name>
-          <key_value>isurl</key_value>
-          <target_name>is_url_to</target_name>
-          <target_type>String</target_type>
-          <target_format/>
-          <target_length>-1</target_length>
-          <target_precision>-1</target_precision>
-          <target_decimal_symbol/>
-          <target_grouping_symbol/>
-          <target_currency_symbol/>
-          <target_null_string/>
-          <target_aggregation_type>-</target_aggregation_type>
-          </field>
-        <field>
-          <field_name>removed</field_name>
-          <key_value>attachments.mimetype</key_value>
-          <target_name>mimetype_from</target_name>
-          <target_type>String</target_type>
-          <target_format/>
-          <target_length>-1</target_length>
-          <target_precision>-1</target_precision>
-          <target_decimal_symbol/>
-          <target_grouping_symbol/>
-          <target_currency_symbol/>
-          <target_null_string/>
-          <target_aggregation_type>-</target_aggregation_type>
-          </field>
-        <field>
-          <field_name>added</field_name>
-          <key_value>attachments.mimetype</key_value>
-          <target_name>mimetype_to</target_name>
-          <target_type>String</target_type>
-          <target_format/>
-          <target_length>-1</target_length>
-          <target_precision>-1</target_precision>
-          <target_decimal_symbol/>
-          <target_grouping_symbol/>
-          <target_currency_symbol/>
-          <target_null_string/>
-          <target_aggregation_type>-</target_aggregation_type>
-          </field>
-        </fields>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>546</xloc>
-      <yloc>278</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

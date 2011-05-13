@@ -51,19 +51,13 @@ import org.elasticsearch.common.transport.TransportAddress;
 
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.di.Converters;
-import com.mozilla.bugzilla_etl.es.Mapping.BugMapping;
-import com.mozilla.bugzilla_etl.es.Mapping.FacetMapping;
-import com.mozilla.bugzilla_etl.es.Mapping.MeasurementMapping;
-import com.mozilla.bugzilla_etl.es.Mapping.VersionMapping;
-import com.mozilla.bugzilla_etl.model.Fields;
-import com.mozilla.bugzilla_etl.model.bug.BugFields;
 
 
-abstract class AbstractEsClient {
+public abstract class AbstractEsClient {
 
     protected final Client client;
     protected final PrintStream log;
-    
+
     protected String index() {
         return "bugs";
     }
@@ -73,7 +67,7 @@ abstract class AbstractEsClient {
         this.log = log;
         try {
             log.format("Using elasticsearch connection '%s'.\n", esNodes);
-            TransportClient transportClient = new TransportClient(); 
+            TransportClient transportClient = new TransportClient();
             List<String> nodes = new Converters.CsvConverter().parse(esNodes);
             for (String node : nodes) {
                 int colon = node.indexOf(':');
@@ -91,10 +85,4 @@ abstract class AbstractEsClient {
         }
     }
 
-    // elasticsearch mapping helpers:
-    public static final Mapping<BugFields.Bug> BUG = new BugMapping();
-    public static final Mapping<BugFields.Facet> FACET = new FacetMapping();
-    public static final Mapping<Fields.Activity> VERSION = new VersionMapping();
-    public static final Mapping<BugFields.Measurement> MEASURE = new MeasurementMapping();
-    
 }

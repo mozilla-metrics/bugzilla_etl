@@ -100,11 +100,11 @@ public class BugSource extends AbstractSource<Bug> {
         final PersistenceState persistenceState
             = input.cell(Fields.Activity.PERSISTENCE_STATE).enumValue(PersistenceState.class);
 
-        final EnumMap<BugFields.Facet, String> facets = BugVersion.createFacets();
+        final EnumMap<BugFields.Facet, String> facets = bug.createFacets();
         for (BugFields.Facet field : BugFields.Facet.values()) {
             facets.put(field, input.cell(field, Fields.Column.RESULT).stringValue());
         }
-        final EnumMap<BugFields.Measurement, Long> measurements = BugVersion.createMeasurements();
+        final EnumMap<BugFields.Measurement, Long> measurements = bug.createMeasurements();
         for (BugFields.Measurement field : BugFields.Measurement.values()) {
             measurements.put(field, input.cell(field).longValue());
         }
