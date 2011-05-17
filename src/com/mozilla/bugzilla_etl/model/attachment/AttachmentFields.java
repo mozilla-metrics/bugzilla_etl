@@ -19,7 +19,7 @@ public class AttachmentFields {
         public String columnName() { return columnName; }
 
         @Override
-        public Family family() { return Family.BUG; }
+        public Family family() { return Family.ATTACHMENT; }
 
         Attachment(String name) { columnName = name; }
         Attachment() { columnName = name().toLowerCase(); }
@@ -32,12 +32,12 @@ public class AttachmentFields {
         IS_OBSOLETE,
         IS_PATCH,
         IS_URL,
-        MIME_TYPE,
+        MIMETYPE,
         MODIFIED_FIELDS(true),
         REQUESTS;
 
         @Override
-        public Family family() { return Family.BUG_FACET; }
+        public Family family() { return Family.ATTACHMENT_FACET; }
 
         private final String columnName;
         public final boolean isComputed;
@@ -72,7 +72,7 @@ public class AttachmentFields {
         public String columnName() { return columnName; }
 
         @Override
-        public Family family() { return Family.BUG_MEASURE; }
+        public Family family() { return Family.ATTACHMENT_MEASURE; }
 
         Measurement(String name) { columnName = name; }
         Measurement() { columnName = name().toLowerCase(); }

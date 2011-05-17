@@ -54,7 +54,6 @@ import com.mozilla.bugzilla_etl.di.AbstractSource;
 import com.mozilla.bugzilla_etl.di.Converters;
 import com.mozilla.bugzilla_etl.di.Rebuilder;
 import com.mozilla.bugzilla_etl.di.io.Input;
-import com.mozilla.bugzilla_etl.model.Printer;
 import com.mozilla.bugzilla_etl.model.bug.Bug;
 import com.mozilla.bugzilla_etl.model.bug.BugFields;
 import com.mozilla.bugzilla_etl.model.bug.BugFields.Facet;
@@ -131,7 +130,6 @@ public class RebuilderBugSource extends AbstractSource<Bug> {
         }
 
         @Override protected void updateFacetsAndMeasurements(Bug bug, Date now) {
-            Printer.print(bug);
             bug.updateFacetsAndMeasurements(majorStatusTable, now);
         }
 

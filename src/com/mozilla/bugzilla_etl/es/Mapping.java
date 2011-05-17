@@ -42,7 +42,6 @@ package com.mozilla.bugzilla_etl.es;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +51,6 @@ import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.di.Converters;
 import com.mozilla.bugzilla_etl.di.Converters.Converter;
 import com.mozilla.bugzilla_etl.model.Field;
-import com.mozilla.bugzilla_etl.model.attachment.AttachmentFields;
 
 
 public interface Mapping<T extends Field> {
@@ -63,22 +61,8 @@ public interface Mapping<T extends Field> {
     Long integer(T field, Map<String, Object> fields);
     XContentBuilder append(XContentBuilder builder, T field, Object value) throws IOException;
 
-    static class AttachmentFacetMapping extends BaseMapping<AttachmentFields.Facet> {{
-        conversions = new EnumMap<AttachmentFields.Facet, Conv>(AttachmentFields.Facet.class) {{
-            for (AttachmentFields.Facet field : AttachmentFields.Facet.values()) {
-                switch (field) {
-                    case REQUESTS:
-                    case CHANGES:
-                        put(field, Conv.STRINGLIST); continue;
-                    default:
-                        put(field, Conv.STRING);
-                }
-            }
-        }};
-    }}
 
-
-    public static enum Conv { STRING, STRINGLIST, DATE, INTEGER, UNUSED }
+    public static enum Conv { STRING, STRINGLIST, DATE, INTEGER, BOOLEAN, UNUSED }
 
 
     public static abstract class BaseMapping<T extends Field> implements Mapping<T> {
@@ -111,6 +95,7 @@ public interface Mapping<T extends Field> {
             return integer(field, fields.get(name));
         }
 
+
         @Override
         public XContentBuilder append(XContentBuilder builder,
                                       T field, Object value) throws IOException {
@@ -122,6 +107,8 @@ public interface Mapping<T extends Field> {
                     return builder.field(field.columnName(), (String) value);
                 case INTEGER:
                     return builder.field(field.columnName(), (Long) value);
+                case BOOLEAN:
+                    return builder.field(field.columnName(), ((Boolean)value).booleanValue());
                 case UNUSED:
                     return builder;
                 default:
@@ -135,9 +122,12 @@ public interface Mapping<T extends Field> {
         }
 
         private String string(T field, Object esValue) {
-            // For facets, obtain date- and csv-fields as strings.
+            // For facets, obtain fields as strings.
             if (conversions.get(field) == Conv.STRINGLIST) {
                 return csv(field, esValue);
+            }
+            if (conversions.get(field) == Conv.BOOLEAN) {
+                return Converters.BOOL.format((Boolean) esValue);
             }
             Assert.check(conversions.get(field) == Conv.STRING
                          || conversions.get(field) == Conv.DATE);
@@ -179,6 +169,7 @@ public interface Mapping<T extends Field> {
     }
 
 
+    /** Facet mappings are extracted from EnumMap<Field, String> */
     public static abstract class BaseFacetMapping<FACET extends Enum<FACET> & Field>
     extends BaseMapping<FACET>{
 
@@ -201,6 +192,10 @@ public interface Mapping<T extends Field> {
                     builder.field(field.columnName()).startArray();
                     for (String item : values) builder.value(item);
                     return builder.endArray();
+                case BOOLEAN:
+                    if (facet == null) return builder;
+                    return builder.field(field.columnName(),
+                                         Converters.BOOL.parse(facet).booleanValue());
                 case UNUSED:
                     return builder;
                 default:

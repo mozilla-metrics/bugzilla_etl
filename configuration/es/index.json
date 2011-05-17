@@ -21,7 +21,7 @@
         "keywords":                       {"type": "string", "store": "yes", "index_name": "keyword"},
         "major_status":                   {"type": "string", "store": "yes", "index": "not_analyzed"},
         "major_status_last_changed_date": {"type": "date",   "store": "yes"},
-        "modified_fields":                {"type": "string", "store": "yes", "index_name": "keyword"},
+        "modified_fields":                {"type": "string", "store": "yes", "index_name": "modified"},
         "opsys":                          {"type": "string", "store": "yes", "index": "not_analyzed"},
         "previous_major_status":          {"type": "string", "store": "yes", "index": "not_analyzed"},
         "previous_status":                {"type": "string", "store": "yes", "index": "not_analyzed"},
@@ -42,6 +42,32 @@
         "days_in_previous_status":        {"type": "integer", "store": "yes"},
         "days_open_accumulated":          {"type": "integer", "store": "yes"},
         "times_reopened":                 {"type": "integer", "store": "yes"},
+
+        "number":                         {"type": "integer", "store": "yes"}
+      },
+      "dynamic": "strict"
+    },
+
+    "attachment": {
+      "_source": {"enabled" : true},
+      "_all": {"enabled" : false},
+      "_routing": {"required": true, "path": "attachment_id"},
+      "properties": {
+        "attachment_id":                  {"type": "string", "store": "yes", "index": "not_analyzed"},
+        "bug_id":                         {"type": "integer", "store": "yes", "index": "not_analyzed"},
+        "submitted_by":                   {"type": "string", "store": "yes", "index": "not_analyzed"},
+        "submission_date":                {"type": "date",   "store": "yes", "index": "not_analyzed"},
+
+        "modified_by":                    {"type": "string", "store": "yes", "index": "not_analyzed"},
+        "modification_date":              {"type": "date",   "store": "yes"},
+        "expiration_date":                {"type": "date",   "store": "yes"},
+        "annotation":                     {"type": "string", "store": "no", "index": "not_analyzed"},
+
+        "changes":                        {"type": "string", "store": "yes", "index_name": "change"},
+        "is_obsolete":                    {"type": "boolean", "store": "yes"},
+        "is_patch":                       {"type": "boolean", "store": "yes"},
+        "is_url":                         {"type": "boolean", "store": "yes"},
+        "modified_fields":                {"type": "string", "store": "yes", "index_name": "modified"},
 
         "number":                         {"type": "integer", "store": "yes"}
       },

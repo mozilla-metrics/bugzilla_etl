@@ -170,6 +170,21 @@ public class Converters {
         }
     };
 
+    public static final Converter<Boolean> BOOL = new Converter<Boolean>() {
+        @Override
+        public Boolean parse(String representation) {
+            if (representation == null || representation.length() == 0) return null;
+            return new Boolean(!representation.equals("0")
+                               && !representation.equalsIgnoreCase("f")
+                               && !representation.equalsIgnoreCase("false"));
+        }
+        @Override
+        public String format(Boolean value) {
+            if (value == null) return null;
+            return value.booleanValue() ? "true" : "false";
+        }
+    };
+
     public static final Converter<Date> DATE = new Converter<Date>() {
         @Override
         public Date parse(String representation) {

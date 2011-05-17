@@ -37,8 +37,10 @@ public class Mappings {
                     case REQUESTS:
                     case MODIFIED_FIELDS:
                         put(field, Conv.STRINGLIST); continue;
+                    case MIMETYPE:
+                        put(field, Conv.UNUSED); continue;
                     default:
-                        put(field, Conv.STRING);
+                        put(field, Conv.BOOLEAN);
                 }
             };
         }};
