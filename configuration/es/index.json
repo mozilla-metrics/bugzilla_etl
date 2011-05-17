@@ -68,6 +68,7 @@
         "is_patch":                       {"type": "boolean", "store": "yes"},
         "is_url":                         {"type": "boolean", "store": "yes"},
         "modified_fields":                {"type": "string", "store": "yes", "index_name": "modified"},
+        "requests":                       {"type": "string", "store": "yes", "index_name": "request"},
 
         "number":                         {"type": "integer", "store": "yes"}
       },
