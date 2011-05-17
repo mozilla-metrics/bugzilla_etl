@@ -227,12 +227,14 @@ public class Bug extends Entity<Bug, BugVersion, BugFields.Facet> {
                               creator, annotation, from, Version.TO_FUTURE, PersistenceState.NEW);
     }
 
+    @SuppressWarnings("serial")
     public EnumMap<BugFields.Facet, String> createFacets() {
         return new EnumMap<BugFields.Facet, String>(BugFields.Facet.class) {{
             for (Facet facet : BugFields.Facet.values()) put(facet, null);
         }};
     }
 
+    @SuppressWarnings("serial")
     public EnumMap<BugFields.Measurement, Long> createMeasurements() {
         return new EnumMap<BugFields.Measurement, Long>(BugFields.Measurement.class) {{
             for (Measurement measure : BugFields.Measurement.values()) put(measure, null);

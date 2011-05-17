@@ -12,6 +12,7 @@ public class Mappings {
 
     public static final String TYPE = "bug";
 
+    @SuppressWarnings("serial")
     public static final Mapping<BugFields.Bug> BUG = new BaseMapping<BugFields.Bug>() {{
         conversions = new EnumMap<BugFields.Bug, Conv>(BugFields.Bug.class) {{
             for (BugFields.Bug field : BugFields.Bug.values()) {
@@ -26,6 +27,7 @@ public class Mappings {
     }};
 
 
+    @SuppressWarnings("serial")
     static final Mapping<BugFields.Facet> FACET = new BaseFacetMapping<BugFields.Facet>() {{
         conversions = new EnumMap<BugFields.Facet, Conv>(BugFields.Facet.class) {{
             for (BugFields.Facet field : BugFields.Facet.values()) {
@@ -47,6 +49,7 @@ public class Mappings {
     }};
 
 
+    @SuppressWarnings("serial")
     static final Mapping<BugFields.Measurement> MEASURE = new BaseMapping<BugFields.Measurement>() {{
         conversions = new EnumMap<BugFields.Measurement, Conv>(BugFields.Measurement.class) {{
             for (BugFields.Measurement field : BugFields.Measurement.values()) {

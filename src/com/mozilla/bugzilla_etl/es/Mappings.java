@@ -8,6 +8,7 @@ import com.mozilla.bugzilla_etl.model.Fields;
 
 public class Mappings {
 
+    @SuppressWarnings("serial")
     public static final Mapping<Fields.Activity> VERSION = new BaseMapping<Fields.Activity>() {{
         conversions = new EnumMap<Fields.Activity, Conv>(Fields.Activity.class) {{
             for (Fields.Activity field : Fields.Activity.values()) {

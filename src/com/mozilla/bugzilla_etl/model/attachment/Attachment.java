@@ -89,13 +89,16 @@ public class Attachment extends Entity<Attachment, AttachmentVersion, Facet> {
     }
 
 
-    @Override public EnumMap<Facet, String> createFacets() {
+    @SuppressWarnings("serial") 
+    @Override 
+    public EnumMap<Facet, String> createFacets() {
         return new EnumMap<Facet, String>(Facet.class) {{
             for (Facet f : Facet.values()) put(f, null);
         }};
     }
 
 
+    @SuppressWarnings("serial") 
     public EnumMap<Measurement, Long> createMeasurements() {
         return new EnumMap<Measurement, Long>(Measurement.class) {{
             for (Measurement m : Measurement.values()) put(m, null);

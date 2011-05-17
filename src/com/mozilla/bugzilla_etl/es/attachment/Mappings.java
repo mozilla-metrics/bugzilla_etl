@@ -12,6 +12,7 @@ public class Mappings {
 
     public static final String TYPE = "attachment";
 
+    @SuppressWarnings("serial")
     public static final Mapping<AttachmentFields.Attachment> ATTACHMENT =
         new BaseMapping<AttachmentFields.Attachment>() {{
         conversions = new EnumMap<AttachmentFields.Attachment, Conv>(AttachmentFields.Attachment.class) {{
@@ -28,6 +29,7 @@ public class Mappings {
     }};
 
 
+    @SuppressWarnings("serial")
     static final Mapping<AttachmentFields.Facet> FACET =
         new BaseFacetMapping<AttachmentFields.Facet>() {{
         conversions = new EnumMap<AttachmentFields.Facet, Conv>(AttachmentFields.Facet.class) {{
@@ -47,6 +49,7 @@ public class Mappings {
     }};
 
 
+    @SuppressWarnings("serial")
     static final Mapping<AttachmentFields.Measurement> MEASURE =
         new BaseMapping<AttachmentFields.Measurement>() {{
         conversions = new EnumMap<AttachmentFields.Measurement, Conv>(AttachmentFields.Measurement.class) {{
