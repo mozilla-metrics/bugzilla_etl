@@ -28,7 +28,7 @@
         </parameter>
         <parameter>
             <name>LOGS_DIR</name>
-            <default_value>${Internal.Job.Filename.Directory}&#47;..&#47;log&#47;initial</default_value>
+            <default_value>${Internal.Job.Filename.Directory}&#47;..&#47;log&#47;import</default_value>
             <description/>
         </parameter>
         <parameter>
@@ -94,9 +94,12 @@
             </parameter>            <parameter>            <name>IS_IMPORT</name>
             <stream_name/>
             <value>true</value>
-            </parameter>            <parameter>            <name>ES_NODES</name>
+            </parameter>            <parameter>            <name>PES_NODES</name>
             <stream_name/>
             <value>${ES_NODES}</value>
+            </parameter>            <parameter>            <name>PES_CLUSTER</name>
+            <stream_name/>
+            <value>${ES_CLUSTER}</value>
             </parameter>      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
@@ -283,9 +286,12 @@
             </parameter>            <parameter>            <name>IS_IMPORT</name>
             <stream_name/>
             <value>true</value>
-            </parameter>            <parameter>            <name>ES_NODES</name>
+            </parameter>            <parameter>            <name>PES_NODES</name>
             <stream_name/>
             <value>${ES_NODES}</value>
+            </parameter>            <parameter>            <name>PES_CLUSTER</name>
+            <stream_name/>
+            <value>${ES_CLUSTER}</value>
             </parameter>      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>

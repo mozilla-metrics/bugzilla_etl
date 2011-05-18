@@ -96,6 +96,7 @@ public class RebuildVersionsStep extends TransformClassBase {                   
             java.io.PrintStream log = System.out;
             String isInitialImport = getParameter("IS_IMPORT");
             String esNodes = getParameter("ES_NODES");
+            String esCluster = getParameter("ES_CLUSTER");
             String lilyZkNodes = getParameter("LILY_ZK_NODES");
 
             logBasic(String.format(
@@ -108,7 +109,7 @@ public class RebuildVersionsStep extends TransformClassBase {                   
             }
             else if (esNodes != null && esNodes.length() > 0) {
                 log.println("Rebuilder Lookup: elasticsearch");
-                lookup = new com.mozilla.bugzilla_etl.es.bug.BugLookup(log, esNodes);
+                lookup = new com.mozilla.bugzilla_etl.es.bug.BugLookup(log, esNodes, esCluster);
             }
             else if (lilyZkNodes != null && lilyZkNodes.length() > 0) {
                 log.println("Rebuilder Lookup: Lily repository");

@@ -82,6 +82,12 @@
             </parameter>            <parameter>            <name>IS_IMPORT</name>
             <stream_name/>
             <value>false</value>
+            </parameter>            <parameter>            <name>PES_NODES</name>
+            <stream_name/>
+            <value>${ES_NODES}</value>
+            </parameter>            <parameter>            <name>PES_CLUSTER</name>
+            <stream_name/>
+            <value>${ES_CLUSTER}</value>
             </parameter>      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
@@ -372,13 +378,19 @@ exit $?</script>
       <parameters>        <pass_all_parameters>Y</pass_all_parameters>
             <parameter>            <name>BUG_IDS_PARTITION</name>
             <stream_name/>
-            <value>bug_id &gt;= 1 AND bug_id &lt; 900900900</value>
+            <value>attachments.bug_id &gt;= 1 AND attachments.bug_id &lt; 900900900</value>
             </parameter>            <parameter>            <name>OVERRIDE_START_TIME</name>
             <stream_name/>
             <value>2011-05-06 01:01:01</value>
             </parameter>            <parameter>            <name>IS_IMPORT</name>
             <stream_name/>
             <value>false</value>
+            </parameter>            <parameter>            <name>PES_NODES</name>
+            <stream_name/>
+            <value>${ES_NODES}</value>
+            </parameter>            <parameter>            <name>PES_CLUSTER</name>
+            <stream_name/>
+            <value>${ES_CLUSTER}</value>
             </parameter>      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>

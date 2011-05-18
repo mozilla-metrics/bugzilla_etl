@@ -22,8 +22,8 @@ import static com.mozilla.bugzilla_etl.es.Mappings.VERSION;
 
 public class AttachmentDestination extends AbstractDestination<Attachment, AttachmentVersion, Facet> {
 
-    public AttachmentDestination(PrintStream log, String esNodes) {
-        super(log, esNodes);
+    public AttachmentDestination(PrintStream log, String esNodes, String esCluster) {
+        super(log, esNodes, esCluster);
     }
 
     @Override protected IndexRequest request(AttachmentVersion version) throws IOException {

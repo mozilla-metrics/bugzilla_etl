@@ -77,8 +77,9 @@ public class WriteBugsToEsStep extends TransformClassBase {                     
             RowSet input = (RowSet)this.getInputRowSets().get(0);
             source = new com.mozilla.bugzilla_etl.di.bug.BugSource(this, input);
             final String esNodes = getParameter("ES_NODES");
+            final String esCluster = getParameter("ES_CLUSTER");
             destination = new com.mozilla.bugzilla_etl.es.bug.BugDestination(System.out,
-                                                                         esNodes);
+                                                                             esNodes, esCluster);
         }
         try {
             if (!source.hasMore()) {

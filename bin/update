@@ -8,6 +8,7 @@ mkdir -p ./log/update/
 JAVAMAXMEM=2048 "${KETTLE_LIBS}/../kitchen.sh" \
         -file "${ETL_HOME}/jobs/update.kjb" \
         -param:"ES_NODES=${ES_NODES}" \
+        -param:"ES_CLUSTER=${ES_CLUSTER}" \
     >> "${ETL_HOME}/log/update/stdout" \
     2>> "${ETL_HOME}/log/update/stderr" || exit 1
 
