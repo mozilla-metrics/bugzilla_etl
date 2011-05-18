@@ -11,7 +11,7 @@ public class Printer {
                    V extends Version<E, V, FACET>,
                    FACET extends Enum<FACET> & Field> void print(Entity<E,V,FACET> entity) {
         PrintStream o = System.out;
-        o.format("Updating F&M of bug %s\n", entity);
+        o.format("F&M of id=%s -------------------------------------------------------\n", entity);
         for (Version<E, V, FACET> v : entity) {
             o.format("Version: %s\n", v);
             o.format("Facets: (%s)\n", v.facets().size());

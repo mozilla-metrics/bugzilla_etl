@@ -37,7 +37,7 @@ public class Attachment extends Entity<Attachment, AttachmentVersion, Facet> {
             }
         }
         return String.format("{attachment id=%s, bug_id=%s, reporter=%s, versions=%s (.saved #dirty *new)}",
-                             id, reporter, versionsVis.toString());
+                             id, bugId, reporter, versionsVis.toString());
     }
 
 
@@ -89,8 +89,8 @@ public class Attachment extends Entity<Attachment, AttachmentVersion, Facet> {
     }
 
 
-    @SuppressWarnings("serial") 
-    @Override 
+    @SuppressWarnings("serial")
+    @Override
     public EnumMap<Facet, String> createFacets() {
         return new EnumMap<Facet, String>(Facet.class) {{
             for (Facet f : Facet.values()) put(f, null);
@@ -98,7 +98,7 @@ public class Attachment extends Entity<Attachment, AttachmentVersion, Facet> {
     }
 
 
-    @SuppressWarnings("serial") 
+    @SuppressWarnings("serial")
     public EnumMap<Measurement, Long> createMeasurements() {
         return new EnumMap<Measurement, Long>(Measurement.class) {{
             for (Measurement m : Measurement.values()) put(m, null);

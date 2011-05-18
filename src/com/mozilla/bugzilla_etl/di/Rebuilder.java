@@ -28,6 +28,7 @@ import com.mozilla.bugzilla_etl.model.Fields;
 import com.mozilla.bugzilla_etl.model.Version;
 import com.mozilla.bugzilla_etl.model.bug.Flag;
 
+
 /**
  * @param <E> The entity type to be rebuilt from the activity table.
  * @param <V> The associated version type.
@@ -89,12 +90,13 @@ public abstract class Rebuilder<E extends Entity<E, V, FACET>,
             processActivitiesRows(entity, state);
             if (!applyAnyPersistedState(entity)) {
                 // Initial import: Add creation revision as "bottom".
-                final V successor = entity.iterator().next();
-                Date safeDate = !successor.from().equals(creation.date)
+                final V first = entity.iterator().next();
+                Date safeDate = !first.from().equals(creation.date)
                                 ? creation.date
                                 : new Date(creation.date.getTime() - safetyDeltaMs);
-                entity.prepend(successor.predecessor(state.facets, creation.creator, safeDate,
-                                                     annotation("initial")));
+                final V newFirst = first.predecessor(state.facets, creation.creator, safeDate,
+                                                     annotation("initial"));
+                entity.prepend(newFirst);
             }
         }
         else {
@@ -122,7 +124,7 @@ public abstract class Rebuilder<E extends Entity<E, V, FACET>,
         do {
             final Date currentDate = input.cell(Fields.Activity.MODIFICATION_DATE).dateValue();
             if (!candidates.isEmpty() && !currentDate.equals(candidateDate)) {
-                // New date, process all activities with the previous (more recent) date.
+                // Next date. Process all activities with the previous (more recent) date.
                 processCandidates(bug, candidates, state);
                 candidates.clear();
             }

@@ -13,7 +13,6 @@ import com.mozilla.bugzilla_etl.model.attachment.Attachment;
 import com.mozilla.bugzilla_etl.model.attachment.AttachmentFields;
 import com.mozilla.bugzilla_etl.model.attachment.AttachmentFields.Facet;
 import com.mozilla.bugzilla_etl.model.attachment.AttachmentVersion;
-import com.mozilla.bugzilla_etl.model.bug.BugFields;
 
 import static com.mozilla.bugzilla_etl.es.attachment.Mappings.ATTACHMENT;
 import static com.mozilla.bugzilla_etl.es.attachment.Mappings.FACET;
@@ -53,7 +52,7 @@ public class AttachmentDestination extends AbstractDestination<Attachment, Attac
 
         final String id =
             new StringBuilder().append(version.entity().id()).append('.')
-            .append(version.measurements().get(BugFields.Measurement.NUMBER)).toString();
+            .append(version.measurements().get(AttachmentFields.Measurement.NUMBER)).toString();
 
         return client.prepareIndex(index(), Mappings.TYPE)
                      .setId(id)

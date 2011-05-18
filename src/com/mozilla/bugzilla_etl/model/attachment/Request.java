@@ -22,7 +22,7 @@ public class Request extends Flag {
             return new Request(flag.name(), flag.status(), null);
         }
         int to = representation.indexOf(')');
-        String requestee = representation.substring(from, to);
+        String requestee = representation.substring(from+1, to);
         return new Request(flag.name(), flag.status(), requestee);
     }
 
