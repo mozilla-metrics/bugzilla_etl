@@ -63,14 +63,13 @@ public abstract class AbstractEsClient {
         return "bugs";
     }
 
-    public AbstractEsClient(final PrintStream log, final String esNodes) {
+    public AbstractEsClient(final PrintStream log, final String esNodes, final String esCluster) {
         Assert.nonNull(log, esNodes);
         this.log = log;
         try {
-            // :FIXME: cluster name "es_bugs_dwh" is hard-coded...
-            log.format("Using elasticsearch connection '%s'.\n", esNodes);
+            log.format("Using elasticsearch nodes '%s' (cluster name '%s').\n", esNodes, esCluster);
             ImmutableSettings.Builder settings = ImmutableSettings.settingsBuilder();
-            settings.put("cluster.name", "es_bugs_dwh");
+            settings.put("cluster.name", esCluster);
             TransportClient transportClient = new TransportClient(settings.build());
             List<String> nodes = new Converters.CsvConverter().parse(esNodes);
             for (String node : nodes) {

@@ -78,7 +78,10 @@ public class WriteAttachmentsToEsStep extends TransformClassBase {              
             RowSet input = (RowSet)this.getInputRowSets().get(0);
             source = new com.mozilla.bugzilla_etl.di.attachment.AttachmentSource(this, input);
             final String esNodes = getParameter("ES_NODES");
-            destination = new com.mozilla.bugzilla_etl.es.attachment.AttachmentDestination(System.out, esNodes);
+            final String esCluster = getParameter("ES_CLUSTER");
+            destination = new com.mozilla.bugzilla_etl.es.attachment.AttachmentDestination(System.out,
+                                                                                           esNodes,
+                                                                                           esCluster);
         }
         try {
             if (!source.hasMore()) {

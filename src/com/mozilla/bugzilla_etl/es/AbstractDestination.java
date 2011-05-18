@@ -19,8 +19,8 @@ public abstract class AbstractDestination<E extends Entity<E, V, FACET>,
                                           FACET extends Enum<FACET> & Field>
 extends AbstractEsClient implements Destination<E, Exception> {
 
-    public AbstractDestination(PrintStream log, String esNodes) {
-        super(log, esNodes);
+    public AbstractDestination(PrintStream log, String esNodes, String esCluster) {
+        super(log, esNodes, esCluster);
     }
 
     public static final int BATCH_LIMIT = 1000;

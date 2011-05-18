@@ -95,6 +95,7 @@ public class RebuildVersionsStep extends TransformClassBase {                   
             java.io.PrintStream log = System.out;
             String isInitialImport = getParameter("IS_IMPORT");
             String esNodes = getParameter("ES_NODES");
+            String esCluster = getParameter("ES_CLUSTER");
 
             logBasic(String.format("Params: IS_IMPORT=%s, ES_NODES=%s",
                                    new Object[]{isInitialImport, esNodes}));
@@ -107,7 +108,7 @@ public class RebuildVersionsStep extends TransformClassBase {                   
             else if (esNodes != null && esNodes.length() > 0) {
                 log.println("Rebuilder Lookup: elasticsearch");
                 lookup =
-                    new com.mozilla.bugzilla_etl.es.attachment.AttachmentLookup(log, esNodes);
+                    new com.mozilla.bugzilla_etl.es.attachment.AttachmentLookup(log, esNodes, esCluster);
             }
             else {
                 logError("RebuildVersionsStep (Attachment) Lookup Configuration Invalid!");

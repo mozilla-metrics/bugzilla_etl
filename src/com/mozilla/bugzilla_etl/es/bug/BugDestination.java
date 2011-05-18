@@ -22,8 +22,8 @@ import static com.mozilla.bugzilla_etl.es.Mappings.VERSION;
 
 public class BugDestination extends AbstractDestination<Bug, BugVersion, BugFields.Facet> {
 
-    public BugDestination(PrintStream log, String esNodes) {
-        super(log, esNodes);
+    public BugDestination(PrintStream log, String esNodes, String esCluster) {
+        super(log, esNodes, esCluster);
     }
 
     protected IndexRequest request(final BugVersion version) throws IOException {

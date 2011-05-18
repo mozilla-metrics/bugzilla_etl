@@ -20,6 +20,11 @@
             <description>An SQL expression that selects flags from custom fields.</description>
         </parameter>
         <parameter>
+            <name>ES_CLUSTER</name>
+            <default_value>elasticsearch</default_value>
+            <description/>
+        </parameter>
+        <parameter>
             <name>ES_NODES</name>
             <default_value>localhost:9300</default_value>
             <description/>
@@ -208,6 +213,9 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
     </fields><clear_result_fields>N</clear_result_fields>
 <info_steps></info_steps><target_steps></target_steps><usage_parameters><usage_parameter><parameter_tag>ES_NODES</parameter_tag>
 <parameter_value>${ES_NODES}</parameter_value>
+<parameter_description/>
+</usage_parameter><usage_parameter><parameter_tag>ES_CLUSTER</parameter_tag>
+<parameter_value>${ES_CLUSTER}</parameter_value>
 <parameter_description/>
 </usage_parameter></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
@@ -1208,6 +1216,9 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
     </fields><clear_result_fields>Y</clear_result_fields>
 <info_steps></info_steps><target_steps></target_steps><usage_parameters><usage_parameter><parameter_tag>ES_NODES</parameter_tag>
 <parameter_value>${ES_NODES}</parameter_value>
+<parameter_description/>
+</usage_parameter><usage_parameter><parameter_tag>ES_CLUSTER</parameter_tag>
+<parameter_value>${ES_CLUSTER}</parameter_value>
 <parameter_description/>
 </usage_parameter><usage_parameter><parameter_tag>IS_IMPORT</parameter_tag>
 <parameter_value>${IS_IMPORT}</parameter_value>

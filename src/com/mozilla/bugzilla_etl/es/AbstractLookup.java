@@ -19,8 +19,8 @@ public abstract class AbstractLookup<E extends Entity<E, V, FACET>,
                                      FACET extends Enum<FACET> & Field>
 extends AbstractEsClient implements Lookup<E, Exception> {
 
-    public AbstractLookup(PrintStream log, String esNodes) {
-        super(log, esNodes);
+    public AbstractLookup(PrintStream log, String esNodes, String esCluster) {
+        super(log, esNodes, esCluster);
     }
 
 

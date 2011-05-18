@@ -65,8 +65,8 @@ public class AttachmentLookup
 extends AbstractLookup<Attachment, AttachmentVersion, AttachmentFields.Facet>
 implements IAttachmentLookup {
 
-    public AttachmentLookup(final PrintStream log, final String esNodes) {
-        super(log, esNodes);
+    public AttachmentLookup(final PrintStream log, final String esNodes, final String esCluster) {
+        super(log, esNodes, esCluster);
     }
 
     /** Construct a Bug from its elasticsearch version records. */

@@ -64,8 +64,8 @@ import com.mozilla.bugzilla_etl.model.bug.BugVersion;
 public class BugLookup extends AbstractLookup<Bug, BugVersion, BugFields.Facet>
 implements IBugLookup {
 
-    public BugLookup(final PrintStream log, final String esNodes) {
-        super(log, esNodes);
+    public BugLookup(final PrintStream log, final String esNodes, final String esCluster) {
+        super(log, esNodes, esCluster);
     }
 
     /** Construct a Bug from its elasticsearch version records. */
