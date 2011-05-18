@@ -11,7 +11,7 @@
     <parameters>
         <parameter>
             <name>BUG_IDS_PARTITION</name>
-            <default_value>bug_id &gt;= 606001 and bug_id &lt; 606011</default_value>
+            <default_value>bug_id &gt;= 655010 and bug_id &lt; 655011</default_value>
             <description>Partitioning to reduce memory and process time for big batch processing</description>
         </parameter>
         <parameter>

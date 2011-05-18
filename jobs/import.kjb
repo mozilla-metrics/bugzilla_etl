@@ -114,7 +114,7 @@
       <destinationBCc/>
       <replyto>metrics@mozilla.com</replyto>
       <replytoname>Metrics Bugzilla ETL</replytoname>
-      <subject>Bugzilla ETL Failure (bugs)</subject>
+      <subject>Bugzilla ETL Failure (import bugs)</subject>
       <include_date>N</include_date>
       <contact_person>Michael Kurze</contact_person>
       <contact_phone/>
@@ -303,7 +303,7 @@
       <destinationBCc/>
       <replyto>metrics@mozilla.com</replyto>
       <replytoname>Metrics Bugzilla ETL</replytoname>
-      <subject>Bugzilla ETL Failure (attachments)</subject>
+      <subject>Bugzilla ETL Failure (import attachments)</subject>
       <include_date>N</include_date>
       <contact_person>Michael Kurze</contact_person>
       <contact_phone/>

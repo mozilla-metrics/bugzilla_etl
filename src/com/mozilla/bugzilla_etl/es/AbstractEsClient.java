@@ -46,6 +46,7 @@ import java.util.List;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.transport.TransportAddress;
 
@@ -66,8 +67,11 @@ public abstract class AbstractEsClient {
         Assert.nonNull(log, esNodes);
         this.log = log;
         try {
+            // :FIXME: cluster name "es_bugs_dwh" is hard-coded...
             log.format("Using elasticsearch connection '%s'.\n", esNodes);
-            TransportClient transportClient = new TransportClient();
+            ImmutableSettings.Builder settings = ImmutableSettings.settingsBuilder();
+            settings.put("cluster.name", "es_bugs_dwh");
+            TransportClient transportClient = new TransportClient(settings.build());
             List<String> nodes = new Converters.CsvConverter().parse(esNodes);
             for (String node : nodes) {
                 int colon = node.indexOf(':');
