@@ -82,6 +82,12 @@
             </parameter>            <parameter>            <name>IS_IMPORT</name>
             <stream_name/>
             <value>false</value>
+            </parameter>            <parameter>            <name>PES_NODES</name>
+            <stream_name/>
+            <value>${ES_NODES}</value>
+            </parameter>            <parameter>            <name>PES_CLUSTER</name>
+            <stream_name/>
+            <value>${ES_CLUSTER}</value>
             </parameter>      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
@@ -379,6 +385,12 @@ exit $?</script>
             </parameter>            <parameter>            <name>IS_IMPORT</name>
             <stream_name/>
             <value>false</value>
+            </parameter>            <parameter>            <name>PES_NODES</name>
+            <stream_name/>
+            <value>${ES_NODES}</value>
+            </parameter>            <parameter>            <name>PES_CLUSTER</name>
+            <stream_name/>
+            <value>${ES_CLUSTER}</value>
             </parameter>      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>

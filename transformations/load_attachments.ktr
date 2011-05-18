@@ -20,16 +20,6 @@
             <description>An SQL expression that selects flags from custom fields.</description>
         </parameter>
         <parameter>
-            <name>ES_CLUSTER</name>
-            <default_value>elasticsearch</default_value>
-            <description/>
-        </parameter>
-        <parameter>
-            <name>ES_NODES</name>
-            <default_value>localhost:9300</default_value>
-            <description/>
-        </parameter>
-        <parameter>
             <name>IS_IMPORT</name>
             <default_value>true</default_value>
             <description>Will skip check for incremental update if &quot;true&quot;.</description>
@@ -37,6 +27,16 @@
         <parameter>
             <name>OVERRIDE_START_TIME</name>
             <default_value>1901-01-01 01:01:01</default_value>
+            <description/>
+        </parameter>
+        <parameter>
+            <name>PES_CLUSTER</name>
+            <default_value>elasticsearch</default_value>
+            <description/>
+        </parameter>
+        <parameter>
+            <name>PES_NODES</name>
+            <default_value>localhost:9300</default_value>
             <description/>
         </parameter>
     </parameters>
@@ -187,7 +187,10 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
             RowSet input = (RowSet)this.getInputRowSets().get(0);
             source = new com.mozilla.bugzilla_etl.di.attachment.AttachmentSource(this, input);
             final String esNodes = getParameter("ES_NODES");
-            destination = new com.mozilla.bugzilla_etl.es.attachment.AttachmentDestination(System.out, esNodes);
+            final String esCluster = getParameter("ES_CLUSTER");
+            destination = new com.mozilla.bugzilla_etl.es.attachment.AttachmentDestination(System.out,
+                                                                                           esNodes,
+                                                                                           esCluster);
         }
         try {
             if (!source.hasMore()) {
@@ -1001,6 +1004,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
             java.io.PrintStream log = System.out;
             String isInitialImport = getParameter("IS_IMPORT");
             String esNodes = getParameter("ES_NODES");
+            String esCluster = getParameter("ES_CLUSTER");
 
             logBasic(String.format("Params: IS_IMPORT=%s, ES_NODES=%s",
                                    new Object[]{isInitialImport, esNodes}));
@@ -1013,7 +1017,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
             else if (esNodes != null && esNodes.length() > 0) {
                 log.println("Rebuilder Lookup: elasticsearch");
                 lookup =
-                    new com.mozilla.bugzilla_etl.es.attachment.AttachmentLookup(log, esNodes);
+                    new com.mozilla.bugzilla_etl.es.attachment.AttachmentLookup(log, esNodes, esCluster);
             }
             else {
                 logError("RebuildVersionsStep (Attachment) Lookup Configuration Invalid!");
