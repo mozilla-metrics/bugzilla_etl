@@ -113,7 +113,9 @@ implements IAttachmentLookup {
     }
 
     @Override protected String type() { return "attachment"; }
+    @Override protected String index() { return "attachments"; }
     @Override protected String idColumn() { return AttachmentFields.Attachment.ID.columnName(); }
     @Override protected String numberColumn() { return AttachmentFields.Measurement.NUMBER.columnName(); }
+
 
 }

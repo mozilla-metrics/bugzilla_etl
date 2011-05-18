@@ -111,6 +111,7 @@ implements IBugLookup {
     }
 
     @Override protected String type() { return "bug"; }
+    @Override protected String index() { return "bugs"; }
     @Override protected String idColumn() { return BugFields.Bug.ID.columnName(); }
     @Override protected String numberColumn() { return BugFields.Measurement.NUMBER.columnName(); }
 

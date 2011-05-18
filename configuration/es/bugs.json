@@ -46,33 +46,6 @@
         "number":                         {"type": "integer", "store": "yes"}
       },
       "dynamic": "strict"
-    },
-
-    "attachment": {
-      "_source": {"enabled" : true},
-      "_all": {"enabled" : false},
-      "_routing": {"required": true, "path": "attachment_id"},
-      "properties": {
-        "attachment_id":                  {"type": "string", "store": "yes", "index": "not_analyzed"},
-        "bug_id":                         {"type": "integer", "store": "yes", "index": "not_analyzed"},
-        "submitted_by":                   {"type": "string", "store": "yes", "index": "not_analyzed"},
-        "submission_date":                {"type": "date",   "store": "yes", "index": "not_analyzed"},
-
-        "modified_by":                    {"type": "string", "store": "yes", "index": "not_analyzed"},
-        "modification_date":              {"type": "date",   "store": "yes"},
-        "expiration_date":                {"type": "date",   "store": "yes"},
-        "annotation":                     {"type": "string", "store": "no", "index": "not_analyzed"},
-
-        "changes":                        {"type": "string", "store": "yes", "index_name": "change"},
-        "is_obsolete":                    {"type": "boolean", "store": "yes"},
-        "is_patch":                       {"type": "boolean", "store": "yes"},
-        "is_url":                         {"type": "boolean", "store": "yes"},
-        "modified_fields":                {"type": "string", "store": "yes", "index_name": "modified"},
-        "requests":                       {"type": "string", "store": "yes", "index_name": "request"},
-
-        "number":                         {"type": "integer", "store": "yes"}
-      },
-      "dynamic": "strict"
     }
   }
 }

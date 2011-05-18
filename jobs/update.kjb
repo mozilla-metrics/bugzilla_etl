@@ -12,6 +12,11 @@
   <modified_date>2010&#47;11&#47;10 15:40:31.486</modified_date>
     <parameters>
         <parameter>
+            <name>ES_NODES</name>
+            <default_value>localhost:9300</default_value>
+            <description/>
+        </parameter>
+        <parameter>
             <name>LOGS_DIR</name>
             <default_value>${Internal.Job.Filename.Directory}&#47;..&#47;log&#47;update</default_value>
             <description/>
