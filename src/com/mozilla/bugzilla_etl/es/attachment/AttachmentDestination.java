@@ -58,4 +58,9 @@ public class AttachmentDestination extends AbstractDestination<Attachment, Attac
                      .setId(id)
                      .setSource(out).request();
     }
+
+
+    protected String index() {
+        return "attachments";
+    }
 }

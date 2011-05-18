@@ -59,9 +59,6 @@ public abstract class AbstractEsClient {
     protected final Client client;
     protected final PrintStream log;
 
-    protected String index() {
-        return "bugs";
-    }
 
     public AbstractEsClient(final PrintStream log, final String esNodes, final String esCluster) {
         Assert.nonNull(log, esNodes);
@@ -88,4 +85,5 @@ public abstract class AbstractEsClient {
         }
     }
 
+    protected abstract String index();
 }

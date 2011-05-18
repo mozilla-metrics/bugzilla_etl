@@ -54,4 +54,8 @@ public class BugDestination extends AbstractDestination<Bug, BugVersion, BugFiel
                      .setSource(out).request();
     }
 
+
+    protected String index() {
+        return "bugs";
+    }
 }
