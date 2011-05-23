@@ -36,9 +36,10 @@ public class Mappings {
             for (AttachmentFields.Facet field : AttachmentFields.Facet.values()) {
                 switch (field) {
                     case CHANGES:
-                    case REQUESTS:
                     case MODIFIED_FIELDS:
                         put(field, Conv.STRINGLIST); continue;
+                    case REQUESTS:
+                        put(field, Conv.REQUESTS); continue;
                     case MIMETYPE:
                         put(field, Conv.UNUSED); continue;
                     default:

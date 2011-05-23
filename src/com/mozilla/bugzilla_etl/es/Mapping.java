@@ -51,6 +51,7 @@ import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.di.Converters;
 import com.mozilla.bugzilla_etl.di.Converters.Converter;
 import com.mozilla.bugzilla_etl.model.Field;
+import com.mozilla.bugzilla_etl.model.attachment.Request;
 
 
 public interface Mapping<T extends Field> {
@@ -61,8 +62,19 @@ public interface Mapping<T extends Field> {
     Long integer(T field, Map<String, Object> fields);
     XContentBuilder append(XContentBuilder builder, T field, Object value) throws IOException;
 
-
-    public static enum Conv { STRING, STRINGLIST, DATE, INTEGER, BOOLEAN, UNUSED }
+    /**
+     * The conv value associated with a pentaho stream column determines
+     * how its values are sent to elasticsearch.
+     */
+    public static enum Conv {
+        REQUESTS,
+        STRING,
+        STRINGLIST,
+        DATE,
+        INTEGER,
+        BOOLEAN,
+        UNUSED
+    }
 
 
     public static abstract class BaseMapping<T extends Field> implements Mapping<T> {
@@ -186,6 +198,19 @@ public interface Mapping<T extends Field> {
                 case STRING:
                     if (facet == null) facet = "<none>";
                     return builder.field(field.columnName(), facet);
+                case REQUESTS:
+                    builder.startArray(field.columnName() + "_parsed");
+                    for (Request req : Converters.REQUESTS.parse((String) value)) {
+                        builder.startObject();
+                        builder.field("name", req.name());
+                        if (req.status() != Request.Status.NA) {
+                            builder.field("status", req.status().name().toLowerCase());
+                        }
+                        builder.field("requestee", req.requestee());
+                        builder.endObject();
+                    }
+                    builder.endArray();
+                    // FALL THROUGH: create the regular (unparsed) field as well
                 case STRINGLIST:
                     List<String> values = csvConverter.parse(facet);
                     if (values.size() == 0) return builder;
