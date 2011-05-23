@@ -23,7 +23,7 @@ A previous version (`v1.0`, currently in use at MoCo) stores data in a Solr inde
 
 ** Initialize the elasticsearch mappings:
 
-    > curl -XPOST 'http://localhost:9200/bugs' --data @configuration/es/index.json
+    > curl -XPOST 'http://localhost:9200/bugs' --data @configuration/es/bugs.json
     > curl -XPOST 'http://localhost:9200/attachments' --data @configuration/es/attachments.json; echo
 
 * Copy/Rename the `*.example` files to lose the suffix, and adjust them for your setup. 
