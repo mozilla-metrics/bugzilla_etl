@@ -39,6 +39,13 @@ public abstract class Rebuilder<E extends Entity<E, V, FACET>,
                                 FACET extends Enum<FACET> & Field,
                                 FLAG extends Flag> {
 
+    /**
+     * Create a Rebuilder for given input and lookup.
+     * @param input The DI input of state and (latest) history records.
+     * @param lookup The lookup for already persisted entities.
+     * @param flagsConverter A converter for flags/review requests between DI
+     * *                     stream entries (strings) and lists.
+     */
     public Rebuilder(final Input input,
                      final Lookup<E, ? extends Exception> lookup,
                      final Converter<List<FLAG>> flagsConverter) {
