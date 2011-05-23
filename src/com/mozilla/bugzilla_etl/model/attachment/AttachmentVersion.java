@@ -3,6 +3,8 @@ package com.mozilla.bugzilla_etl.model.attachment;
 import java.util.Date;
 import java.util.EnumMap;
 
+import org.apache.commons.lang.time.DateUtils;
+
 import com.mozilla.bugzilla_etl.base.Assert;
 import com.mozilla.bugzilla_etl.model.PersistenceState;
 import com.mozilla.bugzilla_etl.model.Version;
@@ -60,8 +62,9 @@ public class AttachmentVersion extends Version<Attachment, AttachmentVersion, At
         super(attachment, author, maybeAnnotation, from, to, persistenceState);
         Assert.nonNull(facets, measurements);
         if (!from.before(to)) {
-            Assert.unreachable("Faulty expiration range on #%s! DST bug? From: %s, to: %s",
-                               attachment, from, to);
+            final Date oneHourEarlier = DateUtils.addHours(from, -1);
+            from.setTime(oneHourEarlier.getTime());
+            System.out.format("Time mismatch on attachment %s: Moved FROM back 1h!\n", entity.id());
         }
         if (maybeAnnotation == null) maybeAnnotation = "";
         this.facets = facets.clone();
