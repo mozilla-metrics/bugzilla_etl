@@ -22,6 +22,12 @@ public class Request extends Flag {
             return new Request(flag.name(), flag.status(), null);
         }
         int to = representation.indexOf(')');
+        if (to == -1) {
+            final String msg =
+                String.format("Unclosed parens in review request ''",
+                              representation);
+            throw new IllegalArgumentException(msg);
+        }
         String requestee = representation.substring(from+1, to);
         return new Request(flag.name(), flag.status(), requestee);
     }
