@@ -1,6 +1,6 @@
 # Bugzilla ETL
 
-A set of [Pentaho DI](http://www.pentaho.com/products/data_integration/) jobs to extract bug versions from a bugzilla database and store them in an [elasticsearch](http://www.elasticsearch.org/) index. This ETL drives dashboards for [BMO](http://bugzilla.mozilla.org), for various teams at [Mozilla Corp.](http://www.mozilla.com/en-US/about/). 
+A set of [Pentaho DI](http://www.pentaho.com/products/data_integration/) jobs to extract bug versions from a bugzilla database and store them in an [elasticsearch](http://www.elasticsearch.org/) index. This ETL drives dashboards for [BMO](http://bugzilla.mozilla.org), for various teams at [Mozilla Corporation](http://www.mozilla.com/en-US/about/). 
 
 A previous version (`v1.0`, currently in use at MoCo) stores data in a Solr index via a [lily content repository](http://www.lilyproject.org). Any fixes for that are added on the `lilydest` branch. 
 
