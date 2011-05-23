@@ -13,3 +13,4 @@ export KETTLE_LIBS="/usr/local/pdi-ee/data-integration/libext"
 
 # Elasticsearch hosts for the transport client to connect to (CSV).
 export ES_NODES="localhost:9300"
+export ES_CLUSTER="elasticsearch"
