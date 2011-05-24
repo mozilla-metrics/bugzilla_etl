@@ -55,7 +55,7 @@
       <type>TRANS</type>
       <specification_method>filename</specification_method>
       <trans_object_id/>
-      <filename>&#47;Volumes&#47;Work&#47;mozilla&#47;bugzilla_dwh&#47;bugzilla_etl&#47;transformations&#47;load_bugs.ktr</filename>
+      <filename>${Internal.Job.Filename.Directory}&#47;..&#47;transformations&#47;load_bugs.ktr</filename>
       <transname/>
       <arg_from_previous>N</arg_from_previous>
       <params_from_previous>N</params_from_previous>
@@ -80,7 +80,7 @@
             <value>bug_id &gt;= 1 AND bug_id &lt; 900900900</value>
             </parameter>            <parameter>            <name>OVERRIDE_START_TIME</name>
             <stream_name/>
-            <value>2011-05-06 01:01:01</value>
+            <value>2011-05-23 01:01:01</value>
             </parameter>            <parameter>            <name>LILY_ZK_NODES</name>
             <stream_name/>
             <value>${ZOOKEEPER_HOST}</value>
@@ -361,7 +361,7 @@ exit $?</script>
       <type>TRANS</type>
       <specification_method>filename</specification_method>
       <trans_object_id/>
-      <filename>&#47;Volumes&#47;Work&#47;mozilla&#47;bugzilla_dwh&#47;bugzilla_etl&#47;transformations&#47;load_attachments.ktr</filename>
+      <filename>${Internal.Job.Filename.Directory}&#47;..&#47;transformations&#47;load_attachments.ktr</filename>
       <transname/>
       <arg_from_previous>N</arg_from_previous>
       <params_from_previous>N</params_from_previous>
