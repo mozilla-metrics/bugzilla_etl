@@ -16,19 +16,29 @@ A previous version (`v1.0`, currently in use at MoCo) stores data in a Solr inde
 
 * Clone this project into a local directory
 * Configure the elasticsearch indexes (put a cluster node in place of `localhost`):
-** Optionally: clean out previous indexes:
 
-	> curl -XDELETE 'http://localhost:9200/bugs'
-	> curl -XDELETE 'http://localhost:9200/attachments' ; echo
+    * Optionally: clean out previous indexes:
 
-** Initialize the elasticsearch mappings:
+        > curl -XDELETE 'http://localhost:9200/bugs'
+        
+        > curl -XDELETE 'http://localhost:9200/attachments' ; echo
 
-    > curl -XPOST 'http://localhost:9200/bugs' --data @configuration/es/bugs.json
-    > curl -XPOST 'http://localhost:9200/attachments' --data @configuration/es/attachments.json; echo
+
+    * Initialize the elasticsearch mappings:
+
+        > curl -XPOST 'http://localhost:9200/bugs' --data @configuration/es/bugs.json
+        
+        > curl -XPOST 'http://localhost:9200/attachments' --data @configuration/es/attachments.json; echo
+
 
 * Copy/Rename the `*.example` files to lose the suffix, and adjust them for your setup. 
 * Using `bin/install`, build the ETL and install it into your PDI `libext/` directory.
 * Configure Pentaho DI: 
+    * add a directory `.kettle` in your `$KETTLE_HOME`
+    * there, create a file `kettle.properties`
+    * in that file, add settings for `bugs_db_host`, `bugs_db_port`, 
+      `bugs_db_user`, `bugs_db_pass` and `bugs_db_name` for your
+      bugzilla-database connection.
 * Run `bin/import FROM TO` for the initial batch import, where FROM is the (inclusive) bug number to start at, and TO is the (exclusive) bug ID to stop at. It is recommended to split your import across multiple clients. This makes the ETL queries to Bugzilla return much more quickly, and saves on loading time by parallelizing bulk loads. Of course, this mostly makes sense if you have a corresponding number of
 * Later on, use `bin/update` to read modifications from the MySQL database
 
