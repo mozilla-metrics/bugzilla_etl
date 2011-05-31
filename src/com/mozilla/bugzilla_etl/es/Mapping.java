@@ -133,18 +133,30 @@ public interface Mapping<T extends Field> {
             return field.columnName();
         }
 
+        /** We want to read any facet field as a string for generic handling. */
         private String string(T field, Object esValue) {
-            // For facets, obtain fields as strings.
-            if (conversions.get(field) == Conv.STRINGLIST) {
-                return csv(field, esValue);
+            if (esValue == null)
+                return null;
+
+            switch (conversions.get(field)) {
+                case REQUESTS:
+                case STRINGLIST:
+                    return csv(field, esValue);
+                case BOOLEAN:
+                    return Converters.BOOL.format((Boolean) esValue);
+                case STRING:
+                case DATE:
+                    return (String) esValue;
+                case INTEGER:
+                    return ((Integer) esValue).toString();
+                case UNUSED:
+                    return null;
+                default:
+                    return Assert.unreachable(String.class,
+                                              "JSON-to-string for field %s (%s) not implemented.",
+                                              field.columnName(), conversions.get(field).name());
             }
-            if (conversions.get(field) == Conv.BOOLEAN) {
-                return Converters.BOOL.format((Boolean) esValue);
-            }
-            Assert.check(conversions.get(field) == Conv.STRING
-                         || conversions.get(field) == Conv.DATE);
-            if (esValue == null) return null;
-            return (String) esValue;
+
         }
 
         private Long integer(T field, Object esValue) {
@@ -163,7 +175,8 @@ public interface Mapping<T extends Field> {
         }
 
         private String csv(T field, Object esValue) {
-            Assert.check(conversions.get(field) == Conv.STRINGLIST);
+            Assert.check(conversions.get(field) == Conv.STRINGLIST
+                         || conversions.get(field) == Conv.REQUESTS);
             if (esValue == null) return "";
             List<?> esValues = (List<?>) esValue;
             // Cast is guarded by the check above.

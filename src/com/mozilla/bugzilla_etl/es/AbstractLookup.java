@@ -29,13 +29,12 @@ extends AbstractEsClient implements Lookup<E, Exception> {
 
         final String index = index();
 
-        // Now we have only the "latest" bug versions, sorted ascending.
         log.format("%s: Searching for id=%d.\n", getClass().getSimpleName(), id);
 
         final SearchResponse response =
             client.prepareSearch(index).setTypes(type())
             .setSearchType(SearchType.DEFAULT)
-            .setTimeout("5s")
+            .setTimeout("10s")
             .setQuery(QueryBuilders.fieldQuery(idColumn(), id))
             .setFrom(0).setSize(1024).setExplain(false)
             .addSort(numberColumn(), SortOrder.ASC)
@@ -44,13 +43,11 @@ extends AbstractEsClient implements Lookup<E, Exception> {
 
         final SearchHits hits = response.getHits();
         if (hits.getTotalHits() == 0) {
-            // Now we have only the "latest" bug versions, sorted ascending.
-            log.format("LOOKUP: Nothing found for bug %d\n", id);
+            log.format("LOOKUP: Nothing found for entity %d\n", id);
             return null;
         }
 
-        // Now we have only the "latest" bug versions, sorted ascending.
-        log.format("LOOKUP: Reconstructing bug %d from %s versions\n",
+        log.format("LOOKUP: Reconstructing entity %d from %s versions\n",
                    id, hits.totalHits());
 
         return reconstruct(hits);

@@ -55,7 +55,7 @@ public abstract class Rebuilder<E extends Entity<E, V, FACET>,
             public E find(Long id) throws KettleStepException {
                 try { return lookup.find(id); }
                 catch (Exception e) {
-                    String message = String.format("Trouble looking up bug %s: %s \n",
+                    String message = String.format("Trouble looking up entity %s: %s \n",
                                                    id, e.getClass().getSimpleName());
                     System.out.print(message);
                     e.printStackTrace(System.out);
