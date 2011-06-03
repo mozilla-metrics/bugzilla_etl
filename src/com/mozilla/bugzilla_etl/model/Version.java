@@ -1,6 +1,8 @@
 package com.mozilla.bugzilla_etl.model;
 
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
@@ -50,6 +52,16 @@ public abstract class Version<E extends Entity<E, V, FACET>,
 
     public PersistenceState persistenceState() { return persistenceState; }
 
+
+    @Override
+    public String toString() {
+        return String.format("{version from='%s', to='%s', persisted=%s, author=%s}",
+                             format.get().format(from),
+                             format.get().format(to),
+                             persistenceState,
+                             author);
+    }
+
     /**
      * Create a modified version based on this version.
      * This is needed to expire the currently valid version when a new version
@@ -66,6 +78,12 @@ public abstract class Version<E extends Entity<E, V, FACET>,
     /** Is this version in the database? Ignored when comparing for equality. */
     protected final PersistenceState persistenceState;
 
+    private static final ThreadLocal<DateFormat> format =
+        new ThreadLocal<DateFormat>() {
+            protected DateFormat initialValue() {
+                return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z");
+            }
+        };
 
     public static final Date TO_FUTURE;
     static {

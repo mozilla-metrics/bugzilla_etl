@@ -40,9 +40,7 @@
 
 package com.mozilla.bugzilla_etl.model.bug;
 
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.EnumMap;
 
@@ -167,20 +165,10 @@ public class BugVersion extends Version<Bug, BugVersion, BugFields.Facet> {
                            newTo, newState);
     }
 
-    @Override
-    public String toString() {
-        return String.format("{version from='%s', to='%s', persisted=%s, author=%s}",
-                             format.format(from),
-                             format.format(to),
-                             persistenceState,
-                             author);
-    }
-
     final EnumMap<BugFields.Facet, String> facets;
     final EnumMap<BugFields.Measurement, Long> measurements;
 
     protected static final Date theFuture;
-    private static final DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z");
     static {
         Date date = null;
         try { date = DateUtils.parseDate("2199-12-31", new String[]{"yyyy-MM-dd"}); }

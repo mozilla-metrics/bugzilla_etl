@@ -55,7 +55,13 @@ public abstract class Entity<E extends Entity<E, V, FACET>,
 
     public void append(V laterVersion) {
         Assert.nonNull(laterVersion);
-        Assert.check(versions.isEmpty() || !versions.getLast().to().after(laterVersion.from()));
+        if (!versions.isEmpty() && versions.getLast().to().after(laterVersion.from())) {
+            System.out.format("VERSION CONSISTENCY PROBLEM trying to append to \n %s"
+                              + "\n versions so far: %s"
+                              + "\n latest version: %s"
+                              + "\n new version : %s \n",
+                              this, versions.size(), versions.getLast(), laterVersion);
+        }
         versions.addLast(laterVersion);
     }
 
