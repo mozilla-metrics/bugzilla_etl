@@ -35,6 +35,7 @@ public class Mappings {
                     case FLAGS:
                     case CHANGES:
                     case KEYWORDS:
+                    case GROUPS:
                     case MODIFIED_FIELDS:
                     case STATUS_WHITEBOARD_ITEMS:
                         put(field, Conv.STRINGLIST); continue;

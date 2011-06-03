@@ -19,6 +19,7 @@
         "component":                      {"type": "string", "store": "yes", "index": "not_analyzed"},
         "flags":                          {"type": "string", "store": "yes", "index_name": "flag"},
         "keywords":                       {"type": "string", "store": "yes", "index_name": "keyword"},
+        "groups":                         {"type": "string", "store": "yes", "index_name": "group"},
         "major_status":                   {"type": "string", "store": "yes", "index": "not_analyzed"},
         "major_status_last_changed_date": {"type": "date",   "store": "yes"},
         "modified_fields":                {"type": "string", "store": "yes", "index_name": "modified"},

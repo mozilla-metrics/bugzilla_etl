@@ -40,6 +40,7 @@ public class BugFields {
         COMPONENT,
         FLAGS,
         KEYWORDS,
+        GROUPS,
         OPSYS,
         MAJOR_STATUS(true),
         MAJOR_STATUS_LAST_CHANGED_DATE(true),

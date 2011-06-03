@@ -287,6 +287,7 @@ class Types {
         final EnumMap<BugFields.Facet, Params> facetParams =
             new EnumMap<BugFields.Facet, Params>(BugFields.Facet.class);
         add(facetParams, BugFields.Facet.KEYWORDS,                       stringlists, Scope.VERSIONED, false);
+        add(facetParams, BugFields.Facet.GROUPS,                         stringlists, Scope.VERSIONED, false);
         add(facetParams, BugFields.Facet.FLAGS,                          stringlists, Scope.VERSIONED, false);
         add(facetParams, BugFields.Facet.MODIFIED_FIELDS,                stringlists, Scope.VERSIONED, false);
         add(facetParams, BugFields.Facet.STATUS_WHITEBOARD_ITEMS,        stringlists, Scope.VERSIONED, false);

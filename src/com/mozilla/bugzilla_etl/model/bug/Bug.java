@@ -312,6 +312,7 @@ public class Bug extends Entity<Bug, BugVersion, BugFields.Facet> {
     @Override protected boolean isMultivalue(BugFields.Facet facet) {
         switch (facet) {
             case KEYWORDS:
+            case GROUPS:
             case FLAGS:
             case STATUS_WHITEBOARD_ITEMS:
                 return true;
