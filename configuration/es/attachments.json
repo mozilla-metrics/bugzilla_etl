@@ -16,6 +16,7 @@
         "annotation":        {"type": "string", "store": "no", "index": "not_analyzed"},
                              
         "changes":           {"type": "string", "store": "yes", "index_name": "change"},
+        "groups":            {"type": "string", "store": "yes", "index_name": "group"},
         "is_obsolete":       {"type": "boolean", "store": "yes"},
         "is_patch":          {"type": "boolean", "store": "yes"},
         "is_url":            {"type": "boolean", "store": "yes"},

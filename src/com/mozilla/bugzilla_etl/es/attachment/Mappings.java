@@ -37,6 +37,7 @@ public class Mappings {
                 switch (field) {
                     case CHANGES:
                     case MODIFIED_FIELDS:
+                    case GROUPS:
                         put(field, Conv.STRINGLIST); continue;
                     case REQUESTS:
                         put(field, Conv.REQUESTS); continue;

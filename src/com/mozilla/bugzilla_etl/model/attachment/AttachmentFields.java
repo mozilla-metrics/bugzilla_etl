@@ -29,6 +29,7 @@ public class AttachmentFields {
     /** Attachment facets. */
     public static enum Facet implements Field {
         CHANGES(true),
+        GROUPS,
         IS_OBSOLETE,
         IS_PATCH,
         IS_URL,
