@@ -109,7 +109,7 @@
       <destinationCc/>
       <destinationBCc/>
       <replyto>metrics@mozilla.com</replyto>
-      <replytoname>Metrics Bugzilla ETL (update bugs)</replytoname>
+      <replytoname>Metrics Bugzilla ETL (update bugs ${FROM_ID} to ${TO_ID})</replytoname>
       <subject>Bugzilla ETL Failure</subject>
       <include_date>N</include_date>
       <contact_person>Michael Kurze</contact_person>
@@ -413,7 +413,7 @@ exit $?</script>
       <destinationBCc/>
       <replyto>metrics@mozilla.com</replyto>
       <replytoname>Metrics Bugzilla ETL</replytoname>
-      <subject>Bugzilla ETL Failure (update attachments)</subject>
+      <subject>Bugzilla ETL Failure (update attachments, bug_id ${FROM_ID} and ${TO_ID})</subject>
       <include_date>N</include_date>
       <contact_person>Michael Kurze</contact_person>
       <contact_phone/>
