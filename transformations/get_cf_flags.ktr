@@ -60,6 +60,8 @@
     </slaveservers>
     <clusterschemas>
     </clusterschemas>
+  <created_user/>
+  <created_date>2011&#47;06&#47;11 21:30:13.233</created_date>
   <modified_user>-</modified_user>
   <modified_date>2010&#47;12&#47;03 21:00:31.859</modified_date>
   </info>
@@ -143,7 +145,7 @@ CONCAT(
 
 var group = &quot;ALL&quot;;
 var sql;
-var templateSql = &quot;IF(`%c` == &apos;---&apos;,  &apos;&apos;,  CONCAT(&apos;%desc&apos;, IF(LENGTH(`%c`) &gt; 1, &apos;-&apos;, &apos;&apos;), `%c`))&quot;;
+var templateSql = &quot;IF(`%c` != &apos;---&apos;, CONCAT(&apos;%desc&apos;, IF(LENGTH(`%c`) &gt; 1, &apos;-&apos;, &apos;&apos;), `%c`), &apos;&apos;)&quot;;
 sql = templateSql.replace(&#47;%c&#47;g, name).replace(&#47;%desc&#47;g, description)
 </jsScript_script>
       </jsScript>    </jsScripts>    <fields>      <field>        <name>group</name>
@@ -207,7 +209,7 @@ var cfFlagsSql = &quot;TRIM(TRAILING &apos;, &apos; FROM CONCAT(&quot; + customF
            <schema_name/>
            </partitioning>
     <connection>bugs</connection>
-    <sql>SELECT `name`, `description` FROM `fielddefs` WHERE `name` LIKE &apos;cf_%&apos;</sql>
+    <sql>SELECT `name`, `description` FROM `fielddefs` WHERE `name` LIKE &apos;cf_%&apos; AND `name` not in (&apos;cf_colo_site&apos;, &apos;cf_crash_signature&apos;, &apos;cf_tracking_thunderbird6&apos;, &apos;cf_tracking_thunderbird7&apos;, &apos;cf_status_thunderbird6&apos;, &apos;cf_status_thunderbird7&apos;)</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>

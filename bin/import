@@ -29,7 +29,7 @@ cmd='"${KETTLE_LIBS}/../kitchen.sh" \
     -param:"ZOOKEEPER_HOST=${ZOOKEEPER_HOST}" \
     -param:"FROM_ID=${from}" \
     -param:"TO_ID=${to}" $mode_param \
-    -level:Rowlevel'
+    -level:Info'
 
 mode_param=""
 if [[ "${#}" -gt "2" ]]; then
