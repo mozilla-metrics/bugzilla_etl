@@ -11,7 +11,7 @@
     <parameters>
         <parameter>
             <name>BUG_IDS_PARTITION</name>
-            <default_value>bug_id &gt;= 601429 and bug_id &lt; 601430</default_value>
+            <default_value>bug_id &gt;= 256912 and bug_id &lt; 256913</default_value>
             <description>Partitioning to reduce memory and process time for big batch processing</description>
         </parameter>
         <parameter>
@@ -257,6 +257,82 @@ writeToLog(&quot;m&quot;, &quot;Updating FACT_bug_states &quot;+bugIDsPartition+
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>417</xloc>
       <yloc>538</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Clean flag fields (infix, suffix)</name>
+    <type>ReplaceString</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>
+      <field>
+        <in_stream_name>flags_from</in_stream_name>
+        <out_stream_name/>
+        <use_regex>no</use_regex>
+        <replace_string>,_</replace_string>
+        <replace_by_string/>
+        <whole_word>no</whole_word>
+        <case_sensitive>no</case_sensitive>
+      </field>
+      <field>
+        <in_stream_name>flags_to</in_stream_name>
+        <out_stream_name/>
+        <use_regex>no</use_regex>
+        <replace_string>,_</replace_string>
+        <replace_by_string/>
+        <whole_word>no</whole_word>
+        <case_sensitive>no</case_sensitive>
+      </field>
+    </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>632</xloc>
+      <yloc>458</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Clean flag fields (prefix)</name>
+    <type>ReplaceString</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>
+      <field>
+        <in_stream_name>flags_from</in_stream_name>
+        <out_stream_name/>
+        <use_regex>yes</use_regex>
+        <replace_string>_,?</replace_string>
+        <replace_by_string/>
+        <whole_word>no</whole_word>
+        <case_sensitive>no</case_sensitive>
+      </field>
+      <field>
+        <in_stream_name>flags_to</in_stream_name>
+        <out_stream_name/>
+        <use_regex>yes</use_regex>
+        <replace_string>_,?</replace_string>
+        <replace_by_string/>
+        <whole_word>no</whole_word>
+        <case_sensitive>no</case_sensitive>
+      </field>
+    </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>632</xloc>
+      <yloc>519</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -846,7 +922,7 @@ WHERE
         field.`name` IN (&apos;assigned_to&apos;, &apos;bug_severity&apos;, &apos;bug_status&apos;, &apos;component&apos;, &apos;flagtypes.name&apos;,
                          &apos;keywords&apos;, &apos;op_sys&apos;, &apos;priority&apos;, &apos;product&apos;, &apos;resolution&apos;, &apos;status_whiteboard&apos;,
                          &apos;target_milestone&apos;, &apos;version&apos;)
-        OR field.`name` LIKE &apos;cf_%&apos;
+        OR (field.`name` LIKE &apos;cf_%&apos; AND field.`name` NOT IN (&apos;cf_colo_site&apos;, &apos;cf_crash_signature&apos;, &apos;cf_tracking_thunderbird6&apos;, &apos;cf_tracking_thunderbird7&apos;, &apos;cf_status_thunderbird6&apos;, &apos;cf_status_thunderbird7&apos;))
     )
     AND `attach_id` IS NULL
 ORDER BY
@@ -1882,82 +1958,6 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>418</xloc>
       <yloc>966</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Clean flag fields (infix, suffix)</name>
-    <type>ReplaceString</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>
-      <field>
-        <in_stream_name>flags_from</in_stream_name>
-        <out_stream_name/>
-        <use_regex>no</use_regex>
-        <replace_string>,_</replace_string>
-        <replace_by_string/>
-        <whole_word>no</whole_word>
-        <case_sensitive>no</case_sensitive>
-      </field>
-      <field>
-        <in_stream_name>flags_to</in_stream_name>
-        <out_stream_name/>
-        <use_regex>no</use_regex>
-        <replace_string>,_</replace_string>
-        <replace_by_string/>
-        <whole_word>no</whole_word>
-        <case_sensitive>no</case_sensitive>
-      </field>
-    </fields>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>632</xloc>
-      <yloc>458</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Clean flag fields (prefix)</name>
-    <type>ReplaceString</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>
-      <field>
-        <in_stream_name>flags_from</in_stream_name>
-        <out_stream_name/>
-        <use_regex>yes</use_regex>
-        <replace_string>_,?</replace_string>
-        <replace_by_string/>
-        <whole_word>no</whole_word>
-        <case_sensitive>no</case_sensitive>
-      </field>
-      <field>
-        <in_stream_name>flags_to</in_stream_name>
-        <out_stream_name/>
-        <use_regex>yes</use_regex>
-        <replace_string>_,?</replace_string>
-        <replace_by_string/>
-        <whole_word>no</whole_word>
-        <case_sensitive>no</case_sensitive>
-      </field>
-    </fields>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>632</xloc>
-      <yloc>519</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

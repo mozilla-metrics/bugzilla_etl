@@ -209,7 +209,7 @@ var cfFlagsSql = &quot;TRIM(TRAILING &apos;, &apos; FROM CONCAT(&quot; + customF
            <schema_name/>
            </partitioning>
     <connection>bugs</connection>
-    <sql>SELECT `name`, `description` FROM `fielddefs` WHERE `name` LIKE &apos;cf_%&apos; AND `name` not in (&apos;cf_colo_site&apos;, &apos;cf_crash_signature&apos;, &apos;cf_tracking_thunderbird6&apos;, &apos;cf_tracking_thunderbird7&apos;, &apos;cf_status_thunderbird6&apos;, &apos;cf_status_thunderbird7&apos;)</sql>
+    <sql>SELECT `name`, `description` FROM `fielddefs` WHERE `name` LIKE &apos;cf_%&apos; AND `name` NOT IN (&apos;cf_colo_site&apos;, &apos;cf_crash_signature&apos;, &apos;cf_tracking_thunderbird6&apos;, &apos;cf_tracking_thunderbird7&apos;, &apos;cf_status_thunderbird6&apos;, &apos;cf_status_thunderbird7&apos;)</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>
