@@ -35,11 +35,14 @@
 
   <fields>
     <!-- Fields which are required by Lily -->
-    <field name="@@key"                          type="string"     required="true" />
-    <field name="@@id"                           type="string"     required="true" />
-    <field name="@@vtag"                         type="string"     required="true" />
-    <field name="@@versionless"                  type="string"     required="false"/>
+    <field name="lily.key" type="string" indexed="true" stored="true" required="true"/>
+    <field name="lily.id" type="string" indexed="true" stored="true" required="true"/>
 
+    <!-- Fields which are required by Lily, but which are not required to be indexed or stored -->
+    <field name="lily.vtagId" type="string" indexed="false" stored="false"/>
+    <field name="lily.vtag" type="string" indexed="false" stored="false"/>
+    <field name="lily.version" type="long" indexed="false" stored="false"/>
+    
     <!-- com.mozilla.bugzilla_etl.base.Fields.Bug -->
     <field name="bug_id"                         type="tlong"      required="true" />
     <field name="reported_by"                    type="string"     required="true" />
@@ -89,10 +92,10 @@
 
   <!-- Field to use to determine and enforce document uniqueness.
        Unless this field is marked with required="false", it will be a required field -->
-  <uniqueKey>@@key</uniqueKey>
+  <uniqueKey>lily.key</uniqueKey>
 
   <!-- field for the QueryParser to use when an explicit fieldname is absent -->
-  <defaultSearchField>@@key</defaultSearchField>
+  <defaultSearchField>lily.key</defaultSearchField>
 
   <solrQueryParser defaultOperator="AND"/>
 </schema>
