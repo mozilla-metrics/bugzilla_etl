@@ -13,7 +13,7 @@ fi
 
 INDEXER_CONF="${ETL_HOME}/configuration/lily/indexer/indexerconf.xml"
 
-TABLES="record type indexmeta blob blobincubator links-backward links-forward mq-shard1 wal-shard1"
+TABLES="record type blob blobincubator links-backward links-forward mq-shard1 wal-shard1"
 
 need_confirm() {
     echo "Type 'Yes' to confirm."
