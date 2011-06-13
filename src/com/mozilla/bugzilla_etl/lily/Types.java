@@ -53,6 +53,7 @@ import org.lilyproject.repository.api.QName;
 import org.lilyproject.repository.api.RecordType;
 import org.lilyproject.repository.api.RecordTypeNotFoundException;
 import org.lilyproject.repository.api.Repository;
+import org.lilyproject.repository.api.RepositoryException;
 import org.lilyproject.repository.api.Scope;
 import org.lilyproject.repository.api.TypeException;
 import org.lilyproject.repository.api.TypeManager;
@@ -134,6 +135,14 @@ class Types {
         } catch (TypeException e) {
             e.printStackTrace();
             log.format("Fatal: value type not found.");
+            throw new RuntimeException(e);
+        } catch (RepositoryException e) {
+            e.printStackTrace();
+            log.format("Fatal: repository exception creating type.");
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            log.format("Fatal: interrupted while creating type.");
             throw new RuntimeException(e);
         }
 
@@ -236,11 +245,16 @@ class Types {
             log.format("Error: Unexpected problem with managing field type (%s).\n",
                        params.qname.getName());
             throw new RuntimeException(typeException);
-        } 
+        }
         catch (InterruptedException error) {
             log.println("Fatal: Got interrupted creating field type:");
             error.printStackTrace(log);
             throw new RuntimeException(error);
+        }
+        catch (RepositoryException e) {
+            e.printStackTrace();
+            log.format("Fatal: repository exception creating type.");
+            throw new RuntimeException(e);
         }
         return fieldType;
     }
