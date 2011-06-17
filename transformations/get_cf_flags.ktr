@@ -145,7 +145,7 @@ CONCAT(
 
 var group = &quot;ALL&quot;;
 var sql;
-var templateSql = &quot;IF(`%c` != &apos;---&apos;, CONCAT(&apos;%desc&apos;, IF(LENGTH(`%c`) &gt; 1, &apos;-&apos;, &apos;&apos;), `%c`), &apos;&apos;)&quot;;
+var templateSql = &quot;IF(`%c` != &apos;---&apos;, CONCAT(&apos;%desc&apos;, IF(LENGTH(`%c`) &gt; 1, &apos;-&apos;, &apos;&apos;), `%c`, &apos;,&apos;), &apos;&apos;)&quot;;
 sql = templateSql.replace(&#47;%c&#47;g, name).replace(&#47;%desc&#47;g, description)
 </jsScript_script>
       </jsScript>    </jsScripts>    <fields>      <field>        <name>group</name>
@@ -183,7 +183,7 @@ sql = templateSql.replace(&#47;%c&#47;g, name).replace(&#47;%desc&#47;g, descrip
         <jsScript_name>Script 1</jsScript_name>
         <jsScript_script>&#47;&#47; Script here
 
-var cfFlagsSql = &quot;TRIM(TRAILING &apos;, &apos; FROM CONCAT(&quot; + customFieldsSql + &quot;))&quot;</jsScript_script>
+var cfFlagsSql = &quot;TRIM(TRAILING &apos;,&apos; FROM CONCAT(&quot; + customFieldsSql + &quot;))&quot;</jsScript_script>
       </jsScript>    </jsScripts>    <fields>      <field>        <name>cfFlagsSql</name>
         <rename>cfFlagsSql</rename>
         <type>String</type>
@@ -209,7 +209,7 @@ var cfFlagsSql = &quot;TRIM(TRAILING &apos;, &apos; FROM CONCAT(&quot; + customF
            <schema_name/>
            </partitioning>
     <connection>bugs</connection>
-    <sql>SELECT `name`, `description` FROM `fielddefs` WHERE `name` LIKE &apos;cf_%&apos; AND `name` NOT IN (&apos;cf_colo_site&apos;, &apos;cf_crash_signature&apos;, &apos;cf_tracking_thunderbird6&apos;, &apos;cf_tracking_thunderbird7&apos;, &apos;cf_status_thunderbird6&apos;, &apos;cf_status_thunderbird7&apos;)</sql>
+    <sql>SELECT `name`, `description` FROM `fielddefs` WHERE `name` LIKE &apos;cf_%&apos; AND `name` != &apos;cf_colo_site&apos; AND `id` &lt; 120</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>

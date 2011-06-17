@@ -41,7 +41,7 @@ if [[ "${#}" -gt "2" ]]; then
         -param:"BUG_IDS_PARTITION=bug_id >= ${from} and bug_id < ${to}" \
         -param:"lily_zk_connect_string=${ZOOKEEPER_HOST}" \
         ${mode_param} \
-        -level:Rowlevel'
+        -level:Info'
 fi
 
 echo "CMD: $cmd"
