@@ -11,12 +11,12 @@
     <parameters>
         <parameter>
             <name>BUG_IDS_PARTITION</name>
-            <default_value>attachments.bug_id &gt;= 606001 and attachments.bug_id &lt; 606011</default_value>
+            <default_value>bug_id &gt;= 653308 AND bug_id &lt; 653310</default_value>
             <description>Partitioning to reduce memory and process time for big batch processing</description>
         </parameter>
         <parameter>
             <name>CF_FLAGS_SQL_PARAMETER</name>
-            <default_value>TRIM(TRAILING &apos;, &apos; FROM CONCAT(IF(`cf_blocking_fennec` != &apos;---&apos;, CONCAT(&apos;blocking-fennec&apos;, IF(LENGTH(`cf_blocking_fennec`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_fennec`, &apos;, &apos;), &apos;&apos;), IF(`cf_blocking_191` != &apos;---&apos;, CONCAT(&apos;blocking1.9.1&apos;, IF(LENGTH(`cf_blocking_191`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_191`, &apos;, &apos;), &apos;&apos;), IF(`cf_blocking_20` != &apos;---&apos;, CONCAT(&apos;blocking2.0&apos;, IF(LENGTH(`cf_blocking_20`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_20`, &apos;, &apos;), &apos;&apos;), IF(`cf_blocking_thunderbird30` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.0&apos;, IF(LENGTH(`cf_blocking_thunderbird30`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird30`, &apos;, &apos;), &apos;&apos;), IF(`cf_blocking_192` != &apos;---&apos;, CONCAT(&apos;blocking1.9.2&apos;, IF(LENGTH(`cf_blocking_192`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_192`, &apos;, &apos;), &apos;&apos;), IF(`cf_blocking_thunderbird31` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.1&apos;, IF(LENGTH(`cf_blocking_thunderbird31`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird31`, &apos;, &apos;), &apos;&apos;), IF(`cf_blocking_seamonkey21` != &apos;---&apos;, CONCAT(&apos;blocking-seamonkey2.1&apos;, IF(LENGTH(`cf_blocking_seamonkey21`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_seamonkey21`, &apos;, &apos;), &apos;&apos;), IF(`cf_blocking_thunderbird32` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.2&apos;, IF(LENGTH(`cf_blocking_thunderbird32`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird32`, &apos;, &apos;), &apos;&apos;)))</default_value>
+            <default_value>TRIM(TRAILING &apos;,&apos; FROM CONCAT(IF(`cf_blocking_fennec` != &apos;---&apos;, CONCAT(&apos;tracking-fennec&apos;, IF(LENGTH(`cf_blocking_fennec`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_fennec`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_191` != &apos;---&apos;, CONCAT(&apos;blocking1.9.1&apos;, IF(LENGTH(`cf_blocking_191`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_191`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_191` != &apos;---&apos;, CONCAT(&apos;status1.9.1&apos;, IF(LENGTH(`cf_status_191`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_191`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_192` != &apos;---&apos;, CONCAT(&apos;status1.9.2&apos;, IF(LENGTH(`cf_status_192`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_192`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_20` != &apos;---&apos;, CONCAT(&apos;blocking2.0&apos;, IF(LENGTH(`cf_blocking_20`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_20`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird30` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.0&apos;, IF(LENGTH(`cf_blocking_thunderbird30`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird30`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird30` != &apos;---&apos;, CONCAT(&apos;status-thunderbird3.0&apos;, IF(LENGTH(`cf_status_thunderbird30`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird30`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_192` != &apos;---&apos;, CONCAT(&apos;blocking1.9.2&apos;, IF(LENGTH(`cf_blocking_192`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_192`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird31` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.1&apos;, IF(LENGTH(`cf_blocking_thunderbird31`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird31`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird31` != &apos;---&apos;, CONCAT(&apos;status-thunderbird3.1&apos;, IF(LENGTH(`cf_status_thunderbird31`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird31`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_20` != &apos;---&apos;, CONCAT(&apos;status2.0&apos;, IF(LENGTH(`cf_status_20`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_20`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_seamonkey21` != &apos;---&apos;, CONCAT(&apos;status-seamonkey2.1&apos;, IF(LENGTH(`cf_status_seamonkey21`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_seamonkey21`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_seamonkey21` != &apos;---&apos;, CONCAT(&apos;blocking-seamonkey2.1&apos;, IF(LENGTH(`cf_blocking_seamonkey21`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_seamonkey21`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird32` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.2&apos;, IF(LENGTH(`cf_blocking_thunderbird32`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird32`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird32` != &apos;---&apos;, CONCAT(&apos;status-thunderbird3.2&apos;, IF(LENGTH(`cf_status_thunderbird32`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird32`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird33` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird5.0&apos;, IF(LENGTH(`cf_blocking_thunderbird33`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird33`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird33` != &apos;---&apos;, CONCAT(&apos;status-thunderbird5.0&apos;, IF(LENGTH(`cf_status_thunderbird33`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird33`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_fx` != &apos;---&apos;, CONCAT(&apos;blocking-fx&apos;, IF(LENGTH(`cf_blocking_fx`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_fx`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_firefox5` != &apos;---&apos;, CONCAT(&apos;tracking-firefox5&apos;, IF(LENGTH(`cf_tracking_firefox5`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_firefox5`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_firefox5` != &apos;---&apos;, CONCAT(&apos;status-firefox5&apos;, IF(LENGTH(`cf_status_firefox5`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_firefox5`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_firefox6` != &apos;---&apos;, CONCAT(&apos;tracking-firefox6&apos;, IF(LENGTH(`cf_tracking_firefox6`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_firefox6`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_firefox7` != &apos;---&apos;, CONCAT(&apos;tracking-firefox7&apos;, IF(LENGTH(`cf_tracking_firefox7`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_firefox7`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_firefox6` != &apos;---&apos;, CONCAT(&apos;status-firefox6&apos;, IF(LENGTH(`cf_status_firefox6`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_firefox6`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_firefox7` != &apos;---&apos;, CONCAT(&apos;status-firefox7&apos;, IF(LENGTH(`cf_status_firefox7`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_firefox7`, &apos;,&apos;), &apos;&apos;)))</default_value>
             <description>An SQL expression that selects flags from custom fields.</description>
         </parameter>
         <parameter>
@@ -102,8 +102,8 @@
 (either in your ~&#47;.kettle or your $KETTLE_HOME&#47;.kettle if set):
 
 bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
-      <xloc>607</xloc>
-      <yloc>18</yloc>
+      <xloc>768</xloc>
+      <yloc>32</yloc>
       <width>454</width>
       <heigth>74</heigth>
       <fontname>Ariel</fontname>
@@ -153,7 +153,7 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
     </attributes>
   </connection>
   <order>
-  <hop> <from>Calculate start date</from><to>Get new&#47;modified attachments</to><enabled>Y</enabled> </hop>  <hop> <from>Join attachments with activities</from><to>Set earliest flag no-activity bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Mark first&#47;last row</from><to>Join attachments with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get reviews for new&#47;modified attachments</to><enabled>Y</enabled> </hop>  <hop> <from>Get reviews for new&#47;modified attachments</from><to>Denormalise reviews</to><enabled>Y</enabled> </hop>  <hop> <from>Get new&#47;modified attachments</from><to>Join flags into attachments</to><enabled>Y</enabled> </hop>  <hop> <from>Denormalise reviews</from><to>Join flags into attachments</to><enabled>Y</enabled> </hop>  <hop> <from>Prepare History Input</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Set earliest flag no-activity bugs</from><to>Prepare History Input</to><enabled>Y</enabled> </hop>  <hop> <from>Generate Rows</from><to>Calculate start date</to><enabled>Y</enabled> </hop>  <hop> <from>Rebuild Versions</from><to>Bulk Load To ES</to><enabled>Y</enabled> </hop>  <hop> <from>Get new activities</from><to>Denormalise activities</to><enabled>Y</enabled> </hop>  <hop> <from>Denormalise activities</from><to>Mark first&#47;last row</to><enabled>Y</enabled> </hop>  <hop> <from>Join flags into attachments</from><to>Join attachments with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Clone row</to><enabled>Y</enabled> </hop>  <hop> <from>Clone row</from><to>Get new activities</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Calculate start date</from><to>Get new&#47;modified attachments</to><enabled>Y</enabled> </hop>  <hop> <from>Join attachments with activities</from><to>Set earliest flag no-activity bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Mark first&#47;last row</from><to>Join attachments with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get reviews for new&#47;modified attachments</to><enabled>Y</enabled> </hop>  <hop> <from>Get reviews for new&#47;modified attachments</from><to>Denormalise reviews</to><enabled>Y</enabled> </hop>  <hop> <from>Denormalise reviews</from><to>Join flags into attachments</to><enabled>Y</enabled> </hop>  <hop> <from>Prepare History Input</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Set earliest flag no-activity bugs</from><to>Prepare History Input</to><enabled>Y</enabled> </hop>  <hop> <from>Generate Rows</from><to>Calculate start date</to><enabled>Y</enabled> </hop>  <hop> <from>Rebuild Versions</from><to>Bulk Load To ES</to><enabled>Y</enabled> </hop>  <hop> <from>Denormalise activities</from><to>Mark first&#47;last row</to><enabled>Y</enabled> </hop>  <hop> <from>Join flags into attachments</from><to>Join attachments with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>activity on attachments</to><enabled>Y</enabled> </hop>  <hop> <from>bug-groups</from><to>concat groups</to><enabled>Y</enabled> </hop>  <hop> <from>Get new&#47;modified attachments</from><to>Join groups into attachments</to><enabled>Y</enabled> </hop>  <hop> <from>concat groups</from><to>Join groups into attachments</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>bug-groups</to><enabled>Y</enabled> </hop>  <hop> <from>Join groups into attachments</from><to>Join flags into attachments</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>activities on their bugs</to><enabled>Y</enabled> </hop>  <hop> <from>activities on their bugs</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>activity on attachments</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Sorted Merge</from><to>remove sort date</to><enabled>Y</enabled> </hop>  <hop> <from>remove sort date</from><to>Denormalise activities</to><enabled>Y</enabled> </hop>  </order>
   <step>
     <name>Bulk Load To ES</name>
     <type>UserDefinedJavaClass</type>
@@ -222,8 +222,8 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
 <parameter_description/>
 </usage_parameter></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>790</xloc>
-      <yloc>696</yloc>
+      <xloc>960</xloc>
+      <yloc>880</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -277,8 +277,8 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartitio
         <replace>N</replace>
       </field>    </fields>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>333</xloc>
-      <yloc>82</yloc>
+      <xloc>352</xloc>
+      <yloc>96</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -477,8 +477,8 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartitio
         </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>546</xloc>
-      <yloc>278</yloc>
+      <xloc>800</xloc>
+      <yloc>464</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -517,8 +517,8 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartitio
         </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>104</xloc>
-      <yloc>274</yloc>
+      <xloc>96</xloc>
+      <yloc>528</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -538,93 +538,8 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartitio
     <limit>1</limit>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>333</xloc>
-      <yloc>19</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Get new activities</name>
-    <type>TableInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <connection>bugs</connection>
-    <sql>(SELECT
-    activity.`attach_id` AS activity_attachment_id,
-    `modifier`.`login_name` AS modified_by,
-    `bug_when`,
-    IF(`name` = &apos;flagtypes.name&apos;, &apos;flags&apos;, field.`name`) AS field_name,
-    CASE
-        WHEN `name` = &apos;flags&apos; AND `removed` IS NULL THEN &apos;&apos;
-        ELSE NULLIF(`removed`, &apos;&apos;)
-    END AS removed,
-    CASE
-        WHEN `name` = &apos;flags&apos; AND `added` IS NULL THEN &apos;&apos;
-        ELSE NULLIF(`added`, &apos;&apos;)
-    END AS added
-FROM
-    `sanitized_bugs_activity` activity
-    JOIN `attachments` attachments ON activity.`attach_id` = attachments.`attach_id`
-    JOIN `fielddefs` field ON activity.`fieldid` = field.`id`
-    JOIN `profiles` modifier ON `who` = modifier.`userid`
-WHERE
-	activity.`attach_id` IS NOT NULL
-    AND `bug_when` &gt; ?
-    AND ${BUG_IDS_PARTITION}
-    AND field.`name` IN (
-        &apos;flagtypes.name&apos;,
-        &apos;attachments.isobsolete&apos;, 
-        &apos;attachments.ispatch&apos;,
-        &apos;attachments.mimetype&apos;,
-        &apos;attachments.cf_fixed_in&apos;,
-        &apos;attachments.isurl&apos;
-    )
-)
-
-UNION
-
-(SELECT
-    attachments.`attach_id` AS activity_attachment_id,
-    `modifier`.`login_name` AS modified_by,
-    `bug_when`,
-    field.`name` AS `field_name`,
-    NULLIF(`removed`, &apos;&apos;) AS removed,
-    NULLIF(`added`, &apos;&apos;) AS added
-FROM 
-	`sanitized_bugs_activity` activity
-	JOIN `profiles` modifier ON `who` = modifier.`userid`
-	JOIN bugs ON activity.bug_id = bugs.`bug_id`
-	JOIN `fielddefs` field ON activity.`fieldid` = field.`id`
-	JOIN attachments ON attachments.bug_id = bugs.`bug_id`
-WHERE
-	activity.`bug_id` IS NOT NULL
-    AND `bug_when` &gt; ?
-    AND ${BUG_IDS_PARTITION}
-	AND field.`name` IN (
-		&apos;bug_group&apos;
-	)
-)
-
-ORDER BY
-    `activity_attachment_id`,
-    `bug_when` DESC,
-    `modified_by`;
-</sql>
-    <limit>0</limit>
-    <lookup>Clone row</lookup>
-    <execute_each_row>N</execute_each_row>
-    <variables_active>Y</variables_active>
-    <lazy_conversion_active>Y</lazy_conversion_active>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>546</xloc>
-      <yloc>203</yloc>
+      <xloc>352</xloc>
+      <yloc>32</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -648,25 +563,14 @@ ORDER BY
 , isurl AS is_url
 , &apos;unknown&apos; AS mimetype
 , attachments.bug_id
-, bug_groups AS groups
 , submitter.login_name AS submitted_by
 , attachments.creation_ts AS submission_ts
 , CAST(DATE(attachments.creation_ts)+0 AS SIGNED INTEGER) AS created_on
 , CAST(TIME(attachments.creation_ts)+0 AS SIGNED INTEGER) AS created_at
 FROM attachments
-JOIN bugs ON attachments.bug_id = bugs.bug_id
-LEFT JOIN (
-    SELECT
-    `bug_group_map`.bug_id AS group_bug_id,
-    GROUP_CONCAT(`groups`.`name`) AS bug_groups
-    FROM `bug_group_map`
-    LEFT JOIN `groups` ON `bug_group_map`.`group_id` = `groups`.`id`
-    GROUP BY bug_id
-) AS `bug_groups` ON `bug_groups`.`group_bug_id` = attachments.bug_id
 JOIN profiles submitter ON submitter.userid = attachments.submitter_id
 WHERE 
-  isprivate = 0
-  AND delta_ts &gt; ?
+  modification_time &gt; ?
   AND ${BUG_IDS_PARTITION}
 GROUP BY 
   attachment_id
@@ -680,8 +584,8 @@ ORDER BY
     <lazy_conversion_active>N</lazy_conversion_active>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>333</xloc>
-      <yloc>203</yloc>
+      <xloc>352</xloc>
+      <yloc>240</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -703,10 +607,10 @@ ORDER BY
 , &apos;flag&apos; as field_name
 FROM flags as f 
 JOIN flagtypes as type on f.type_id = type.id
-JOIN attachments on f.attach_id = attachments.attach_id
-WHERE type.target_type = &apos;a&apos; 
-and modification_date &gt; ?
-AND ${BUG_IDS_PARTITION}
+WHERE 
+   type.target_type = &apos;a&apos; 
+   AND modification_date &gt; ?
+   AND ${BUG_IDS_PARTITION}
 ORDER BY attachment_id ASC
 </sql>
     <limit>0</limit>
@@ -716,8 +620,8 @@ ORDER BY attachment_id ASC
     <lazy_conversion_active>N</lazy_conversion_active>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>104</xloc>
-      <yloc>203</yloc>
+      <xloc>96</xloc>
+      <yloc>240</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -743,8 +647,8 @@ ORDER BY attachment_id ASC
     </keys_2>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>333</xloc>
-      <yloc>491</yloc>
+      <xloc>352</xloc>
+      <yloc>624</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -760,7 +664,7 @@ ORDER BY attachment_id ASC
            <schema_name/>
            </partitioning>
 <join_type>LEFT OUTER</join_type>
-<step1>Get new&#47;modified attachments</step1>
+<step1>Join groups into attachments</step1>
 <step2>Denormalise reviews</step2>
     <keys_1>
       <key>attachment_id</key>
@@ -770,8 +674,35 @@ ORDER BY attachment_id ASC
     </keys_2>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>333</xloc>
-      <yloc>274</yloc>
+      <xloc>352</xloc>
+      <yloc>528</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Join groups into attachments</name>
+    <type>MergeJoin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+<join_type>LEFT OUTER</join_type>
+<step1>Get new&#47;modified attachments</step1>
+<step2>concat groups</step2>
+    <keys_1>
+      <key>attachment_id</key>
+    </keys_1>
+    <keys_2>
+      <key>attach_id</key>
+    </keys_2>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>352</xloc>
+      <yloc>336</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -886,8 +817,8 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
     </fields><clear_result_fields>N</clear_result_fields>
 <info_steps></info_steps><target_steps></target_steps><usage_parameters></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>546</xloc>
-      <yloc>491</yloc>
+      <xloc>800</xloc>
+      <yloc>624</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1017,8 +948,8 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
       </field>        <select_unspecified>N</select_unspecified>
     </fields>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>546</xloc>
-      <yloc>580</yloc>
+      <xloc>800</xloc>
+      <yloc>752</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1311,8 +1242,8 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 <parameter_description/>
 </usage_parameter></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>790</xloc>
-      <yloc>580</yloc>
+      <xloc>960</xloc>
+      <yloc>752</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1336,15 +1267,15 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 </formula>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>333</xloc>
-      <yloc>580</yloc>
+      <xloc>352</xloc>
+      <yloc>752</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Clone row</name>
-    <type>CloneRow</type>
+    <name>Sorted Merge</name>
+    <type>SortedMerge</type>
     <description/>
     <distribute>Y</distribute>
     <copies>1</copies>
@@ -1352,17 +1283,238 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
            <method>none</method>
            <schema_name/>
            </partitioning>
-    <nrclones>1</nrclones>
-    <addcloneflag>N</addcloneflag>
-    <cloneflagfield/>
-    <nrcloneinfield>N</nrcloneinfield>
-    <nrclonefield/>
-    <addclonenum>N</addclonenum>
-    <clonenumfield/>
+    <fields>
+      <field>
+        <name>activity_attachment_id</name>
+        <ascending>Y</ascending>
+        </field>
+      <field>
+        <name>sort_date</name>
+        <ascending>Y</ascending>
+        </field>
+      <field>
+        <name>modified_by</name>
+        <ascending>Y</ascending>
+        </field>
+      </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>546</xloc>
-      <yloc>122</yloc>
+      <xloc>800</xloc>
+      <yloc>336</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>activities on their bugs</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>bugs</connection>
+    <sql>SELECT
+    att.`attach_id` AS activity_attachment_id,
+    -UNIX_TIMESTAMP(`bug_when`) AS sort_date,
+    `modifier`.`login_name` AS modified_by,
+    `bug_when`,
+    field.`name` AS field_name,
+    `removed`,
+    `added`
+FROM
+    `sanitized_bugs_activity` activity
+    JOIN `fielddefs` field ON activity.`fieldid` = field.`id`
+    JOIN `profiles` modifier ON `who` = modifier.`userid`
+    JOIN (
+       SELECT 
+           `attach_id`,
+           `bug_id` AS `attachment_bug_id`,
+		   `creation_ts`
+       FROM attachments
+       WHERE ${BUG_IDS_PARTITION}
+    ) AS att ON (`bug_id` = `attachment_bug_id` AND att.creation_ts &lt; bug_when)
+WHERE
+    `bug_when` &gt; ?
+    AND ${BUG_IDS_PARTITION}
+    AND (
+        field.`name` = &apos;bug_group&apos;
+    )
+ORDER BY
+    activity_attachment_id,
+    sort_date,
+    modified_by</sql>
+    <limit>0</limit>
+    <lookup>Calculate start date</lookup>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>Y</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>832</xloc>
+      <yloc>240</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>activity on attachments</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>N</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>bugs</connection>
+    <sql>SELECT
+    activity.`attach_id` AS activity_attachment_id,
+    -UNIX_TIMESTAMP(`bug_when`) AS sort_date,
+    `modifier`.`login_name` AS modified_by,
+    `bug_when`,
+    IF(`name` = &apos;flagtypes.name&apos;, &apos;flags&apos;, field.`name`) AS field_name,
+    CASE
+        WHEN `name` = &apos;flags&apos; AND `removed` IS NULL THEN &apos;&apos;
+        ELSE NULLIF(`removed`, &apos;&apos;)
+    END AS removed,
+    CASE
+        WHEN `name` = &apos;flags&apos; AND `added` IS NULL THEN &apos;&apos;
+        ELSE NULLIF(`added`, &apos;&apos;)
+    END AS added
+FROM
+    `sanitized_bugs_activity` activity
+    JOIN `fielddefs` field ON activity.`fieldid` = field.`id`
+    JOIN `profiles` modifier ON `who` = modifier.`userid`
+WHERE
+	activity.`attach_id` IS NOT NULL
+    AND `bug_when` &gt; ?
+    AND ${BUG_IDS_PARTITION}
+    AND field.`name` IN (
+        &apos;flagtypes.name&apos;,
+        &apos;attachments.isobsolete&apos;, 
+        &apos;attachments.ispatch&apos;,
+        &apos;attachments.mimetype&apos;,
+        &apos;attachments.cf_fixed_in&apos;,
+        &apos;attachments.isurl&apos;
+    )
+ORDER BY
+    activity_attachment_id,
+    sort_date,
+    modified_by</sql>
+    <limit>0</limit>
+    <lookup>Calculate start date</lookup>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>Y</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>688</xloc>
+      <yloc>240</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>bug-groups</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>bugs</connection>
+    <sql>SELECT
+    attach_id
+  , &apos;group&apos; as `field_name`
+  , `groups`.`name` AS `group`
+FROM 
+    `bug_group_map` AS map
+	LEFT JOIN `groups` ON map.`group_id` = `groups`.`id`
+	JOIN (
+       SELECT 
+           `attach_id`,
+           `bug_id` AS `attachment_bug_id`
+       FROM attachments
+       WHERE ${BUG_IDS_PARTITION}
+    ) AS att ON (`bug_id` = `attachment_bug_id`)
+WHERE
+    ${BUG_IDS_PARTITION}
+ORDER BY 
+    attach_id ASC</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>Y</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>480</xloc>
+      <yloc>240</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>concat groups</name>
+    <type>Denormaliser</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+      <key_field>field_name</key_field>
+      <group>
+        <field>
+          <name>attach_id</name>
+          </field>
+        </group>
+      <fields>
+        <field>
+          <field_name>group</field_name>
+          <key_value>group</key_value>
+          <target_name>groups</target_name>
+          <target_type>String</target_type>
+          <target_format/>
+          <target_length>-1</target_length>
+          <target_precision>-1</target_precision>
+          <target_decimal_symbol/>
+          <target_grouping_symbol/>
+          <target_currency_symbol/>
+          <target_null_string/>
+          <target_aggregation_type>CONCAT_COMMA</target_aggregation_type>
+          </field>
+        </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>480</xloc>
+      <yloc>336</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>remove sort date</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>        <select_unspecified>N</select_unspecified>
+      <remove>        <name>sort_date</name>
+      </remove>    </fields>     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>800</xloc>
+      <yloc>400</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

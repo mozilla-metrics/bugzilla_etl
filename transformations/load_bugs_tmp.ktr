@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>load_bugs</name>
+    <name>load_bugs_tmp</name>
     <description/>
     <extended_description/>
     <trans_version/>
@@ -11,12 +11,12 @@
     <parameters>
         <parameter>
             <name>BUG_IDS_PARTITION</name>
-            <default_value>bug_id &gt;= 655001 and bug_id &lt; 655101</default_value>
+            <default_value>bug_id &gt;= 655010 and bug_id &lt; 655101</default_value>
             <description>Partitioning to reduce memory and process time for big batch processing</description>
         </parameter>
         <parameter>
             <name>CF_FLAGS_SQL_PARAMETER</name>
-            <default_value>TRIM(TRAILING &apos;,&apos; FROM CONCAT(IF(`cf_blocking_fennec` != &apos;---&apos;, CONCAT(&apos;tracking-fennec&apos;, IF(LENGTH(`cf_blocking_fennec`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_fennec`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_191` != &apos;---&apos;, CONCAT(&apos;blocking1.9.1&apos;, IF(LENGTH(`cf_blocking_191`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_191`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_191` != &apos;---&apos;, CONCAT(&apos;status1.9.1&apos;, IF(LENGTH(`cf_status_191`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_191`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_192` != &apos;---&apos;, CONCAT(&apos;status1.9.2&apos;, IF(LENGTH(`cf_status_192`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_192`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_20` != &apos;---&apos;, CONCAT(&apos;blocking2.0&apos;, IF(LENGTH(`cf_blocking_20`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_20`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird30` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.0&apos;, IF(LENGTH(`cf_blocking_thunderbird30`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird30`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird30` != &apos;---&apos;, CONCAT(&apos;status-thunderbird3.0&apos;, IF(LENGTH(`cf_status_thunderbird30`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird30`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_192` != &apos;---&apos;, CONCAT(&apos;blocking1.9.2&apos;, IF(LENGTH(`cf_blocking_192`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_192`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird31` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.1&apos;, IF(LENGTH(`cf_blocking_thunderbird31`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird31`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird31` != &apos;---&apos;, CONCAT(&apos;status-thunderbird3.1&apos;, IF(LENGTH(`cf_status_thunderbird31`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird31`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_20` != &apos;---&apos;, CONCAT(&apos;status2.0&apos;, IF(LENGTH(`cf_status_20`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_20`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_seamonkey21` != &apos;---&apos;, CONCAT(&apos;status-seamonkey2.1&apos;, IF(LENGTH(`cf_status_seamonkey21`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_seamonkey21`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_seamonkey21` != &apos;---&apos;, CONCAT(&apos;blocking-seamonkey2.1&apos;, IF(LENGTH(`cf_blocking_seamonkey21`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_seamonkey21`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird32` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.2&apos;, IF(LENGTH(`cf_blocking_thunderbird32`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird32`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird32` != &apos;---&apos;, CONCAT(&apos;status-thunderbird3.2&apos;, IF(LENGTH(`cf_status_thunderbird32`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird32`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird33` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird5.0&apos;, IF(LENGTH(`cf_blocking_thunderbird33`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird33`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird33` != &apos;---&apos;, CONCAT(&apos;status-thunderbird5.0&apos;, IF(LENGTH(`cf_status_thunderbird33`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird33`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_fx` != &apos;---&apos;, CONCAT(&apos;blocking-fx&apos;, IF(LENGTH(`cf_blocking_fx`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_fx`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_firefox5` != &apos;---&apos;, CONCAT(&apos;tracking-firefox5&apos;, IF(LENGTH(`cf_tracking_firefox5`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_firefox5`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_firefox5` != &apos;---&apos;, CONCAT(&apos;status-firefox5&apos;, IF(LENGTH(`cf_status_firefox5`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_firefox5`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_firefox6` != &apos;---&apos;, CONCAT(&apos;tracking-firefox6&apos;, IF(LENGTH(`cf_tracking_firefox6`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_firefox6`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_firefox7` != &apos;---&apos;, CONCAT(&apos;tracking-firefox7&apos;, IF(LENGTH(`cf_tracking_firefox7`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_firefox7`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_firefox6` != &apos;---&apos;, CONCAT(&apos;status-firefox6&apos;, IF(LENGTH(`cf_status_firefox6`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_firefox6`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_firefox7` != &apos;---&apos;, CONCAT(&apos;status-firefox7&apos;, IF(LENGTH(`cf_status_firefox7`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_firefox7`, &apos;,&apos;), &apos;&apos;)))</default_value>
+            <default_value>TRIM(TRAILING &apos;, &apos; FROM CONCAT(IF(`cf_blocking_fennec` != &apos;---&apos;, CONCAT(&apos;blocking-fennec&apos;, IF(LENGTH(`cf_blocking_fennec`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_fennec`, &apos;, &apos;), &apos;&apos;), IF(`cf_blocking_191` != &apos;---&apos;, CONCAT(&apos;blocking1.9.1&apos;, IF(LENGTH(`cf_blocking_191`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_191`, &apos;, &apos;), &apos;&apos;), IF(`cf_blocking_20` != &apos;---&apos;, CONCAT(&apos;blocking2.0&apos;, IF(LENGTH(`cf_blocking_20`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_20`, &apos;, &apos;), &apos;&apos;), IF(`cf_blocking_thunderbird30` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.0&apos;, IF(LENGTH(`cf_blocking_thunderbird30`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird30`, &apos;, &apos;), &apos;&apos;), IF(`cf_blocking_192` != &apos;---&apos;, CONCAT(&apos;blocking1.9.2&apos;, IF(LENGTH(`cf_blocking_192`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_192`, &apos;, &apos;), &apos;&apos;), IF(`cf_blocking_thunderbird31` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.1&apos;, IF(LENGTH(`cf_blocking_thunderbird31`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird31`, &apos;, &apos;), &apos;&apos;), IF(`cf_blocking_seamonkey21` != &apos;---&apos;, CONCAT(&apos;blocking-seamonkey2.1&apos;, IF(LENGTH(`cf_blocking_seamonkey21`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_seamonkey21`, &apos;, &apos;), &apos;&apos;), IF(`cf_blocking_thunderbird32` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.2&apos;, IF(LENGTH(`cf_blocking_thunderbird32`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird32`, &apos;, &apos;), &apos;&apos;)))</default_value>
             <description>An SQL expression that selects flags from custom fields.</description>
         </parameter>
         <parameter>
@@ -98,16 +98,15 @@
   </info>
   <notepads>
     <notepad>
-      <note>Fetch bugs from MySQL, reconstruct their history,
-load them into ElasticSearch.
+      <note>This is the regular transform from MySQL to ES!
 
 Make sure to have the database settings specified in your kettle.properties
 (either in your ~&#47;.kettle or your $KETTLE_HOME&#47;.kettle if set)
 bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
-      <xloc>720</xloc>
-      <yloc>32</yloc>
-      <width>452</width>
-      <heigth>106</heigth>
+      <xloc>666</xloc>
+      <yloc>20</yloc>
+      <width>453</width>
+      <heigth>90</heigth>
       <fontname>Ariel</fontname>
       <fontsize>12</fontsize>
       <fontbold>N</fontbold>
@@ -155,80 +154,7 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
     </attributes>
   </connection>
   <order>
-  <hop> <from>Get Major Status Lookup</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Prepare History Input</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Set earliest flag no-activity bugs</from><to>Prepare History Input</to><enabled>Y</enabled> </hop>  <hop> <from>Rebuild Versions</from><to>Bulk Load To ES</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get flags for new&#47;modified bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get new activities</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get new&#47;modified bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>bug-groups</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>bug-keywords</to><enabled>Y</enabled> </hop>  <hop> <from>Clean Bug State</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Generate Rows</from><to>Calculate start date</to><enabled>Y</enabled> </hop>  <hop> <from>Get flags for new&#47;modified bugs</from><to>concat flags</to><enabled>Y</enabled> </hop>  <hop> <from>Get new activities</from><to>Denormalise activities</to><enabled>Y</enabled> </hop>  <hop> <from>Get new&#47;modified bugs</from><to>Join groups into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join flags into bugs</from><to>Merge flags with cf_flags</to><enabled>Y</enabled> </hop>  <hop> <from>Join groups into bugs</from><to>Join keywords into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join keywords into bugs</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Mark first&#47;last row</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Merge flags with cf_flags</from><to>Clean Bug State</to><enabled>Y</enabled> </hop>  <hop> <from>bug-groups</from><to>concat groups</to><enabled>Y</enabled> </hop>  <hop> <from>bug-keywords</from><to>concat keywords</to><enabled>Y</enabled> </hop>  <hop> <from>concat flags</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>concat groups</from><to>Join groups into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>concat keywords</from><to>Join keywords into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join bugs with activities</from><to>Set earliest flag no-activity bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Clean flag fields (infix, suffix)</from><to>Clean flag fields (prefix)</to><enabled>Y</enabled> </hop>  <hop> <from>Denormalise activities</from><to>Clean flag fields (infix, suffix)</to><enabled>Y</enabled> </hop>  <hop> <from>Clean flag fields (prefix)</from><to>Mark first&#47;last row</to><enabled>Y</enabled> </hop>  </order>
-  <step>
-    <name>Bulk Load To ES</name>
-    <type>UserDefinedJavaClass</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-
-    <definitions>
-        <definition>
-        <class_type>TRANSFORM_CLASS</class_type>
-
-        <class_name>Processor</class_name>
-
-        <class_source><![CDATA[
-    /**
-     * source: {@link com.mozilla.bugzilla_etl.di.bug.steps.WriteBugsToEsStep}
-     *
-     * Input: A stream of bugs (normalized)
-     * Output step(s): (none)
-     */
-    private com.mozilla.bugzilla_etl.di.bug.BugSource source;
-    private com.mozilla.bugzilla_etl.es.bug.BugDestination destination;
-
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        if (first) {
-            first = false;
-            RowSet input = (RowSet)this.getInputRowSets().get(0);
-            source = new com.mozilla.bugzilla_etl.di.bug.BugSource(this, input);
-            final String esNodes = getParameter("ES_NODES");
-            final String esCluster = getParameter("ES_CLUSTER");
-            destination = new com.mozilla.bugzilla_etl.es.bug.BugDestination(System.out,
-                                                                             esNodes, esCluster);
-        }
-        try {
-            if (!source.hasMore()) {
-                setOutputDone();
-                destination.flush();
-                return false;
-            }
-            destination.send(source.receive());
-            incrementLinesWritten();
-        }
-        catch (Exception error) {
-            error.printStackTrace(System.out);
-            System.out.format("Repository Error (%s) (see stack trace above),",
-                              new Object[] { error.getClass().getSimpleName() });
-            throw new RuntimeException(error);
-        }
-        return true;
-    }
-]]></class_source>
-        </definition>
-    </definitions>
-    <fields>
-    </fields><clear_result_fields>N</clear_result_fields>
-<info_steps></info_steps><target_steps></target_steps><usage_parameters><usage_parameter><parameter_tag>ES_NODES</parameter_tag>
-<parameter_value>${PES_NODES}</parameter_value>
-<parameter_description/>
-</usage_parameter><usage_parameter><parameter_tag>ES_CLUSTER</parameter_tag>
-<parameter_value>${PES_CLUSTER}</parameter_value>
-<parameter_description/>
-</usage_parameter></usage_parameters>     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>864</xloc>
-      <yloc>1008</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
+  <hop> <from>Calculate start date</from><to>Get new activities</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get new&#47;modified bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Denormalise activities</from><to>Mark first&#47;last row</to><enabled>Y</enabled> </hop>  <hop> <from>Get new activities</from><to>Denormalise activities</to><enabled>Y</enabled> </hop>  <hop> <from>Mark first&#47;last row</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get flags for new&#47;modified bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Get flags for new&#47;modified bugs</from><to>concat flags</to><enabled>Y</enabled> </hop>  <hop> <from>concat flags</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Generate Rows</from><to>Calculate start date</to><enabled>Y</enabled> </hop>  <hop> <from>Join flags into bugs</from><to>Merge flags with cf_flags</to><enabled>Y</enabled> </hop>  <hop> <from>Clean Bug State</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Merge flags with cf_flags</from><to>Clean Bug State</to><enabled>Y</enabled> </hop>  <hop> <from>Get new&#47;modified bugs</from><to>Join groups into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>bug-groups</from><to>concat groups</to><enabled>Y</enabled> </hop>  <hop> <from>concat groups</from><to>Join groups into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join groups into bugs</from><to>Join keywords into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join keywords into bugs</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>bug-keywords</from><to>concat keywords</to><enabled>Y</enabled> </hop>  <hop> <from>concat keywords</from><to>Join keywords into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>bug-keywords</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>bug-groups</to><enabled>Y</enabled> </hop>  </order>
   <step>
     <name>Calculate start date</name>
     <type>ScriptValueMod</type>
@@ -278,8 +204,8 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartitio
         <replace>N</replace>
       </field>    </fields>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>352</xloc>
-      <yloc>96</yloc>
+      <xloc>332</xloc>
+      <yloc>82</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -298,120 +224,8 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartitio
       <remove>        <name>flags_cf</name>
       </remove>    </fields>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>352</xloc>
-      <yloc>672</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Clean flag fields (infix, suffix)</name>
-    <type>ReplaceString</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>
-      <field>
-        <in_stream_name>flags_from</in_stream_name>
-        <out_stream_name/>
-        <use_regex>no</use_regex>
-        <replace_string>,_</replace_string>
-        <replace_by_string/>
-        <whole_word>no</whole_word>
-        <case_sensitive>no</case_sensitive>
-      </field>
-      <field>
-        <in_stream_name>flags_to</in_stream_name>
-        <out_stream_name/>
-        <use_regex>no</use_regex>
-        <replace_string>,_</replace_string>
-        <replace_by_string/>
-        <whole_word>no</whole_word>
-        <case_sensitive>no</case_sensitive>
-      </field>
-      <field>
-        <in_stream_name>keywords_from</in_stream_name>
-        <out_stream_name/>
-        <use_regex>no</use_regex>
-        <replace_string>,_</replace_string>
-        <replace_by_string/>
-        <whole_word>no</whole_word>
-        <case_sensitive>no</case_sensitive>
-      </field>
-      <field>
-        <in_stream_name>keywords_to</in_stream_name>
-        <out_stream_name/>
-        <use_regex>no</use_regex>
-        <replace_string>,_</replace_string>
-        <replace_by_string/>
-        <whole_word>no</whole_word>
-        <case_sensitive>no</case_sensitive>
-      </field>
-    </fields>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>752</xloc>
-      <yloc>656</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Clean flag fields (prefix)</name>
-    <type>ReplaceString</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>
-      <field>
-        <in_stream_name>flags_from</in_stream_name>
-        <out_stream_name/>
-        <use_regex>yes</use_regex>
-        <replace_string>^_,?</replace_string>
-        <replace_by_string/>
-        <whole_word>no</whole_word>
-        <case_sensitive>no</case_sensitive>
-      </field>
-      <field>
-        <in_stream_name>flags_to</in_stream_name>
-        <out_stream_name/>
-        <use_regex>yes</use_regex>
-        <replace_string>^_,?</replace_string>
-        <replace_by_string/>
-        <whole_word>no</whole_word>
-        <case_sensitive>no</case_sensitive>
-      </field>
-      <field>
-        <in_stream_name>keywords_from</in_stream_name>
-        <out_stream_name/>
-        <use_regex>yes</use_regex>
-        <replace_string>^_,?</replace_string>
-        <replace_by_string/>
-        <whole_word>no</whole_word>
-        <case_sensitive>no</case_sensitive>
-      </field>
-      <field>
-        <in_stream_name>keywords_to</in_stream_name>
-        <out_stream_name/>
-        <use_regex>yes</use_regex>
-        <replace_string>^_,?</replace_string>
-        <replace_by_string/>
-        <whole_word>no</whole_word>
-        <case_sensitive>no</case_sensitive>
-      </field>
-    </fields>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>752</xloc>
-      <yloc>720</yloc>
+      <xloc>332</xloc>
+      <yloc>607</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -834,8 +648,8 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartitio
         </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>752</xloc>
-      <yloc>592</yloc>
+      <xloc>679</xloc>
+      <yloc>456</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -855,57 +669,8 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartitio
     <limit>1</limit>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>352</xloc>
-      <yloc>32</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Get Major Status Lookup</name>
-    <type>DataGrid</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>
-      <field>
-        <name>status_name</name>
-        <type>String</type>
-        <format/>
-        <currency/>
-        <decimal/>
-        <group/>
-        <length>-1</length>
-        <precision>-1</precision>
-      </field>
-      <field>
-        <name>status_isopen</name>
-        <type>Integer</type>
-        <format/>
-        <currency/>
-        <decimal/>
-        <group/>
-        <length>-1</length>
-        <precision>-1</precision>
-      </field>
-    </fields>
-    <data>
-      <line> <item>UNCONFIRMED</item><item>1</item> </line>
-      <line> <item>NEW</item><item>1</item> </line>
-      <line> <item>ASSIGNED</item><item>1</item> </line>
-      <line> <item>REOPENED</item><item>1</item> </line>
-      <line> <item>RESOLVED</item><item>0</item> </line>
-      <line> <item>VERIFIED</item><item>0</item> </line>
-      <line> <item>CLOSED</item><item>0</item> </line>
-    </data>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>992</xloc>
-      <yloc>928</yloc>
+      <xloc>332</xloc>
+      <yloc>20</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -937,8 +702,8 @@ ORDER BY bug_id ASC</sql>
     <lazy_conversion_active>N</lazy_conversion_active>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>96</xloc>
-      <yloc>240</yloc>
+      <xloc>81</xloc>
+      <yloc>204</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -958,22 +723,22 @@ ORDER BY bug_id ASC</sql>
     `bug_id` AS activity_bug_id,
     `modifier`.`login_name` AS modified_by,
     `bug_when`,
-    IF(`name` = &apos;flagtypes.name&apos; OR `name` LIKE &apos;cf_%&apos;, &apos;flags&apos;, field.`name`) AS field_name,
+    IF(`name` = &apos;flagtypes.name&apos; OR `name` LIKE &apos;cf_blocking_%&apos;, &apos;flags&apos;, field.`name`) AS field_name,
     CASE
-        WHEN `name` IN (&apos;resolution&apos;, &apos;status_whiteboard&apos;, &apos;target_milestone&apos;) AND `removed` = &apos;&apos; THEN &apos;&lt;empty&gt;&apos;
-        WHEN `name` IN (&apos;flags&apos;, &apos;keywords&apos;)                       AND `removed` IS NULL  THEN &apos;_&apos;
-        WHEN `name` LIKE &apos;cf_%&apos;                                    AND `removed` =  &apos;---&apos; THEN &apos;_&apos;
-        WHEN `name` LIKE &apos;cf_%&apos; AND LENGTH(activity.`removed`) = 1 AND `removed` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`,      `removed`)
-        WHEN `name` LIKE &apos;cf_%&apos; AND LENGTH(activity.`removed`) &gt; 1 AND `removed` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`, &apos;-&apos;, `removed`)
-        ELSE IF(`removed` IS NULL or `removed` = &apos;&apos;, &apos;_&apos;, `removed`)
+        WHEN `name` IN (&apos;resolution&apos;, &apos;status_whiteboard&apos;, &apos;target_milestone&apos;) AND `removed` = &apos;&apos;     THEN &apos;&lt;empty&gt;&apos;
+        WHEN `name` IN (&apos;flags&apos;, &apos;keywords&apos;)                                   AND `removed` IS NULL  THEN &apos;&apos;
+        WHEN `name` LIKE &apos;cf_blocking_%&apos;                                       AND `removed` = &apos;---&apos; THEN &apos;&apos;
+        WHEN `name` LIKE &apos;cf_blocking_%&apos; AND LENGTH(activity.`removed`) = 1   AND `removed` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`,      `removed`)
+        WHEN `name` LIKE &apos;cf_blocking_%&apos; AND LENGTH(activity.`removed`) &gt; 1   AND `removed` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`, &apos;-&apos;, `removed`)
+        ELSE NULLIF(`removed`, &apos;&apos;)
     END AS removed,
     CASE
-        WHEN `name` IN (&apos;resolution&apos;, &apos;status_whiteboard&apos;, &apos;target_milestone&apos;) AND `added` = &apos;&apos; THEN &apos;&lt;empty&gt;&apos;
-        WHEN `name` IN (&apos;flags&apos;, &apos;keywords&apos;)                     AND `added` IS NULL  THEN &apos;_&apos;
-        WHEN `name` LIKE &apos;cf_%&apos;                                  AND `added` =  &apos;---&apos; THEN &apos;_&apos;
-        WHEN `name` LIKE &apos;cf_%&apos; AND LENGTH(activity.`added`) = 1 AND `added` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`,      `added`)
-        WHEN `name` LIKE &apos;cf_%&apos; AND LENGTH(activity.`added`) &gt; 1 AND `added` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`, &apos;-&apos;, `added`)
-        ELSE IF(`removed` IS NULL or `added` = &apos;&apos;, &apos;_&apos;, `added`)
+        WHEN `name` IN (&apos;resolution&apos;, &apos;status_whiteboard&apos;, &apos;target_milestone&apos;) AND `added` = &apos;&apos;     THEN &apos;&lt;empty&gt;&apos;
+        WHEN `name` IN (&apos;flags&apos;, &apos;keywords&apos;)                                   AND `added` IS NULL  THEN &apos;&apos;
+        WHEN `name` LIKE &apos;cf_blocking_%&apos;                                       AND `added` = &apos;---&apos; THEN &apos;&apos;
+        WHEN `name` LIKE &apos;cf_blocking_%&apos; AND LENGTH(activity.`added`) = 1   AND `added` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`,      `added`)
+        WHEN `name` LIKE &apos;cf_blocking_%&apos; AND LENGTH(activity.`added`) &gt; 1   AND `added` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`, &apos;-&apos;, `added`)
+        ELSE NULLIF(`added`, &apos;&apos;)
     END AS added,
     `attach_id`,
     CAST(DATE(`bug_when`)+0 AS SIGNED INT) AS modified_on,
@@ -989,7 +754,7 @@ WHERE
         field.`name` IN (&apos;assigned_to&apos;, &apos;bug_severity&apos;, &apos;bug_status&apos;, &apos;component&apos;, &apos;flagtypes.name&apos;,
                          &apos;keywords&apos;, &apos;bug_group&apos;, &apos;op_sys&apos;, &apos;priority&apos;, &apos;product&apos;, &apos;resolution&apos;, &apos;status_whiteboard&apos;,
                          &apos;target_milestone&apos;, &apos;version&apos;)
-        OR (field.`name` LIKE &apos;cf_%&apos; AND field.`name` NOT IN (&apos;cf_colo_site&apos;, &apos;cf_crash_signature&apos;, &apos;cf_tracking_thunderbird6&apos;, &apos;cf_tracking_thunderbird7&apos;, &apos;cf_status_thunderbird6&apos;, &apos;cf_status_thunderbird7&apos;))
+        OR field.`name` LIKE &apos;cf_blocking_%&apos;
     )
     AND `attach_id` IS NULL
 ORDER BY
@@ -1003,8 +768,8 @@ ORDER BY
     <lazy_conversion_active>N</lazy_conversion_active>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>752</xloc>
-      <yloc>240</yloc>
+      <xloc>679</xloc>
+      <yloc>202</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1058,8 +823,8 @@ ORDER BY
     <lazy_conversion_active>N</lazy_conversion_active>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>352</xloc>
-      <yloc>240</yloc>
+      <xloc>332</xloc>
+      <yloc>202</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1085,8 +850,8 @@ ORDER BY
     </keys_2>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>352</xloc>
-      <yloc>784</yloc>
+      <xloc>332</xloc>
+      <yloc>673</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1112,8 +877,8 @@ ORDER BY
     </keys_2>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>352</xloc>
-      <yloc>544</yloc>
+      <xloc>332</xloc>
+      <yloc>456</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1139,8 +904,8 @@ ORDER BY
     </keys_2>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>352</xloc>
-      <yloc>336</yloc>
+      <xloc>332</xloc>
+      <yloc>292</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1166,8 +931,8 @@ ORDER BY
     </keys_2>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>352</xloc>
-      <yloc>432</yloc>
+      <xloc>331</xloc>
+      <yloc>376</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1282,8 +1047,8 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
     </fields><clear_result_fields>N</clear_result_fields>
 <info_steps></info_steps><target_steps></target_steps><usage_parameters></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>752</xloc>
-      <yloc>784</yloc>
+      <xloc>679</xloc>
+      <yloc>673</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1307,751 +1072,8 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 </formula>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>352</xloc>
-      <yloc>608</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Prepare History Input</name>
-    <type>SelectValues</type>
-    <description/>
-    <distribute>N</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>      <field>        <name>bug_id</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>reported_by</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>creation_ts</name>
-        <rename>creation_date</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>activity_bug_id</name>
-        <rename>activity_entity_id</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>bug_when</name>
-        <rename>modification_date</rename>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>modified_by</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>is_earliest_state</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>is_latest_state</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>bugs_const</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>assigned_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>component</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>flags</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>keywords</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>groups</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>opsys</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>priority</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>product</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>resolution</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>severity</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>status</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>status_whiteboard</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>version</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>assigned_to_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>assigned_to_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>component_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>component_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>flags_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>flags_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>keywords_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>keywords_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>groups_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>groups_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>opsys_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>opsys_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>priority_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>priority_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>product_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>product_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>resolution_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>resolution_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>severity_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>severity_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>status_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>status_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>status_whiteboard_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>status_whiteboard_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>version_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>version_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>target_milestone</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>target_milestone_from</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>      <field>        <name>target_milestone_to</name>
-        <rename/>
-        <length>-2</length>
-        <precision>-2</precision>
-      </field>        <select_unspecified>N</select_unspecified>
-    </fields>     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>752</xloc>
-      <yloc>928</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Rebuild Versions</name>
-    <type>UserDefinedJavaClass</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-
-    <definitions>
-        <definition>
-        <class_type>TRANSFORM_CLASS</class_type>
-
-        <class_name>Processor</class_name>
-
-        <class_source><![CDATA[
-    /**
-     * source: {@link com.mozilla.bugzilla_etl.di.steps.RebuildVersionsStep}
-     *
-     * This class corresponds to the actual contents of the UserDefinedJavaClass
-     * step editor window. Remove the lines ending in "// snip" when pasting the
-     * contents there.
-     *
-     * Because it is compiled at Runtime by Janino, the language constructs are
-     * restricted: http://docs.codehaus.org/display/JANINO/Home#Home-limitations
-     *
-     * For incremental update of existing bugs, a lookup is used:
-     * - If "IS_IMPORT" is set, an empty dummy lookup is used.
-     * - If "ES_NODES" is set, the elasticsearch lookup is used.
-     * - If "LILY_ZK_NODES" is set, the lily repository will be used.
-     * - Otherwise an error is raised.
-     *
-     * Input: A stream of bugs and bug activities.
-     *        The activities of each bug are grouped together.
-     * Output: A stream of complete bug versions.
-     */
-    private static final String IN_STEP = "Prepare History Input";
-    private static final String IN_STEP_STATUS_LOOKUP = "Get Major Status Lookup";
-    private com.mozilla.bugzilla_etl.di.bug.BugDestination destination;
-    private com.mozilla.bugzilla_etl.di.bug.RebuilderBugSource source;
-    private com.mozilla.bugzilla_etl.di.bug.IBugLookup lookup;
-
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        if (first) {
-            first = false;
-            final RowMeta outputRowMeta = new RowMeta();
-            data.outputRowMeta = outputRowMeta;
-            meta.getFields(data.outputRowMeta, getStepname(), null, null, parent);
-
-            java.io.PrintStream log = System.out;
-            String isInitialImport = getParameter("IS_IMPORT");
-            String esNodes = getParameter("ES_NODES");
-            String esCluster = getParameter("ES_CLUSTER");
-            String lilyZkNodes = getParameter("LILY_ZK_NODES");
-
-            logBasic(String.format(
-                    "Params: IS_IMPORT=%s, ES_NODES=%s, LILY_ZK_NODES=%s",
-                    new Object[]{isInitialImport, esNodes, lilyZkNodes}
-            ));
-            if ("true".equals(isInitialImport)) {
-                log.println("Rebuilder Lookup: none (initial_import)");
-                lookup = new com.mozilla.bugzilla_etl.di.bug.EmptyBugLookup();
-            }
-            else if (esNodes != null && esNodes.length() > 0) {
-                log.println("Rebuilder Lookup: elasticsearch");
-                lookup = new com.mozilla.bugzilla_etl.es.bug.BugLookup(log, esNodes, esCluster);
-            }
-            else if (lilyZkNodes != null && lilyZkNodes.length() > 0) {
-                log.println("Rebuilder Lookup: Lily repository");
-                lookup =
-                    new com.mozilla.bugzilla_etl.lily.LilyBugLookup(log,
-                                                                    lilyZkNodes);
-            }
-            else {
-                logError("RebuildVersionStep Lookup Configuration Invalid!");
-                com.mozilla.bugzilla_etl.base.Assert.unreachable();
-            }
-            source = new com.mozilla.bugzilla_etl.di.bug.RebuilderBugSource(
-                         this,
-                         findInputRowSet(IN_STEP),
-                         findInputRowSet(IN_STEP_STATUS_LOOKUP),
-                         lookup
-            );
-
-            destination = new com.mozilla.bugzilla_etl.di.bug.BugDestination(this, outputRowMeta);
-        }
-        if (!source.hasMore()) {
-            setOutputDone();
-            source.printDiagnostics();
-            return false;
-        }
-        destination.send(source.receive());
-        return true;
-    }
-
-    public static String[] getInfoSteps() {
-        return new String[] { IN_STEP_STATUS_LOOKUP };
-    }
-]]></class_source>
-        </definition>
-    </definitions>
-    <fields>
-        <field>
-        <field_name>bug_id</field_name>
-
-        <field_type>Integer</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>reported_by</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>creation_date</field_name>
-
-        <field_type>Date</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>modification_date</field_name>
-
-        <field_type>Date</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>expiration_date</field_name>
-
-        <field_type>Date</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>modified_by</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>annotation</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>assigned_to</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>changes</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>component</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>flags</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>keywords</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>groups</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>opsys</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>major_status</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>major_status_last_changed_date</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>modified_fields</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>previous_major_status</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>previous_status</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>priority</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>product</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>resolution</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>severity</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>status</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>status_last_changed_date</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>status_whiteboard</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>status_whiteboard_items</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>target_milestone</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>version</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>days_in_previous_major_status</field_name>
-
-        <field_type>Integer</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>days_in_previous_status</field_name>
-
-        <field_type>Integer</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>days_in_major_status</field_name>
-
-        <field_type>Integer</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>days_in_status</field_name>
-
-        <field_type>Integer</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>days_open_accumulated</field_name>
-
-        <field_type>Integer</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>times_reopened</field_name>
-
-        <field_type>Integer</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>number</field_name>
-
-        <field_type>Integer</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-        <field>
-        <field_name>persistence_state</field_name>
-
-        <field_type>String</field_type>
-
-        <field_length>-1</field_length>
-
-        <field_precision>-1</field_precision>
-
-        </field>
-    </fields><clear_result_fields>Y</clear_result_fields>
-<info_steps></info_steps><target_steps></target_steps><usage_parameters><usage_parameter><parameter_tag>ES_NODES</parameter_tag>
-<parameter_value>${PES_NODES}</parameter_value>
-<parameter_description/>
-</usage_parameter><usage_parameter><parameter_tag>ES_CLUSTER</parameter_tag>
-<parameter_value>${PES_CLUSTER}</parameter_value>
-<parameter_description/>
-</usage_parameter><usage_parameter><parameter_tag>IS_IMPORT</parameter_tag>
-<parameter_value>${IS_IMPORT}</parameter_value>
-<parameter_description/>
-</usage_parameter><usage_parameter><parameter_tag>LILY_ZK_NODES</parameter_tag>
-<parameter_value>${LILY_ZK_NODES}</parameter_value>
-<parameter_description/>
-</usage_parameter></usage_parameters>     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>864</xloc>
-      <yloc>928</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Set earliest flag no-activity bugs</name>
-    <type>Janino</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-       <formula><field_name>new_is_earliest_state</field_name>
-<formula_string>bug_id != null &amp;&amp; activity_bug_id == null ? bug_id : (is_earliest_state == null ? Long.valueOf(0L) : is_earliest_state)</formula_string>
-<value_type>Integer</value_type>
-<value_length>-1</value_length>
-<value_precision>-1</value_precision>
-<replace_field>is_earliest_state</replace_field>
-</formula>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>352</xloc>
-      <yloc>928</yloc>
+      <xloc>332</xloc>
+      <yloc>536</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2085,8 +1107,8 @@ ORDER BY
     <lazy_conversion_active>N</lazy_conversion_active>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>464</xloc>
-      <yloc>240</yloc>
+      <xloc>442</xloc>
+      <yloc>202</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2121,8 +1143,8 @@ ORDER BY
     <lazy_conversion_active>N</lazy_conversion_active>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>576</xloc>
-      <yloc>240</yloc>
+      <xloc>522</xloc>
+      <yloc>202</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2161,8 +1183,8 @@ ORDER BY
         </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>96</xloc>
-      <yloc>544</yloc>
+      <xloc>81</xloc>
+      <yloc>456</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2201,8 +1223,8 @@ ORDER BY
         </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>464</xloc>
-      <yloc>336</yloc>
+      <xloc>442</xloc>
+      <yloc>291</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2241,8 +1263,8 @@ ORDER BY
         </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>576</xloc>
-      <yloc>432</yloc>
+      <xloc>522</xloc>
+      <yloc>374</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

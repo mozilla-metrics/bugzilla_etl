@@ -181,7 +181,7 @@
       <add_date>N</add_date>
       <add_time>N</add_time>
       <insertScript>Y</insertScript>
-      <script>rename current_run_ &apos;&apos; update_current_run*.log
+      <script>rename current_run_ &apos;&apos; import_current_run*.log
 </script>
       <loglevel>Nothing</loglevel>
       <parallel>N</parallel>
@@ -279,7 +279,7 @@
       <parameters>        <pass_all_parameters>Y</pass_all_parameters>
             <parameter>            <name>BUG_IDS_PARTITION</name>
             <stream_name/>
-            <value>attachments.bug_id &gt;= ${FROM_ID} AND attachments.bug_id &lt; ${TO_ID}</value>
+            <value>bug_id &gt;= ${FROM_ID} AND bug_id &lt; ${TO_ID}</value>
             </parameter>            <parameter>            <name>LILY_ZK_NODES</name>
             <stream_name/>
             <value>${ZOOKEEPER_HOST}</value>
