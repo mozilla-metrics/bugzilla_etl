@@ -17,8 +17,18 @@
             <description/>
         </parameter>
         <parameter>
+            <name>FROM_ID</name>
+            <default_value>1</default_value>
+            <description/>
+        </parameter>
+        <parameter>
             <name>LOGS_DIR</name>
             <default_value>${Internal.Job.Filename.Directory}&#47;..&#47;log&#47;update</default_value>
+            <description/>
+        </parameter>
+        <parameter>
+            <name>TO_ID</name>
+            <default_value>900900900</default_value>
             <description/>
         </parameter>
         <parameter>
@@ -77,10 +87,10 @@
       <parameters>        <pass_all_parameters>Y</pass_all_parameters>
             <parameter>            <name>BUG_IDS_PARTITION</name>
             <stream_name/>
-            <value>bug_id &gt;= 1 AND bug_id &lt; 900900900</value>
+            <value>bug_id &gt;= ${FROM_ID} AND bug_id &lt; ${TO_ID}</value>
             </parameter>            <parameter>            <name>OVERRIDE_START_TIME</name>
             <stream_name/>
-            <value>2011-05-23 01:01:01</value>
+            <value>2011-05-23 01:01:01 DONT USE</value>
             </parameter>            <parameter>            <name>LILY_ZK_NODES</name>
             <stream_name/>
             <value>${ZOOKEEPER_HOST}</value>
@@ -96,8 +106,8 @@
             </parameter>      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>506</xloc>
-      <yloc>216</yloc>
+      <xloc>512</xloc>
+      <yloc>224</yloc>
       </entry>
     <entry>
       <name>send fail mail</name>
@@ -136,8 +146,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>506</xloc>
-      <yloc>30</yloc>
+      <xloc>512</xloc>
+      <yloc>32</yloc>
       </entry>
     <entry>
       <name>START</name>
@@ -156,8 +166,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>29</xloc>
-      <yloc>216</yloc>
+      <xloc>16</xloc>
+      <yloc>224</yloc>
       </entry>
     <entry>
       <name>Rename current_log</name>
@@ -180,8 +190,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>785</xloc>
-      <yloc>216</yloc>
+      <xloc>800</xloc>
+      <yloc>224</yloc>
       </entry>
     <entry>
       <name>Get log</name>
@@ -199,8 +209,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>1</nr>
-      <xloc>506</xloc>
-      <yloc>119</yloc>
+      <xloc>512</xloc>
+      <yloc>128</yloc>
       </entry>
     <entry>
       <name>Is current_run Log still young?</name>
@@ -225,8 +235,8 @@ exit $AGE</script>
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>581</xloc>
-      <yloc>373</yloc>
+      <xloc>576</xloc>
+      <yloc>400</yloc>
       </entry>
     <entry>
       <name>Send mail for lingering run</name>
@@ -267,8 +277,8 @@ To resume processing, run: cd &#47;opt&#47;pentaho&#47;kettle; .&#47;kitchen.sh 
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>581</xloc>
-      <yloc>601</yloc>
+      <xloc>576</xloc>
+      <yloc>608</yloc>
       </entry>
     <entry>
       <name>Get unfinished log</name>
@@ -286,8 +296,8 @@ To resume processing, run: cd &#47;opt&#47;pentaho&#47;kettle; .&#47;kitchen.sh 
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>581</xloc>
-      <yloc>495</yloc>
+      <xloc>576</xloc>
+      <yloc>512</yloc>
       </entry>
     <entry>
       <name>Existing current_run Log?</name>
@@ -310,8 +320,8 @@ exit $?</script>
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>190</xloc>
-      <yloc>216</yloc>
+      <xloc>176</xloc>
+      <yloc>224</yloc>
       </entry>
     <entry>
       <name>Success</name>
@@ -320,8 +330,8 @@ exit $?</script>
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>929</xloc>
-      <yloc>216</yloc>
+      <xloc>944</xloc>
+      <yloc>224</yloc>
       </entry>
     <entry>
       <name>Get Custom Field Flags</name>
@@ -352,8 +362,8 @@ exit $?</script>
       </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>355</xloc>
-      <yloc>216</yloc>
+      <xloc>320</xloc>
+      <yloc>224</yloc>
       </entry>
     <entry>
       <name>Load attach updates</name>
@@ -383,7 +393,7 @@ exit $?</script>
       <parameters>        <pass_all_parameters>Y</pass_all_parameters>
             <parameter>            <name>BUG_IDS_PARTITION</name>
             <stream_name/>
-            <value>bug_id &gt;= 1 AND bug_id &lt; 900900900</value>
+            <value>bug_id &gt;= ${FROM_ID} AND bug_id &lt; ${TO_ID}</value>
             </parameter>            <parameter>            <name>OVERRIDE_START_TIME</name>
             <stream_name/>
             <value>2011-06-20 01:01:01</value>
@@ -399,8 +409,8 @@ exit $?</script>
             </parameter>      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>632</xloc>
-      <yloc>216</yloc>
+      <xloc>640</xloc>
+      <yloc>224</yloc>
       </entry>
     <entry>
       <name>send fail mail 2</name>
@@ -439,8 +449,8 @@ exit $?</script>
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>632</xloc>
-      <yloc>32</yloc>
+      <xloc>640</xloc>
+      <yloc>48</yloc>
       </entry>
     <entry>
       <name>Get log 2</name>
@@ -458,8 +468,40 @@ exit $?</script>
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>1</nr>
-      <xloc>632</xloc>
-      <yloc>119</yloc>
+      <xloc>640</xloc>
+      <yloc>128</yloc>
+      </entry>
+    <entry>
+      <name>Get last modification</name>
+      <description/>
+      <type>TRANS</type>
+      <specification_method>filename</specification_method>
+      <trans_object_id/>
+      <filename>&#47;Volumes&#47;Work&#47;mozilla&#47;bugzilla_dwh&#47;bugzilla_etl&#47;transformations&#47;get_last_modification.ktr</filename>
+      <transname/>
+      <arg_from_previous>N</arg_from_previous>
+      <params_from_previous>N</params_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <clear_rows>N</clear_rows>
+      <clear_files>N</clear_files>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Basic</loglevel>
+      <cluster>N</cluster>
+      <slave_server_name/>
+      <set_append_logfile>N</set_append_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <follow_abort_remote>N</follow_abort_remote>
+      <create_parent_folder>N</create_parent_folder>
+      <parameters>        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>416</xloc>
+      <yloc>192</yloc>
       </entry>
   </entries>
   <hops>
@@ -545,15 +587,6 @@ exit $?</script>
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Get Custom Field Flags</from>
-      <to>Load bug updates</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
       <from>Load bug updates</from>
       <to>Load attach updates</to>
       <from_nr>0</from_nr>
@@ -584,6 +617,24 @@ exit $?</script>
       <from>Get log 2</from>
       <to>send fail mail 2</to>
       <from_nr>1</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Get Custom Field Flags</from>
+      <to>Get last modification</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Get last modification</from>
+      <to>Load bug updates</to>
+      <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
       <evaluation>Y</evaluation>

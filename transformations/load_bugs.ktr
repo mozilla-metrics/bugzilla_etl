@@ -11,13 +11,18 @@
     <parameters>
         <parameter>
             <name>BUG_IDS_PARTITION</name>
-            <default_value>bug_id &gt;= 655001 and bug_id &lt; 655101</default_value>
+            <default_value>bug_id &gt;= 655001 and bug_id &lt; 655005</default_value>
             <description>Partitioning to reduce memory and process time for big batch processing</description>
         </parameter>
         <parameter>
             <name>CF_FLAGS_SQL_PARAMETER</name>
             <default_value>TRIM(TRAILING &apos;,&apos; FROM CONCAT(IF(`cf_blocking_fennec` != &apos;---&apos;, CONCAT(&apos;tracking-fennec&apos;, IF(LENGTH(`cf_blocking_fennec`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_fennec`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_191` != &apos;---&apos;, CONCAT(&apos;blocking1.9.1&apos;, IF(LENGTH(`cf_blocking_191`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_191`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_191` != &apos;---&apos;, CONCAT(&apos;status1.9.1&apos;, IF(LENGTH(`cf_status_191`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_191`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_192` != &apos;---&apos;, CONCAT(&apos;status1.9.2&apos;, IF(LENGTH(`cf_status_192`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_192`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_20` != &apos;---&apos;, CONCAT(&apos;blocking2.0&apos;, IF(LENGTH(`cf_blocking_20`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_20`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird30` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.0&apos;, IF(LENGTH(`cf_blocking_thunderbird30`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird30`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird30` != &apos;---&apos;, CONCAT(&apos;status-thunderbird3.0&apos;, IF(LENGTH(`cf_status_thunderbird30`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird30`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_192` != &apos;---&apos;, CONCAT(&apos;blocking1.9.2&apos;, IF(LENGTH(`cf_blocking_192`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_192`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird31` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.1&apos;, IF(LENGTH(`cf_blocking_thunderbird31`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird31`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird31` != &apos;---&apos;, CONCAT(&apos;status-thunderbird3.1&apos;, IF(LENGTH(`cf_status_thunderbird31`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird31`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_20` != &apos;---&apos;, CONCAT(&apos;status2.0&apos;, IF(LENGTH(`cf_status_20`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_20`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_seamonkey21` != &apos;---&apos;, CONCAT(&apos;status-seamonkey2.1&apos;, IF(LENGTH(`cf_status_seamonkey21`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_seamonkey21`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_seamonkey21` != &apos;---&apos;, CONCAT(&apos;blocking-seamonkey2.1&apos;, IF(LENGTH(`cf_blocking_seamonkey21`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_seamonkey21`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird32` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.2&apos;, IF(LENGTH(`cf_blocking_thunderbird32`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird32`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird32` != &apos;---&apos;, CONCAT(&apos;status-thunderbird3.2&apos;, IF(LENGTH(`cf_status_thunderbird32`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird32`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird33` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird5.0&apos;, IF(LENGTH(`cf_blocking_thunderbird33`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird33`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird33` != &apos;---&apos;, CONCAT(&apos;status-thunderbird5.0&apos;, IF(LENGTH(`cf_status_thunderbird33`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird33`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_fx` != &apos;---&apos;, CONCAT(&apos;blocking-fx&apos;, IF(LENGTH(`cf_blocking_fx`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_fx`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_firefox5` != &apos;---&apos;, CONCAT(&apos;tracking-firefox5&apos;, IF(LENGTH(`cf_tracking_firefox5`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_firefox5`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_firefox5` != &apos;---&apos;, CONCAT(&apos;status-firefox5&apos;, IF(LENGTH(`cf_status_firefox5`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_firefox5`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_firefox6` != &apos;---&apos;, CONCAT(&apos;tracking-firefox6&apos;, IF(LENGTH(`cf_tracking_firefox6`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_firefox6`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_firefox7` != &apos;---&apos;, CONCAT(&apos;tracking-firefox7&apos;, IF(LENGTH(`cf_tracking_firefox7`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_firefox7`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_firefox6` != &apos;---&apos;, CONCAT(&apos;status-firefox6&apos;, IF(LENGTH(`cf_status_firefox6`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_firefox6`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_firefox7` != &apos;---&apos;, CONCAT(&apos;status-firefox7&apos;, IF(LENGTH(`cf_status_firefox7`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_firefox7`, &apos;,&apos;), &apos;&apos;)))</default_value>
             <description>An SQL expression that selects flags from custom fields.</description>
+        </parameter>
+        <parameter>
+            <name>ES_REST</name>
+            <default_value>http:&#47;&#47;localhost:9300</default_value>
+            <description/>
         </parameter>
         <parameter>
             <name>IS_IMPORT</name>
@@ -104,7 +109,7 @@ load them into ElasticSearch.
 Make sure to have the database settings specified in your kettle.properties
 (either in your ~&#47;.kettle or your $KETTLE_HOME&#47;.kettle if set)
 bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
-      <xloc>720</xloc>
+      <xloc>656</xloc>
       <yloc>32</yloc>
       <width>452</width>
       <heigth>106</heigth>
@@ -155,7 +160,7 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
     </attributes>
   </connection>
   <order>
-  <hop> <from>Get Major Status Lookup</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Prepare History Input</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Set earliest flag no-activity bugs</from><to>Prepare History Input</to><enabled>Y</enabled> </hop>  <hop> <from>Rebuild Versions</from><to>Bulk Load To ES</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get flags for new&#47;modified bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get new activities</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get new&#47;modified bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>bug-groups</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>bug-keywords</to><enabled>Y</enabled> </hop>  <hop> <from>Clean Bug State</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Generate Rows</from><to>Calculate start date</to><enabled>Y</enabled> </hop>  <hop> <from>Get flags for new&#47;modified bugs</from><to>concat flags</to><enabled>Y</enabled> </hop>  <hop> <from>Get new activities</from><to>Denormalise activities</to><enabled>Y</enabled> </hop>  <hop> <from>Get new&#47;modified bugs</from><to>Join groups into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join flags into bugs</from><to>Merge flags with cf_flags</to><enabled>Y</enabled> </hop>  <hop> <from>Join groups into bugs</from><to>Join keywords into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join keywords into bugs</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Mark first&#47;last row</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Merge flags with cf_flags</from><to>Clean Bug State</to><enabled>Y</enabled> </hop>  <hop> <from>bug-groups</from><to>concat groups</to><enabled>Y</enabled> </hop>  <hop> <from>bug-keywords</from><to>concat keywords</to><enabled>Y</enabled> </hop>  <hop> <from>concat flags</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>concat groups</from><to>Join groups into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>concat keywords</from><to>Join keywords into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join bugs with activities</from><to>Set earliest flag no-activity bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Clean flag fields (infix, suffix)</from><to>Clean flag fields (prefix)</to><enabled>Y</enabled> </hop>  <hop> <from>Denormalise activities</from><to>Clean flag fields (infix, suffix)</to><enabled>Y</enabled> </hop>  <hop> <from>Clean flag fields (prefix)</from><to>Mark first&#47;last row</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Get Major Status Lookup</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Prepare History Input</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Set earliest flag no-activity bugs</from><to>Prepare History Input</to><enabled>Y</enabled> </hop>  <hop> <from>Rebuild Versions</from><to>Bulk Load To ES</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get flags for new&#47;modified bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get new activities</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get new&#47;modified bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>bug-groups</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>bug-keywords</to><enabled>Y</enabled> </hop>  <hop> <from>Clean Bug State</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Get flags for new&#47;modified bugs</from><to>concat flags</to><enabled>Y</enabled> </hop>  <hop> <from>Get new activities</from><to>Denormalise activities</to><enabled>Y</enabled> </hop>  <hop> <from>Get new&#47;modified bugs</from><to>Join groups into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join flags into bugs</from><to>Merge flags with cf_flags</to><enabled>Y</enabled> </hop>  <hop> <from>Join groups into bugs</from><to>Join keywords into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join keywords into bugs</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Mark first&#47;last row</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Merge flags with cf_flags</from><to>Clean Bug State</to><enabled>Y</enabled> </hop>  <hop> <from>bug-groups</from><to>concat groups</to><enabled>Y</enabled> </hop>  <hop> <from>bug-keywords</from><to>concat keywords</to><enabled>Y</enabled> </hop>  <hop> <from>concat flags</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>concat groups</from><to>Join groups into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>concat keywords</from><to>Join keywords into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join bugs with activities</from><to>Set earliest flag no-activity bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Clean flag fields (infix, suffix)</from><to>Clean flag fields (prefix)</to><enabled>Y</enabled> </hop>  <hop> <from>Denormalise activities</from><to>Clean flag fields (infix, suffix)</to><enabled>Y</enabled> </hop>  <hop> <from>Clean flag fields (prefix)</from><to>Mark first&#47;last row</to><enabled>Y</enabled> </hop>  <hop> <from>Generate Rows</from><to>Calculate start date</to><enabled>Y</enabled> </hop>  </order>
   <step>
     <name>Bulk Load To ES</name>
     <type>UserDefinedJavaClass</type>
@@ -246,29 +251,26 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
 
 var bugIDsPartition = getVariable(&quot;BUG_IDS_PARTITION&quot;, &quot;1 = 1&quot;);
 var overrideStartTime = getVariable(&quot;OVERRIDE_START_TIME&quot;, &quot;&quot;);
+var lastModificationTime = getVariable(&quot;LAST_MODIFICATION&quot;, &quot;&quot;);
 
 writeToLog(&quot;m&quot;, &quot;Override start time: &quot; + overrideStartTime);
+writeToLog(&quot;m&quot;, &quot;Last modification: &quot; + lastModificationTime);
 
 
 if (overrideStartTime.length == 19) {
 	startDateTime = str2date(overrideStartTime, &quot;yyyy-MM-dd HH:mm:ss&quot;);
-} else {
-
-    &#47;&#47; NEED TO GET THIS FROM ELASTIC_SEARCH INSTEAD
-	var strConn = &quot;bugs_dw&quot;;
-	var strSQL = &quot;SELECT MAX(valid_from_ts) FROM FACT_bug_states WHERE &quot;+bugIDsPartition.replace(&quot;bug_id&quot;, &quot;bug_nk&quot;);
-	var xArr = fireToDB(strConn, strSQL);
-
-	startDateTime = xArr[0][0];
-	if (startDateTime == null) {
-		startDateTime = str2date(&quot;1900-01-01&quot;, &quot;yyyy-MM-dd&quot;);
-	} else {
-		dateAdd(startDateTime, &quot;ss&quot;, 1);
-	}
+}
+else if (lastModificationTime.length &gt;= 19) {
+    startDateTime = str2date(lastModificationTime.substring(0,19).replace(&quot;T&quot;, &quot; &quot;), &quot;yyyy-MM-dd HH:mm:ss&quot;);
+    startDateTime = dateAdd(startDateTime, &quot;mi&quot;, -5);
+}
+else {
+    writeToLog(&quot;m&quot;, &quot;Using default start date.&quot;);
+    startDateTime = str2date(&quot;1900-01-01&quot;, &quot;yyyy-MM-dd&quot;);
 }
 
-writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartition
-                + &quot;, since [&quot;+date2str(startDateTime,&quot;yyyy-MM-dd HH:mm:ss&quot;)+&quot;]&quot;);
+writeToLog(&quot;m&quot;, &quot;Updating bug records WHERE &quot;+bugIDsPartition
+                + &quot; AND buug_when &gt; &apos;&quot;+date2str(startDateTime,&quot;yyyy-MM-dd HH:mm:ss&quot;)+&quot;&apos;&quot;);
 </jsScript_script>
       </jsScript>    </jsScripts>    <fields>      <field>        <name>startDateTime</name>
         <rename>START_DATE_RANGE</rename>
@@ -856,7 +858,7 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartitio
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>352</xloc>
-      <yloc>32</yloc>
+      <yloc>16</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

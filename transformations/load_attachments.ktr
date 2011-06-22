@@ -246,27 +246,26 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
 var bugIDsPartition = getVariable(&quot;BUG_IDS_PARTITION&quot;, &quot;1 = 1&quot;);
 var overrideStartTime = getVariable(&quot;OVERRIDE_START_TIME&quot;, &quot;&quot;);
 
+var overrideStartTime = getVariable(&quot;OVERRIDE_START_TIME&quot;, &quot;&quot;);
+var lastModificationTime = getVariable(&quot;LAST_MODIFICATION&quot;, &quot;&quot;);
+
 writeToLog(&quot;m&quot;, &quot;Override start time: &quot; + overrideStartTime);
+writeToLog(&quot;m&quot;, &quot;Last modification: &quot; + lastModificationTime);
 
 
 if (overrideStartTime.length == 19) {
 	startDateTime = str2date(overrideStartTime, &quot;yyyy-MM-dd HH:mm:ss&quot;);
-} else {
-
-    &#47;&#47; NEED TO GET THIS FROM ELASTIC_SEARCH INSTEAD
-	var strConn = &quot;bugs_dw&quot;;
-	var strSQL = &quot;SELECT MAX(valid_from_ts) FROM FACT_bug_states WHERE &quot;+bugIDsPartition.replace(&quot;bug_id&quot;, &quot;bug_nk&quot;);
-	var xArr = fireToDB(strConn, strSQL);
-
-	startDateTime = xArr[0][0];
-	if (startDateTime == null) {
-		startDateTime = str2date(&quot;1900-01-01&quot;, &quot;yyyy-MM-dd&quot;);
-	} else {
-		dateAdd(startDateTime, &quot;ss&quot;, 1);
-	}
+}
+else if (lastModificationTime.length &gt;= 19) {
+    startDateTime = str2date(lastModificationTime.substring(0,19).replace(&quot;T&quot;, &quot; &quot;), &quot;yyyy-MM-dd HH:mm:ss&quot;);
+    startDateTime = dateAdd(startDateTime, &quot;mi&quot;, -5);
+}
+else {
+    writeToLog(&quot;m&quot;, &quot;Using default start date.&quot;);
+    startDateTime = str2date(&quot;1900-01-01&quot;, &quot;yyyy-MM-dd&quot;);
 }
 
-writeToLog(&quot;m&quot;, &quot;Updating bug records where &quot;+bugIDsPartition
+writeToLog(&quot;m&quot;, &quot;Updating attachment records where &quot;+bugIDsPartition
                 + &quot;, since [&quot;+date2str(startDateTime,&quot;yyyy-MM-dd HH:mm:ss&quot;)+&quot;]&quot;);
 </jsScript_script>
       </jsScript>    </jsScripts>    <fields>      <field>        <name>startDateTime</name>
