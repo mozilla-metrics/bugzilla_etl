@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Get LAST_MODIFICATION</name>
+    <name>Set LAST_MODIFICATION</name>
     <description/>
     <extended_description/>
     <trans_version/>
@@ -236,9 +236,6 @@
       <loglevel>log_level_basic</loglevel>
       <displayHeader>Y</displayHeader>
     <fields>
-      <field>
-        <name>Huh</name>
-        </field>
       <field>
         <name>result</name>
         </field>

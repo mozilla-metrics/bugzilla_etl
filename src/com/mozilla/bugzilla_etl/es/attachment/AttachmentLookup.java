@@ -98,11 +98,6 @@ implements IAttachmentLookup {
                                  MEASURE.integer(measurement, fields));
             }
 
-            System.out.format("DEBUG: Lookup diagnostics for\n %s,\n next from: %s\n next to: %s \n\n",
-                              attachment,
-                              VERSION.date(Fields.Activity.MODIFICATION_DATE, fields),
-                              VERSION.date(Fields.Activity.EXPIRATION_DATE, fields));
-
             attachment.append(new AttachmentVersion(
                 attachment,
                 facets,

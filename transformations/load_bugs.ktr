@@ -31,7 +31,7 @@
         </parameter>
         <parameter>
             <name>OVERRIDE_START_TIME</name>
-            <default_value>1901-01-01 01:01:01</default_value>
+            <default_value/>
             <description/>
         </parameter>
         <parameter>
@@ -270,7 +270,7 @@ else {
 }
 
 writeToLog(&quot;m&quot;, &quot;Updating bug records WHERE &quot;+bugIDsPartition
-                + &quot; AND buug_when &gt; &apos;&quot;+date2str(startDateTime,&quot;yyyy-MM-dd HH:mm:ss&quot;)+&quot;&apos;&quot;);
+                + &quot; AND bug_when &gt; &apos;&quot;+date2str(startDateTime,&quot;yyyy-MM-dd HH:mm:ss&quot;)+&quot;&apos;&quot;);
 </jsScript_script>
       </jsScript>    </jsScripts>    <fields>      <field>        <name>startDateTime</name>
         <rename>START_DATE_RANGE</rename>

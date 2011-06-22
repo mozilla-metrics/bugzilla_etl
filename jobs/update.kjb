@@ -477,7 +477,7 @@ exit $?</script>
       <type>TRANS</type>
       <specification_method>filename</specification_method>
       <trans_object_id/>
-      <filename>&#47;Volumes&#47;Work&#47;mozilla&#47;bugzilla_dwh&#47;bugzilla_etl&#47;transformations&#47;get_last_modification.ktr</filename>
+      <filename>${Internal.Job.Filename.Directory}&#47;..&#47;transformations&#47;get_last_modification.ktr</filename>
       <transname/>
       <arg_from_previous>N</arg_from_previous>
       <params_from_previous>N</params_from_previous>
