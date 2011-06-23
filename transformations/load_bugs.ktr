@@ -30,11 +30,6 @@
             <description>Will skip check for incremental update if &quot;true&quot;.</description>
         </parameter>
         <parameter>
-            <name>OVERRIDE_START_TIME</name>
-            <default_value/>
-            <description/>
-        </parameter>
-        <parameter>
             <name>PES_CLUSTER</name>
             <default_value>elasticsearch</default_value>
             <description/>
@@ -103,16 +98,28 @@
   </info>
   <notepads>
     <notepad>
-      <note>Fetch bugs from MySQL, reconstruct their history,
-load them into ElasticSearch.
+      <note>1. Fetch bugs from bugzilla MySQL
+2. Fetch recorded activity on them
+3. Reconstruct historic versions
+4. Load records into ElasticSearch
 
-Make sure to have the database settings specified in your kettle.properties
-(either in your ~&#47;.kettle or your $KETTLE_HOME&#47;.kettle if set)
-bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
-      <xloc>656</xloc>
-      <yloc>32</yloc>
-      <width>452</width>
-      <heigth>106</heigth>
+To limit the changes being loaded, set
+* $START_TIME (string: local iso datetime)
+* $BUG_IDS_PARTITION (SQL to use in WHERE)
+
+Make sure to have the database settings:
+* in ~&#47;.kettle or $KETTLE_HOME&#47;.kettle
+* find&#47;create your kettle.properties
+* and set
+  * bugs_db_host
+  * bugs_db_port
+  * bugs_db_user
+  * bugs_db_pass
+  * bugs_db_name</note>
+      <xloc>880</xloc>
+      <yloc>48</yloc>
+      <width>276</width>
+      <heigth>298</heigth>
       <fontname>Ariel</fontname>
       <fontsize>12</fontsize>
       <fontbold>N</fontbold>
@@ -160,7 +167,7 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
     </attributes>
   </connection>
   <order>
-  <hop> <from>Get Major Status Lookup</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Prepare History Input</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Set earliest flag no-activity bugs</from><to>Prepare History Input</to><enabled>Y</enabled> </hop>  <hop> <from>Rebuild Versions</from><to>Bulk Load To ES</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get flags for new&#47;modified bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get new activities</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>Get new&#47;modified bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>bug-groups</to><enabled>Y</enabled> </hop>  <hop> <from>Calculate start date</from><to>bug-keywords</to><enabled>Y</enabled> </hop>  <hop> <from>Clean Bug State</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Get flags for new&#47;modified bugs</from><to>concat flags</to><enabled>Y</enabled> </hop>  <hop> <from>Get new activities</from><to>Denormalise activities</to><enabled>Y</enabled> </hop>  <hop> <from>Get new&#47;modified bugs</from><to>Join groups into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join flags into bugs</from><to>Merge flags with cf_flags</to><enabled>Y</enabled> </hop>  <hop> <from>Join groups into bugs</from><to>Join keywords into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join keywords into bugs</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Mark first&#47;last row</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Merge flags with cf_flags</from><to>Clean Bug State</to><enabled>Y</enabled> </hop>  <hop> <from>bug-groups</from><to>concat groups</to><enabled>Y</enabled> </hop>  <hop> <from>bug-keywords</from><to>concat keywords</to><enabled>Y</enabled> </hop>  <hop> <from>concat flags</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>concat groups</from><to>Join groups into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>concat keywords</from><to>Join keywords into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join bugs with activities</from><to>Set earliest flag no-activity bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Clean flag fields (infix, suffix)</from><to>Clean flag fields (prefix)</to><enabled>Y</enabled> </hop>  <hop> <from>Denormalise activities</from><to>Clean flag fields (infix, suffix)</to><enabled>Y</enabled> </hop>  <hop> <from>Clean flag fields (prefix)</from><to>Mark first&#47;last row</to><enabled>Y</enabled> </hop>  <hop> <from>Generate Rows</from><to>Calculate start date</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Get Major Status Lookup</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Prepare History Input</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Set earliest flag no-activity bugs</from><to>Prepare History Input</to><enabled>Y</enabled> </hop>  <hop> <from>Rebuild Versions</from><to>Bulk Load To ES</to><enabled>Y</enabled> </hop>  <hop> <from>Clean Bug State</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Get flags for new&#47;modified bugs</from><to>concat flags</to><enabled>Y</enabled> </hop>  <hop> <from>Get new activities</from><to>Denormalise activities</to><enabled>Y</enabled> </hop>  <hop> <from>Get new&#47;modified bugs</from><to>Join groups into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join flags into bugs</from><to>Merge flags with cf_flags</to><enabled>Y</enabled> </hop>  <hop> <from>Join groups into bugs</from><to>Join keywords into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join keywords into bugs</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Mark first&#47;last row</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Merge flags with cf_flags</from><to>Clean Bug State</to><enabled>Y</enabled> </hop>  <hop> <from>bug-groups</from><to>concat groups</to><enabled>Y</enabled> </hop>  <hop> <from>bug-keywords</from><to>concat keywords</to><enabled>Y</enabled> </hop>  <hop> <from>concat flags</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>concat groups</from><to>Join groups into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>concat keywords</from><to>Join keywords into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join bugs with activities</from><to>Set earliest flag no-activity bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Clean flag fields (infix, suffix)</from><to>Clean flag fields (prefix)</to><enabled>Y</enabled> </hop>  <hop> <from>Denormalise activities</from><to>Clean flag fields (infix, suffix)</to><enabled>Y</enabled> </hop>  <hop> <from>Clean flag fields (prefix)</from><to>Mark first&#47;last row</to><enabled>Y</enabled> </hop>  </order>
   <step>
     <name>Bulk Load To ES</name>
     <type>UserDefinedJavaClass</type>
@@ -229,59 +236,7 @@ bugs_db_host, bugs_db_port, bugs_db_user, bugs_db_pass, bugs_db_name</note>
 </usage_parameter></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>864</xloc>
-      <yloc>1008</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Calculate start date</name>
-    <type>ScriptValueMod</type>
-    <description/>
-    <distribute>N</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <compatible>N</compatible>
-    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
-        <jsScript_name>Script 1</jsScript_name>
-        <jsScript_script>var startDateTime;
-
-var bugIDsPartition = getVariable(&quot;BUG_IDS_PARTITION&quot;, &quot;1 = 1&quot;);
-var overrideStartTime = getVariable(&quot;OVERRIDE_START_TIME&quot;, &quot;&quot;);
-var lastModificationTime = getVariable(&quot;LAST_MODIFICATION&quot;, &quot;&quot;);
-
-writeToLog(&quot;m&quot;, &quot;Override start time: &quot; + overrideStartTime);
-writeToLog(&quot;m&quot;, &quot;Last modification: &quot; + lastModificationTime);
-
-
-if (overrideStartTime.length == 19) {
-	startDateTime = str2date(overrideStartTime, &quot;yyyy-MM-dd HH:mm:ss&quot;);
-}
-else if (lastModificationTime.length &gt;= 19) {
-    startDateTime = str2date(lastModificationTime.substring(0,19).replace(&quot;T&quot;, &quot; &quot;), &quot;yyyy-MM-dd HH:mm:ss&quot;);
-    startDateTime = dateAdd(startDateTime, &quot;mi&quot;, -5);
-}
-else {
-    writeToLog(&quot;m&quot;, &quot;Using default start date.&quot;);
-    startDateTime = str2date(&quot;1900-01-01&quot;, &quot;yyyy-MM-dd&quot;);
-}
-
-writeToLog(&quot;m&quot;, &quot;Updating bug records WHERE &quot;+bugIDsPartition
-                + &quot; AND bug_when &gt; &apos;&quot;+date2str(startDateTime,&quot;yyyy-MM-dd HH:mm:ss&quot;)+&quot;&apos;&quot;);
-</jsScript_script>
-      </jsScript>    </jsScripts>    <fields>      <field>        <name>startDateTime</name>
-        <rename>START_DATE_RANGE</rename>
-        <type>Date</type>
-        <length>-1</length>
-        <precision>-1</precision>
-        <replace>N</replace>
-      </field>    </fields>     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>352</xloc>
-      <yloc>96</yloc>
+      <yloc>800</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -301,7 +256,7 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records WHERE &quot;+bugIDsPartitio
       </remove>    </fields>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>352</xloc>
-      <yloc>672</yloc>
+      <yloc>464</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -357,7 +312,7 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records WHERE &quot;+bugIDsPartitio
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>752</xloc>
-      <yloc>656</yloc>
+      <yloc>448</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -413,7 +368,7 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records WHERE &quot;+bugIDsPartitio
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>752</xloc>
-      <yloc>720</yloc>
+      <yloc>512</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -837,28 +792,7 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records WHERE &quot;+bugIDsPartitio
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>752</xloc>
-      <yloc>592</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Generate Rows</name>
-    <type>RowGenerator</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>
-    </fields>
-    <limit>1</limit>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>352</xloc>
-      <yloc>16</yloc>
+      <yloc>384</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -907,7 +841,7 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records WHERE &quot;+bugIDsPartitio
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>992</xloc>
-      <yloc>928</yloc>
+      <yloc>720</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -928,19 +862,21 @@ writeToLog(&quot;m&quot;, &quot;Updating bug records WHERE &quot;+bugIDsPartitio
 , concat( type.`name`, f.status ) as flag
 , &apos;flag&apos; as field_name
 FROM flags as f JOIN flagtypes as type on f.type_id = type.id
-WHERE type.target_type = &apos;b&apos; 
-and modification_date &gt; ?
-AND ${BUG_IDS_PARTITION}
-ORDER BY bug_id ASC</sql>
+WHERE 
+    type.target_type = &apos;b&apos; 
+	AND modification_date &gt; &apos;${START_TIME}&apos;
+	AND ${BUG_IDS_PARTITION}
+ORDER BY 
+	bug_id ASC</sql>
     <limit>0</limit>
-    <lookup>Calculate start date</lookup>
+    <lookup/>
     <execute_each_row>N</execute_each_row>
     <variables_active>Y</variables_active>
     <lazy_conversion_active>N</lazy_conversion_active>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>96</xloc>
-      <yloc>240</yloc>
+      <yloc>48</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -985,7 +921,7 @@ FROM
     JOIN `fielddefs` field ON activity.`fieldid` = field.`id`
     JOIN `profiles` modifier ON `who` = modifier.`userid`
 WHERE
-    `bug_when` &gt; ?
+    `bug_when` &gt; &apos;${START_TIME}&apos;
     AND ${BUG_IDS_PARTITION}
     AND (
         field.`name` IN (&apos;assigned_to&apos;, &apos;bug_severity&apos;, &apos;bug_status&apos;, &apos;component&apos;, &apos;flagtypes.name&apos;,
@@ -999,14 +935,14 @@ ORDER BY
     `bug_when` DESC,
     modified_by</sql>
     <limit>0</limit>
-    <lookup>Calculate start date</lookup>
+    <lookup/>
     <execute_each_row>N</execute_each_row>
     <variables_active>Y</variables_active>
     <lazy_conversion_active>N</lazy_conversion_active>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>752</xloc>
-      <yloc>240</yloc>
+      <yloc>48</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1048,20 +984,20 @@ FROM
     JOIN products prod ON prod.id = product_id
     JOIN components comp ON comp.id = component_id
 WHERE
-   delta_ts &gt; ?
+   delta_ts &gt; &apos;${START_TIME}&apos;
    AND ${BUG_IDS_PARTITION}
 ORDER BY 
    bug_id ASC
 </sql>
     <limit>0</limit>
-    <lookup>Calculate start date</lookup>
+    <lookup/>
     <execute_each_row>N</execute_each_row>
     <variables_active>Y</variables_active>
     <lazy_conversion_active>N</lazy_conversion_active>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>352</xloc>
-      <yloc>240</yloc>
+      <yloc>48</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1088,7 +1024,7 @@ ORDER BY
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>352</xloc>
-      <yloc>784</yloc>
+      <yloc>576</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1115,7 +1051,7 @@ ORDER BY
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>352</xloc>
-      <yloc>544</yloc>
+      <yloc>336</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1142,7 +1078,7 @@ ORDER BY
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>352</xloc>
-      <yloc>336</yloc>
+      <yloc>128</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1169,7 +1105,7 @@ ORDER BY
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>352</xloc>
-      <yloc>432</yloc>
+      <yloc>224</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1285,7 +1221,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 <info_steps></info_steps><target_steps></target_steps><usage_parameters></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>752</xloc>
-      <yloc>784</yloc>
+      <yloc>576</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1310,7 +1246,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>352</xloc>
-      <yloc>608</yloc>
+      <yloc>400</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1533,7 +1469,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
     </fields>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>752</xloc>
-      <yloc>928</yloc>
+      <yloc>720</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2028,7 +1964,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
 </usage_parameter></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>864</xloc>
-      <yloc>928</yloc>
+      <yloc>720</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2053,7 +1989,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>352</xloc>
-      <yloc>928</yloc>
+      <yloc>720</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2075,11 +2011,15 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
   , `groups`.`name` AS `group`
 FROM 
     `bug_group_map` AS map
-	LEFT JOIN `groups` ON map.`group_id` = `groups`.`id`
+    LEFT JOIN `groups` ON map.`group_id` = `groups`.`id`
 WHERE
-    ${BUG_IDS_PARTITION}
+    map.bug_id IN (
+       SELECT bug_id FROM bugs
+       WHERE delta_ts &gt; &apos;${START_TIME}&apos; AND ${BUG_IDS_PARTITION}
+    )
 ORDER BY 
-   bug_id ASC</sql>
+    bug_id ASC
+</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>
@@ -2088,7 +2028,7 @@ ORDER BY
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>464</xloc>
-      <yloc>240</yloc>
+      <yloc>48</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2112,7 +2052,10 @@ FROM
     `keywords` AS map
     LEFT JOIN `keyworddefs` ON map.`keywordid` = `keyworddefs`.`id`
 WHERE
-    ${BUG_IDS_PARTITION}
+    map.bug_id IN (
+       SELECT bug_id FROM bugs
+       WHERE delta_ts &gt; &apos;${START_TIME}&apos; AND ${BUG_IDS_PARTITION}
+    )
 ORDER BY 
     bug_id ASC
 </sql>
@@ -2124,7 +2067,7 @@ ORDER BY
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>576</xloc>
-      <yloc>240</yloc>
+      <yloc>48</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2164,7 +2107,7 @@ ORDER BY
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>96</xloc>
-      <yloc>544</yloc>
+      <yloc>336</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2204,7 +2147,7 @@ ORDER BY
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>464</xloc>
-      <yloc>336</yloc>
+      <yloc>128</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -2244,7 +2187,7 @@ ORDER BY
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>576</xloc>
-      <yloc>432</yloc>
+      <yloc>224</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

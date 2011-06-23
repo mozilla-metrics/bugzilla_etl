@@ -103,8 +103,8 @@
             </parameter>      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>445</xloc>
-      <yloc>427</yloc>
+      <xloc>336</xloc>
+      <yloc>240</yloc>
       </entry>
     <entry>
       <name>send fail mail</name>
@@ -143,8 +143,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>445</xloc>
-      <yloc>234</yloc>
+      <xloc>336</xloc>
+      <yloc>48</yloc>
       </entry>
     <entry>
       <name>START</name>
@@ -163,8 +163,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>72</xloc>
-      <yloc>427</yloc>
+      <xloc>48</xloc>
+      <yloc>144</yloc>
       </entry>
     <entry>
       <name>Rename current_log</name>
@@ -187,8 +187,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>739</xloc>
-      <yloc>427</yloc>
+      <xloc>528</xloc>
+      <yloc>304</yloc>
       </entry>
     <entry>
       <name>Get log</name>
@@ -206,8 +206,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>1</nr>
-      <xloc>445</xloc>
-      <yloc>330</yloc>
+      <xloc>336</xloc>
+      <yloc>144</yloc>
       </entry>
     <entry>
       <name>Success</name>
@@ -216,8 +216,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>904</xloc>
-      <yloc>428</yloc>
+      <xloc>624</xloc>
+      <yloc>336</yloc>
       </entry>
     <entry>
       <name>Get Custom Flags</name>
@@ -225,7 +225,7 @@
       <type>TRANS</type>
       <specification_method>filename</specification_method>
       <trans_object_id/>
-      <filename>${Internal.Job.Filename.Directory}&#47;..&#47;transformations&#47;get_cf_flags.ktr</filename>
+      <filename>${Internal.Job.Filename.Directory}&#47;..&#47;transformations&#47;set_cf_flags_sql.ktr</filename>
       <transname/>
       <arg_from_previous>N</arg_from_previous>
       <params_from_previous>N</params_from_previous>
@@ -248,8 +248,8 @@
       </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>266</xloc>
-      <yloc>427</yloc>
+      <xloc>144</xloc>
+      <yloc>176</yloc>
       </entry>
     <entry>
       <name>Load attachments</name>
@@ -295,8 +295,8 @@
             </parameter>      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>537</xloc>
-      <yloc>427</yloc>
+      <xloc>432</xloc>
+      <yloc>272</yloc>
       </entry>
     <entry>
       <name>send fail mail 2</name>
@@ -335,8 +335,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>533</xloc>
-      <yloc>234</yloc>
+      <xloc>432</xloc>
+      <yloc>80</yloc>
       </entry>
     <entry>
       <name>Get log 2</name>
@@ -354,8 +354,43 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>1</nr>
-      <xloc>535</xloc>
-      <yloc>330</yloc>
+      <xloc>432</xloc>
+      <yloc>176</yloc>
+      </entry>
+    <entry>
+      <name>set START_TIME</name>
+      <description/>
+      <type>TRANS</type>
+      <specification_method>filename</specification_method>
+      <trans_object_id/>
+      <filename>${Internal.Job.Filename.Directory}&#47;..&#47;transformations&#47;set_start_time.ktr</filename>
+      <transname/>
+      <arg_from_previous>N</arg_from_previous>
+      <params_from_previous>N</params_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <clear_rows>N</clear_rows>
+      <clear_files>N</clear_files>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Basic</loglevel>
+      <cluster>N</cluster>
+      <slave_server_name/>
+      <set_append_logfile>N</set_append_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <follow_abort_remote>N</follow_abort_remote>
+      <create_parent_folder>N</create_parent_folder>
+      <parameters>        <pass_all_parameters>Y</pass_all_parameters>
+            <parameter>            <name>POVERRIDE_START_TIME</name>
+            <stream_name/>
+            <value>1901-01-01 01:01:01</value>
+            </parameter>      </parameters>      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>240</xloc>
+      <yloc>208</yloc>
       </entry>
   </entries>
   <hops>
@@ -380,15 +415,6 @@
     <hop>
       <from>Rename current_log</from>
       <to>Success</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Get Custom Flags</from>
-      <to>Load bugs</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -438,6 +464,24 @@
       <to_nr>1</to_nr>
       <enabled>Y</enabled>
       <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Get Custom Flags</from>
+      <to>set START_TIME</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>set START_TIME</from>
+      <to>Load bugs</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
       <unconditional>N</unconditional>
     </hop>
   </hops>

@@ -106,7 +106,7 @@
             </parameter>      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>512</xloc>
+      <xloc>432</xloc>
       <yloc>224</yloc>
       </entry>
     <entry>
@@ -146,8 +146,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>512</xloc>
-      <yloc>32</yloc>
+      <xloc>432</xloc>
+      <yloc>64</yloc>
       </entry>
     <entry>
       <name>START</name>
@@ -166,8 +166,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>16</xloc>
-      <yloc>224</yloc>
+      <xloc>48</xloc>
+      <yloc>96</yloc>
       </entry>
     <entry>
       <name>Rename current_log</name>
@@ -190,8 +190,8 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>800</xloc>
-      <yloc>224</yloc>
+      <xloc>624</xloc>
+      <yloc>288</yloc>
       </entry>
     <entry>
       <name>Get log</name>
@@ -209,11 +209,11 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>1</nr>
-      <xloc>512</xloc>
-      <yloc>128</yloc>
+      <xloc>432</xloc>
+      <yloc>144</yloc>
       </entry>
     <entry>
-      <name>Is current_run Log still young?</name>
+      <name>current_run log still young?</name>
       <description>Shell</description>
       <type>SHELL</type>
       <filename/>
@@ -235,11 +235,11 @@ exit $AGE</script>
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>576</xloc>
-      <yloc>400</yloc>
+      <xloc>144</xloc>
+      <yloc>416</yloc>
       </entry>
     <entry>
-      <name>Send mail for lingering run</name>
+      <name>Send mail for lingering&#47;unclean run</name>
       <description>Mail</description>
       <type>MAIL</type>
       <server>localhost</server>
@@ -277,8 +277,8 @@ To resume processing, run: cd &#47;opt&#47;pentaho&#47;kettle; .&#47;kitchen.sh 
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>576</xloc>
-      <yloc>608</yloc>
+      <xloc>368</xloc>
+      <yloc>480</yloc>
       </entry>
     <entry>
       <name>Get unfinished log</name>
@@ -296,11 +296,11 @@ To resume processing, run: cd &#47;opt&#47;pentaho&#47;kettle; .&#47;kitchen.sh 
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>576</xloc>
-      <yloc>512</yloc>
+      <xloc>256</xloc>
+      <yloc>448</yloc>
       </entry>
     <entry>
-      <name>Existing current_run Log?</name>
+      <name>Old logs OK?</name>
       <description>Shell</description>
       <type>SHELL</type>
       <filename/>
@@ -314,14 +314,13 @@ To resume processing, run: cd &#47;opt&#47;pentaho&#47;kettle; .&#47;kitchen.sh 
       <add_date>N</add_date>
       <add_time>N</add_time>
       <insertScript>Y</insertScript>
-      <script>ls -l &quot;update_current_run*.log&quot; 2&gt;&amp;1
-exit $?</script>
+      <script>! ls -l &quot;update_current_run*.log&quot; 2&gt;&amp;1</script>
       <loglevel>Nothing</loglevel>
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>176</xloc>
-      <yloc>224</yloc>
+      <xloc>144</xloc>
+      <yloc>128</yloc>
       </entry>
     <entry>
       <name>Success</name>
@@ -330,16 +329,16 @@ exit $?</script>
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>944</xloc>
-      <yloc>224</yloc>
+      <xloc>720</xloc>
+      <yloc>320</yloc>
       </entry>
     <entry>
-      <name>Get Custom Field Flags</name>
+      <name>set CF_FLAGS_SQL</name>
       <description/>
       <type>TRANS</type>
       <specification_method>filename</specification_method>
       <trans_object_id/>
-      <filename>${Internal.Job.Filename.Directory}&#47;..&#47;transformations&#47;get_cf_flags.ktr</filename>
+      <filename>${Internal.Job.Filename.Directory}&#47;..&#47;transformations&#47;set_cf_flags_sql.ktr</filename>
       <transname/>
       <arg_from_previous>N</arg_from_previous>
       <params_from_previous>N</params_from_previous>
@@ -362,8 +361,8 @@ exit $?</script>
       </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>320</xloc>
-      <yloc>224</yloc>
+      <xloc>240</xloc>
+      <yloc>160</yloc>
       </entry>
     <entry>
       <name>Load attach updates</name>
@@ -394,9 +393,6 @@ exit $?</script>
             <parameter>            <name>BUG_IDS_PARTITION</name>
             <stream_name/>
             <value>bug_id &gt;= ${FROM_ID} AND bug_id &lt; ${TO_ID}</value>
-            </parameter>            <parameter>            <name>OVERRIDE_START_TIME</name>
-            <stream_name/>
-            <value>2011-06-20 01:01:01</value>
             </parameter>            <parameter>            <name>IS_IMPORT</name>
             <stream_name/>
             <value>false</value>
@@ -409,8 +405,8 @@ exit $?</script>
             </parameter>      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>640</xloc>
-      <yloc>224</yloc>
+      <xloc>528</xloc>
+      <yloc>256</yloc>
       </entry>
     <entry>
       <name>send fail mail 2</name>
@@ -449,8 +445,8 @@ exit $?</script>
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>640</xloc>
-      <yloc>48</yloc>
+      <xloc>528</xloc>
+      <yloc>112</yloc>
       </entry>
     <entry>
       <name>Get log 2</name>
@@ -468,16 +464,16 @@ exit $?</script>
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>1</nr>
-      <xloc>640</xloc>
-      <yloc>128</yloc>
+      <xloc>528</xloc>
+      <yloc>176</yloc>
       </entry>
     <entry>
-      <name>Get last modification</name>
+      <name>set START_TIME</name>
       <description/>
       <type>TRANS</type>
       <specification_method>filename</specification_method>
       <trans_object_id/>
-      <filename>${Internal.Job.Filename.Directory}&#47;..&#47;transformations&#47;get_last_modification.ktr</filename>
+      <filename>${Internal.Job.Filename.Directory}&#47;..&#47;transformations&#47;set_start_time.ktr</filename>
       <transname/>
       <arg_from_previous>N</arg_from_previous>
       <params_from_previous>N</params_from_previous>
@@ -500,7 +496,7 @@ exit $?</script>
       </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
-      <xloc>416</xloc>
+      <xloc>336</xloc>
       <yloc>192</yloc>
       </entry>
   </entries>
@@ -524,16 +520,16 @@ exit $?</script>
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Existing current_run Log?</from>
-      <to>Is current_run Log still young?</to>
+      <from>Old logs OK?</from>
+      <to>current_run log still young?</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
+      <evaluation>N</evaluation>
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Is current_run Log still young?</from>
+      <from>current_run log still young?</from>
       <to>Get unfinished log</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
@@ -543,7 +539,7 @@ exit $?</script>
     </hop>
     <hop>
       <from>Get unfinished log</from>
-      <to>Send mail for lingering run</to>
+      <to>Send mail for lingering&#47;unclean run</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -551,11 +547,11 @@ exit $?</script>
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Is current_run Log still young?</from>
+      <from>current_run log still young?</from>
       <to>Success</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
-      <enabled>N</enabled>
+      <enabled>Y</enabled>
       <evaluation>Y</evaluation>
       <unconditional>N</unconditional>
     </hop>
@@ -570,7 +566,7 @@ exit $?</script>
     </hop>
     <hop>
       <from>START</from>
-      <to>Existing current_run Log?</to>
+      <to>Old logs OK?</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -578,17 +574,8 @@ exit $?</script>
       <unconditional>Y</unconditional>
     </hop>
     <hop>
-      <from>Existing current_run Log?</from>
-      <to>Get Custom Field Flags</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>N</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>Load bug updates</from>
-      <to>Load attach updates</to>
+      <from>Old logs OK?</from>
+      <to>set CF_FLAGS_SQL</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -596,8 +583,8 @@ exit $?</script>
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Load attach updates</from>
-      <to>Rename current_log</to>
+      <from>Load bug updates</from>
+      <to>Load attach updates</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -623,8 +610,8 @@ exit $?</script>
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Get Custom Field Flags</from>
-      <to>Get last modification</to>
+      <from>set CF_FLAGS_SQL</from>
+      <to>set START_TIME</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -632,8 +619,17 @@ exit $?</script>
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Get last modification</from>
+      <from>set START_TIME</from>
       <to>Load bug updates</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Load attach updates</from>
+      <to>Rename current_log</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -642,26 +638,5 @@ exit $?</script>
     </hop>
   </hops>
   <notepads>
-    <notepad>
-      <note>&lt;--- Happy Lane</note>
-      <xloc>972</xloc>
-      <yloc>215</yloc>
-      <width>94</width>
-      <heigth>23</heigth>
-      <fontname>Ariel</fontname>
-      <fontsize>10</fontsize>
-      <fontbold>N</fontbold>
-      <fontitalic>N</fontitalic>
-      <fontcolorred>0</fontcolorred>
-      <fontcolorgreen>0</fontcolorgreen>
-      <fontcolorblue>0</fontcolorblue>
-      <backgroundcolorred>255</backgroundcolorred>
-      <backgroundcolorgreen>255</backgroundcolorgreen>
-      <backgroundcolorblue>0</backgroundcolorblue>
-      <bordercolorred>100</bordercolorred>
-      <bordercolorgreen>100</bordercolorgreen>
-      <bordercolorblue>100</bordercolorblue>
-      <drawshadow>Y</drawshadow>
-    </notepad>
   </notepads>
 </job>
