@@ -84,7 +84,7 @@ public class WriteBugsToEsStep extends TransformClassBase {                     
         try {
             if (!source.hasMore()) {
                 setOutputDone();
-                destination.flush();
+                destination.complete();
                 return false;
             }
             destination.send(source.receive());

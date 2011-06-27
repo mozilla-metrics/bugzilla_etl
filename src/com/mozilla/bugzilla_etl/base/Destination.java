@@ -42,5 +42,5 @@ package com.mozilla.bugzilla_etl.base;
 
 public interface Destination<T, E extends Throwable> {
     public void send(T object) throws E;
-    public void flush() throws E;
+    public void complete() throws E;
 }

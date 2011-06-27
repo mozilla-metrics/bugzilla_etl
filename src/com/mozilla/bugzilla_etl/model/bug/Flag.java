@@ -67,16 +67,29 @@ public class Flag {
         Status(char indicator) { this.indicator = indicator; }
     }
 
+    public static final char SEPARATOR = ':';
+
     public String name() { return name; }
+    public String value() { return value; }
     public Status status() { return status; }
 
     private final String name;
+    private final String value;
     private final Status status;
 
     public static Flag fromRepresentation(String representation) {
-        // Strip any requestee, currently not used.
+
+        // Discards requestee. Use Requestee model if you need the requestee info:
         final int requesteePos = representation.indexOf('(');
         if (requesteePos != -1) representation = representation.substring(0, requesteePos);
+
+        // Split flag/field name and value using this separator introduced by a query
+        final int sepPos = representation.indexOf(SEPARATOR);
+        String value = null;
+        if (sepPos != -1) {
+            value = representation.substring(0, sepPos);
+            representation = representation.substring(sepPos + 1);
+        }
 
         final int lastPos = representation.length() -1;
         if (lastPos <= 0) {
@@ -92,20 +105,25 @@ public class Flag {
             if(representation.equals("in-testsu")) {
                 return new Flag("in-testsuite", Status.REQUESTED);
             }
-            return new Flag(representation, status);
+            return new Flag(representation, value, status);
         }
 
         return new Flag(representation.substring(0, lastPos), status);
     }
 
-    public Flag(final String name, final Status status) {
-        Assert.nonNull(name, status);
+    private Flag(final String name, final String value, final Status status) {
+        Assert.nonNull(name, status, value);
         this.name = name;
+        this.value = value;
         this.status = status;
     }
 
+    protected Flag(final String name, final Status status) {
+        this(name, String.valueOf(status.indicator), status);
+    }
+
     public String representation() {
-        return (status == Status.NA) ? name : (name + status.indicator);
+        return name + (status == Status.NA ? (SEPARATOR + value) : status.indicator);
     }
 
     @Override

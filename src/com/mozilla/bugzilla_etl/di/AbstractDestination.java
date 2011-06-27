@@ -58,6 +58,6 @@ public abstract class AbstractDestination<T> implements Destination<T, KettleExc
     }
 
     @Override
-    public void flush() throws KettleException { }
+    public void complete() throws KettleException { }
 
 }

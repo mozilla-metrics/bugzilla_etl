@@ -38,9 +38,8 @@ public class Mappings {
                     case CHANGES:
                     case MODIFIED_FIELDS:
                     case GROUPS:
-                        put(field, Conv.STRINGLIST); continue;
                     case REQUESTS:
-                        put(field, Conv.REQUESTS); continue;
+                        put(field, Conv.STRINGLIST); continue;
                     case MIMETYPE:
                         put(field, Conv.UNUSED); continue;
                     default:

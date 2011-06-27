@@ -52,6 +52,7 @@ import com.mozilla.bugzilla_etl.di.Converters;
 import com.mozilla.bugzilla_etl.di.Converters.Converter;
 import com.mozilla.bugzilla_etl.model.Field;
 import com.mozilla.bugzilla_etl.model.attachment.Request;
+import com.mozilla.bugzilla_etl.model.bug.Flag;
 
 
 public interface Mapping<T extends Field> {
@@ -67,12 +68,12 @@ public interface Mapping<T extends Field> {
      * how its values are sent to elasticsearch.
      */
     public static enum Conv {
-        REQUESTS,
         STRING,
         STRINGLIST,
         DATE,
         INTEGER,
         BOOLEAN,
+        MAP,
         UNUSED
     }
 
@@ -107,7 +108,6 @@ public interface Mapping<T extends Field> {
             return integer(field, fields.get(name));
         }
 
-
         @Override
         public XContentBuilder append(XContentBuilder builder,
                                       T field, Object value) throws IOException {
@@ -139,7 +139,6 @@ public interface Mapping<T extends Field> {
                 return null;
 
             switch (conversions.get(field)) {
-                case REQUESTS:
                 case STRINGLIST:
                     return csv(field, esValue);
                 case BOOLEAN:
@@ -175,8 +174,7 @@ public interface Mapping<T extends Field> {
         }
 
         private String csv(T field, Object esValue) {
-            Assert.check(conversions.get(field) == Conv.STRINGLIST
-                         || conversions.get(field) == Conv.REQUESTS);
+            Assert.check(conversions.get(field) == Conv.STRINGLIST);
             if (esValue == null) return "";
             List<?> esValues = (List<?>) esValue;
             // Cast is guarded by the check above.
@@ -211,20 +209,31 @@ public interface Mapping<T extends Field> {
                 case STRING:
                     if (facet == null) facet = "<none>";
                     return builder.field(field.columnName(), facet);
-                case REQUESTS:
-                    builder.startArray(field.columnName() + "_parsed");
-                    for (Request req : Converters.REQUESTS.parse((String) value)) {
-                        builder.startObject();
-                        builder.field("name", req.name());
-                        if (req.status() != Request.Status.NA) {
-                            builder.field("status", req.status().name().toLowerCase());
+                case STRINGLIST:
+
+                    // All string lists are encoded as simple string arrays.
+                    // For some fields we also add object representations.
+                    if ("requests".equals(field.columnName())) {
+                        builder.startArray(field.columnName() + "_parsed");
+                        for (Request req : Converters.REQUESTS.parse((String) value)) {
+                            builder.startObject();
+                            builder.field("name", req.name());
+                            if (req.status() != Request.Status.NA) {
+                                builder.field("status", req.status().name().toLowerCase());
+                            }
+                            builder.field("requestee", req.requestee());
+                            builder.endObject();
                         }
-                        builder.field("requestee", req.requestee());
+                        builder.endArray();
+                    }
+                    else if ("flags".equals(field.columnName())) {
+                        builder.startObject("cf");
+                        for (Flag flag: Converters.FLAGS.parse((String) value)) {
+                            builder.field(flag.name(), flag.value());
+                        }
                         builder.endObject();
                     }
-                    builder.endArray();
-                    // FALL THROUGH: create the regular (unparsed) field as well
-                case STRINGLIST:
+
                     List<String> values = csvConverter.parse(facet);
                     if (values.size() == 0) return builder;
                     builder.field(field.columnName()).startArray();

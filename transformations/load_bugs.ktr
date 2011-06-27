@@ -16,7 +16,7 @@
         </parameter>
         <parameter>
             <name>CF_FLAGS_SQL_PARAMETER</name>
-            <default_value>TRIM(TRAILING &apos;,&apos; FROM CONCAT(IF(`cf_blocking_fennec` != &apos;---&apos;, CONCAT(&apos;tracking-fennec&apos;, IF(LENGTH(`cf_blocking_fennec`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_fennec`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_191` != &apos;---&apos;, CONCAT(&apos;blocking1.9.1&apos;, IF(LENGTH(`cf_blocking_191`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_191`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_191` != &apos;---&apos;, CONCAT(&apos;status1.9.1&apos;, IF(LENGTH(`cf_status_191`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_191`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_192` != &apos;---&apos;, CONCAT(&apos;status1.9.2&apos;, IF(LENGTH(`cf_status_192`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_192`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_20` != &apos;---&apos;, CONCAT(&apos;blocking2.0&apos;, IF(LENGTH(`cf_blocking_20`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_20`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird30` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.0&apos;, IF(LENGTH(`cf_blocking_thunderbird30`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird30`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird30` != &apos;---&apos;, CONCAT(&apos;status-thunderbird3.0&apos;, IF(LENGTH(`cf_status_thunderbird30`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird30`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_192` != &apos;---&apos;, CONCAT(&apos;blocking1.9.2&apos;, IF(LENGTH(`cf_blocking_192`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_192`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird31` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.1&apos;, IF(LENGTH(`cf_blocking_thunderbird31`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird31`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird31` != &apos;---&apos;, CONCAT(&apos;status-thunderbird3.1&apos;, IF(LENGTH(`cf_status_thunderbird31`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird31`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_20` != &apos;---&apos;, CONCAT(&apos;status2.0&apos;, IF(LENGTH(`cf_status_20`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_20`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_seamonkey21` != &apos;---&apos;, CONCAT(&apos;status-seamonkey2.1&apos;, IF(LENGTH(`cf_status_seamonkey21`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_seamonkey21`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_seamonkey21` != &apos;---&apos;, CONCAT(&apos;blocking-seamonkey2.1&apos;, IF(LENGTH(`cf_blocking_seamonkey21`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_seamonkey21`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird32` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.2&apos;, IF(LENGTH(`cf_blocking_thunderbird32`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird32`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird32` != &apos;---&apos;, CONCAT(&apos;status-thunderbird3.2&apos;, IF(LENGTH(`cf_status_thunderbird32`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird32`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird33` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird5.0&apos;, IF(LENGTH(`cf_blocking_thunderbird33`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird33`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird33` != &apos;---&apos;, CONCAT(&apos;status-thunderbird5.0&apos;, IF(LENGTH(`cf_status_thunderbird33`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird33`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_fx` != &apos;---&apos;, CONCAT(&apos;blocking-fx&apos;, IF(LENGTH(`cf_blocking_fx`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_fx`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_firefox5` != &apos;---&apos;, CONCAT(&apos;tracking-firefox5&apos;, IF(LENGTH(`cf_tracking_firefox5`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_firefox5`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_firefox5` != &apos;---&apos;, CONCAT(&apos;status-firefox5&apos;, IF(LENGTH(`cf_status_firefox5`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_firefox5`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_firefox6` != &apos;---&apos;, CONCAT(&apos;tracking-firefox6&apos;, IF(LENGTH(`cf_tracking_firefox6`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_firefox6`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_firefox7` != &apos;---&apos;, CONCAT(&apos;tracking-firefox7&apos;, IF(LENGTH(`cf_tracking_firefox7`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_firefox7`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_firefox6` != &apos;---&apos;, CONCAT(&apos;status-firefox6&apos;, IF(LENGTH(`cf_status_firefox6`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_firefox6`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_firefox7` != &apos;---&apos;, CONCAT(&apos;status-firefox7&apos;, IF(LENGTH(`cf_status_firefox7`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_firefox7`, &apos;,&apos;), &apos;&apos;)))</default_value>
+            <default_value>TRIM(TRAILING &apos;,&apos; FROM CONCAT(IF(`cf_blocking_fennec` != &apos;---&apos;, CONCAT(&apos;tracking-fennec&apos;, IF(LENGTH(`cf_blocking_fennec`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_fennec`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_191` != &apos;---&apos;, CONCAT(&apos;blocking1.9.1&apos;, IF(LENGTH(`cf_blocking_191`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_191`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_191` != &apos;---&apos;, CONCAT(&apos;status1.9.1&apos;, IF(LENGTH(`cf_status_191`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_191`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_192` != &apos;---&apos;, CONCAT(&apos;status1.9.2&apos;, IF(LENGTH(`cf_status_192`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_192`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_20` != &apos;---&apos;, CONCAT(&apos;blocking2.0&apos;, IF(LENGTH(`cf_blocking_20`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_20`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird30` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.0&apos;, IF(LENGTH(`cf_blocking_thunderbird30`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird30`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird30` != &apos;---&apos;, CONCAT(&apos;status-thunderbird3.0&apos;, IF(LENGTH(`cf_status_thunderbird30`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird30`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_192` != &apos;---&apos;, CONCAT(&apos;blocking1.9.2&apos;, IF(LENGTH(`cf_blocking_192`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_192`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird31` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.1&apos;, IF(LENGTH(`cf_blocking_thunderbird31`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird31`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird31` != &apos;---&apos;, CONCAT(&apos;status-thunderbird3.1&apos;, IF(LENGTH(`cf_status_thunderbird31`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird31`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_20` != &apos;---&apos;, CONCAT(&apos;status2.0&apos;, IF(LENGTH(`cf_status_20`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_20`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_seamonkey21` != &apos;---&apos;, CONCAT(&apos;status-seamonkey2.1&apos;, IF(LENGTH(`cf_status_seamonkey21`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_seamonkey21`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_seamonkey21` != &apos;---&apos;, CONCAT(&apos;blocking-seamonkey2.1&apos;, IF(LENGTH(`cf_blocking_seamonkey21`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_seamonkey21`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird32` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.2&apos;, IF(LENGTH(`cf_blocking_thunderbird32`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird32`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird32` != &apos;---&apos;, CONCAT(&apos;status-thunderbird3.2&apos;, IF(LENGTH(`cf_status_thunderbird32`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird32`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_thunderbird33` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird5.0&apos;, IF(LENGTH(`cf_blocking_thunderbird33`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird33`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird33` != &apos;---&apos;, CONCAT(&apos;status-thunderbird5.0&apos;, IF(LENGTH(`cf_status_thunderbird33`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird33`, &apos;,&apos;), &apos;&apos;), IF(`cf_blocking_fx` != &apos;---&apos;, CONCAT(&apos;blocking-fx&apos;, IF(LENGTH(`cf_blocking_fx`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_fx`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_firefox5` != &apos;---&apos;, CONCAT(&apos;tracking-firefox5&apos;, IF(LENGTH(`cf_tracking_firefox5`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_firefox5`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_firefox5` != &apos;---&apos;, CONCAT(&apos;status-firefox5&apos;, IF(LENGTH(`cf_status_firefox5`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_firefox5`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_firefox6` != &apos;---&apos;, CONCAT(&apos;tracking-firefox6&apos;, IF(LENGTH(`cf_tracking_firefox6`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_firefox6`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_firefox7` != &apos;---&apos;, CONCAT(&apos;tracking-firefox7&apos;, IF(LENGTH(`cf_tracking_firefox7`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_firefox7`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_firefox6` != &apos;---&apos;, CONCAT(&apos;status-firefox6&apos;, IF(LENGTH(`cf_status_firefox6`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_firefox6`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_firefox7` != &apos;---&apos;, CONCAT(&apos;status-firefox7&apos;, IF(LENGTH(`cf_status_firefox7`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_firefox7`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_thunderbird6` != &apos;---&apos;, CONCAT(&apos;tracking-thunderbird6&apos;, IF(LENGTH(`cf_tracking_thunderbird6`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_thunderbird6`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_thunderbird7` != &apos;---&apos;, CONCAT(&apos;tracking-thunderbird7&apos;, IF(LENGTH(`cf_tracking_thunderbird7`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_thunderbird7`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird6` != &apos;---&apos;, CONCAT(&apos;status-thunderbird6&apos;, IF(LENGTH(`cf_status_thunderbird6`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird6`, &apos;,&apos;), &apos;&apos;), IF(`cf_status_thunderbird7` != &apos;---&apos;, CONCAT(&apos;status-thunderbird7&apos;, IF(LENGTH(`cf_status_thunderbird7`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_status_thunderbird7`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_seamonkey22` != &apos;---&apos;, CONCAT(&apos;tracking-seamonkey2.2&apos;, IF(LENGTH(`cf_tracking_seamonkey22`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_seamonkey22`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_seamonkey23` != &apos;---&apos;, CONCAT(&apos;tracking-seamonkey2.3&apos;, IF(LENGTH(`cf_tracking_seamonkey23`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_seamonkey23`, &apos;,&apos;), &apos;&apos;), IF(`cf_tracking_seamonkey24` != &apos;---&apos;, CONCAT(&apos;tracking-seamonkey2.4&apos;, IF(LENGTH(`cf_tracking_seamonkey24`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_tracking_seamonkey24`, &apos;,&apos;), &apos;&apos;)))</default_value>
             <description>An SQL expression that selects flags from custom fields.</description>
         </parameter>
         <parameter>
@@ -167,7 +167,7 @@ Make sure to have the database settings:
     </attributes>
   </connection>
   <order>
-  <hop> <from>Get Major Status Lookup</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Prepare History Input</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Set earliest flag no-activity bugs</from><to>Prepare History Input</to><enabled>Y</enabled> </hop>  <hop> <from>Rebuild Versions</from><to>Bulk Load To ES</to><enabled>Y</enabled> </hop>  <hop> <from>Clean Bug State</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Get flags for new&#47;modified bugs</from><to>concat flags</to><enabled>Y</enabled> </hop>  <hop> <from>Get new activities</from><to>Denormalise activities</to><enabled>Y</enabled> </hop>  <hop> <from>Get new&#47;modified bugs</from><to>Join groups into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join flags into bugs</from><to>Merge flags with cf_flags</to><enabled>Y</enabled> </hop>  <hop> <from>Join groups into bugs</from><to>Join keywords into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join keywords into bugs</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Mark first&#47;last row</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  <hop> <from>Merge flags with cf_flags</from><to>Clean Bug State</to><enabled>Y</enabled> </hop>  <hop> <from>bug-groups</from><to>concat groups</to><enabled>Y</enabled> </hop>  <hop> <from>bug-keywords</from><to>concat keywords</to><enabled>Y</enabled> </hop>  <hop> <from>concat flags</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>concat groups</from><to>Join groups into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>concat keywords</from><to>Join keywords into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join bugs with activities</from><to>Set earliest flag no-activity bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Clean flag fields (infix, suffix)</from><to>Clean flag fields (prefix)</to><enabled>Y</enabled> </hop>  <hop> <from>Denormalise activities</from><to>Clean flag fields (infix, suffix)</to><enabled>Y</enabled> </hop>  <hop> <from>Clean flag fields (prefix)</from><to>Mark first&#47;last row</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Get Major Status Lookup</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Prepare History Input</from><to>Rebuild Versions</to><enabled>Y</enabled> </hop>  <hop> <from>Set earliest flag no-activity bugs</from><to>Prepare History Input</to><enabled>Y</enabled> </hop>  <hop> <from>Rebuild Versions</from><to>Bulk Load To ES</to><enabled>Y</enabled> </hop>  <hop> <from>Get flags for new&#47;modified bugs</from><to>concat flags</to><enabled>Y</enabled> </hop>  <hop> <from>Get new activities</from><to>Denormalise activities</to><enabled>Y</enabled> </hop>  <hop> <from>Get new&#47;modified bugs</from><to>Join groups into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join groups into bugs</from><to>Join keywords into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join keywords into bugs</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Mark first&#47;last row</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  <hop> <from>bug-groups</from><to>concat groups</to><enabled>Y</enabled> </hop>  <hop> <from>bug-keywords</from><to>concat keywords</to><enabled>Y</enabled> </hop>  <hop> <from>concat flags</from><to>Join flags into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>concat groups</from><to>Join groups into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>concat keywords</from><to>Join keywords into bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Join bugs with activities</from><to>Set earliest flag no-activity bugs</to><enabled>Y</enabled> </hop>  <hop> <from>Clean flag fields (infix, suffix)</from><to>Clean flag fields (prefix)</to><enabled>Y</enabled> </hop>  <hop> <from>Denormalise activities</from><to>Clean flag fields (infix, suffix)</to><enabled>Y</enabled> </hop>  <hop> <from>Clean flag fields (prefix)</from><to>Mark first&#47;last row</to><enabled>Y</enabled> </hop>  <hop> <from>Merge flags with cf_flags</from><to>Clean Bug State</to><enabled>Y</enabled> </hop>  <hop> <from>Join flags into bugs</from><to>Merge flags with cf_flags</to><enabled>Y</enabled> </hop>  <hop> <from>Clean Bug State</from><to>Join bugs with activities</to><enabled>Y</enabled> </hop>  </order>
   <step>
     <name>Bulk Load To ES</name>
     <type>UserDefinedJavaClass</type>
@@ -208,7 +208,7 @@ Make sure to have the database settings:
         try {
             if (!source.hasMore()) {
                 setOutputDone();
-                destination.flush();
+                destination.complete();
                 return false;
             }
             destination.send(source.receive());
@@ -386,10 +386,10 @@ Make sure to have the database settings:
       <key_field>field_name</key_field>
       <group>
         <field>
-          <name>activity_bug_id</name>
+          <name>activity_entity_id</name>
           </field>
         <field>
-          <name>bug_when</name>
+          <name>modification_date</name>
           </field>
         <field>
           <name>modified_by</name>
@@ -893,24 +893,26 @@ ORDER BY
            </partitioning>
     <connection>bugs</connection>
     <sql>SELECT
-    `bug_id` AS activity_bug_id,
+    `bug_id` AS activity_entity_id,
     `modifier`.`login_name` AS modified_by,
-    `bug_when`,
-    IF(`name` = &apos;flagtypes.name&apos; OR `name` LIKE &apos;cf_%&apos;, &apos;flags&apos;, field.`name`) AS field_name,
+    `bug_when` AS modification_date,
+    CASE
+        WHEN `name` = &apos;flagtypes.name&apos; THEN &apos;flags&apos;
+        WHEN `name` LIKE &apos;cf_%&apos; THEN &apos;flags&apos;
+        ELSE `field`.`name`
+    END AS field_name,
     CASE
         WHEN `name` IN (&apos;resolution&apos;, &apos;status_whiteboard&apos;, &apos;target_milestone&apos;) AND `removed` = &apos;&apos; THEN &apos;&lt;empty&gt;&apos;
-        WHEN `name` IN (&apos;flags&apos;, &apos;keywords&apos;)                       AND `removed` IS NULL  THEN &apos;_&apos;
-        WHEN `name` LIKE &apos;cf_%&apos;                                    AND `removed` =  &apos;---&apos; THEN &apos;_&apos;
-        WHEN `name` LIKE &apos;cf_%&apos; AND LENGTH(activity.`removed`) = 1 AND `removed` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`,      `removed`)
-        WHEN `name` LIKE &apos;cf_%&apos; AND LENGTH(activity.`removed`) &gt; 1 AND `removed` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`, &apos;-&apos;, `removed`)
+        WHEN `name` IN (&apos;flags&apos;, &apos;keywords&apos;) AND `removed` IS NULL  THEN &apos;_&apos;
+        WHEN `name` LIKE &apos;cf_%&apos;              AND `removed` =  &apos;---&apos; THEN &apos;_&apos;
+        WHEN `name` LIKE &apos;cf_%&apos;              AND `removed` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`, &apos;:&apos;, `removed`)
         ELSE IF(`removed` IS NULL or `removed` = &apos;&apos;, &apos;_&apos;, `removed`)
     END AS removed,
     CASE
         WHEN `name` IN (&apos;resolution&apos;, &apos;status_whiteboard&apos;, &apos;target_milestone&apos;) AND `added` = &apos;&apos; THEN &apos;&lt;empty&gt;&apos;
-        WHEN `name` IN (&apos;flags&apos;, &apos;keywords&apos;)                     AND `added` IS NULL  THEN &apos;_&apos;
-        WHEN `name` LIKE &apos;cf_%&apos;                                  AND `added` =  &apos;---&apos; THEN &apos;_&apos;
-        WHEN `name` LIKE &apos;cf_%&apos; AND LENGTH(activity.`added`) = 1 AND `added` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`,      `added`)
-        WHEN `name` LIKE &apos;cf_%&apos; AND LENGTH(activity.`added`) &gt; 1 AND `added` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`, &apos;-&apos;, `added`)
+        WHEN `name` IN (&apos;flags&apos;, &apos;keywords&apos;) AND `added` IS NULL  THEN &apos;_&apos;
+        WHEN `name` LIKE &apos;cf_%&apos;              AND `added` =  &apos;---&apos; THEN &apos;_&apos;
+        WHEN `name` LIKE &apos;cf_%&apos;              AND `added` &lt;&gt; &apos;---&apos; THEN CONCAT(field.`description`, &apos;:&apos;, `added`)
         ELSE IF(`removed` IS NULL or `added` = &apos;&apos;, &apos;_&apos;, `added`)
     END AS added,
     `attach_id`,
@@ -927,7 +929,7 @@ WHERE
         field.`name` IN (&apos;assigned_to&apos;, &apos;bug_severity&apos;, &apos;bug_status&apos;, &apos;component&apos;, &apos;flagtypes.name&apos;,
                          &apos;keywords&apos;, &apos;bug_group&apos;, &apos;op_sys&apos;, &apos;priority&apos;, &apos;product&apos;, &apos;resolution&apos;, &apos;status_whiteboard&apos;,
                          &apos;target_milestone&apos;, &apos;version&apos;)
-        OR (field.`name` LIKE &apos;cf_%&apos; AND field.`name` NOT IN (&apos;cf_colo_site&apos;, &apos;cf_crash_signature&apos;, &apos;cf_tracking_thunderbird6&apos;, &apos;cf_tracking_thunderbird7&apos;, &apos;cf_status_thunderbird6&apos;, &apos;cf_status_thunderbird7&apos;))
+        OR (field.`name` LIKE &apos;cf_%&apos; AND field.`name` NOT IN (&apos;cf_colo_site&apos;, &apos;cf_crash_signature&apos;))
     )
     AND `attach_id` IS NULL
 ORDER BY
@@ -973,9 +975,7 @@ ORDER BY
 , CASE WHEN status_whiteboard = &apos;&apos; THEN &apos;&lt;empty&gt;&apos; ELSE status_whiteboard END AS status_whiteboard
 , CASE WHEN target_milestone = &apos;&apos; THEN &apos;&lt;empty&gt;&apos; ELSE target_milestone END AS target_milestone
 , version
-, bugs.creation_ts
-, CAST(DATE(bugs.creation_ts)+0 AS SIGNED INTEGER) AS created_on
-, CAST(TIME(bugs.creation_ts)+0 AS SIGNED INTEGER) AS created_at
+, bugs.creation_ts AS creation_date
 , ${CF_FLAGS_SQL_PARAMETER} as flags_cf
 FROM 
     bugs
@@ -1147,7 +1147,7 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
         data.outputRowMeta = getInputRowMeta().clone();
         meta.getFields(data.outputRowMeta, getStepname(), null, null, parent);
 
-		prevBugID = get(Fields.In, "activity_bug_id").getInteger(previousRow);
+		prevBugID = get(Fields.In, "activity_entity_id").getInteger(previousRow);
         get(Fields.Out, "is_latest_state").setValue(previousRow, prevBugID);
 
 		return true;
@@ -1161,7 +1161,7 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
 		return false;
 	}
 
-	Long currBugID = get(Fields.In, "activity_bug_id").getInteger(r);
+	Long currBugID = get(Fields.In, "activity_entity_id").getInteger(r);
 	if (!prevBugID.equals(currBugID)) {
 		outputPreviousRowRow(true);
         get(Fields.Out, "is_latest_state").setValue(r, currBugID);
@@ -1237,7 +1237,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
            <schema_name/>
            </partitioning>
        <formula><field_name>flags</field_name>
-<formula_string>flags_cf.length() &gt; 0    ?   (flags_default != null ? flags_cf + &quot;, &quot; + flags_default : flags_cf)   :   flags_default</formula_string>
+<formula_string>flags_cf.length() == 0 ? flags : (flags == null ? flags_cf : flags_cf + &quot;, &quot; + flags)</formula_string>
 <value_type>String</value_type>
 <value_length>-1</value_length>
 <value_precision>-1</value_precision>
@@ -1269,16 +1269,16 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
-      </field>      <field>        <name>creation_ts</name>
-        <rename>creation_date</rename>
+      </field>      <field>        <name>creation_date</name>
+        <rename/>
         <length>-2</length>
         <precision>-2</precision>
-      </field>      <field>        <name>activity_bug_id</name>
-        <rename>activity_entity_id</rename>
+      </field>      <field>        <name>activity_entity_id</name>
+        <rename/>
         <length>-2</length>
         <precision>-2</precision>
-      </field>      <field>        <name>bug_when</name>
-        <rename>modification_date</rename>
+      </field>      <field>        <name>modification_date</name>
+        <rename/>
         <length>-2</length>
         <precision>-2</precision>
       </field>      <field>        <name>modified_by</name>
@@ -1980,7 +1980,7 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
            <schema_name/>
            </partitioning>
        <formula><field_name>new_is_earliest_state</field_name>
-<formula_string>bug_id != null &amp;&amp; activity_bug_id == null ? bug_id : (is_earliest_state == null ? Long.valueOf(0L) : is_earliest_state)</formula_string>
+<formula_string>bug_id != null &amp;&amp; activity_entity_id == null ? bug_id : (is_earliest_state == null ? Long.valueOf(0L) : is_earliest_state)</formula_string>
 <value_type>Integer</value_type>
 <value_length>-1</value_length>
 <value_precision>-1</value_precision>
@@ -2092,7 +2092,7 @@ ORDER BY
         <field>
           <field_name>flag</field_name>
           <key_value>flag</key_value>
-          <target_name>flags_default</target_name>
+          <target_name>flags</target_name>
           <target_type>String</target_type>
           <target_format/>
           <target_length>-1</target_length>

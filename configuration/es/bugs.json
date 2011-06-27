@@ -4,6 +4,19 @@
       "_source": {"enabled" : true},
       "_all": {"enabled" : false},
       "_routing": {"required": true, "path": "bug_id"},
+      "dynamic_templates": [
+        {
+          "string_template" : {
+            "path_match" : "cf.*",
+            "match_mapping_type" : "string",
+            "mapping" : {
+              "store": "yes",
+              "type" : "string",
+              "index" : "not_analyzed"
+            }
+          }
+        }
+      ],
       "properties": {
         "bug_id":                         {"type": "string", "store": "yes", "index": "not_analyzed"},
         "reported_by":                    {"type": "string", "store": "yes", "index": "not_analyzed"},
@@ -15,14 +28,14 @@
         "annotation":                     {"type": "string", "store": "no", "index": "not_analyzed"},
 
         "assigned_to":                    {"type": "string", "store": "yes", "index": "not_analyzed"},
-        "changes":                        {"type": "string", "store": "yes", "index_name": "change"},
+        "changes":                        {"type": "string", "store": "yes", "index": "not_analyzed", "index_name": "change"},
         "component":                      {"type": "string", "store": "yes", "index": "not_analyzed"},
-        "flags":                          {"type": "string", "store": "yes", "index_name": "flag"},
-        "keywords":                       {"type": "string", "store": "yes", "index_name": "keyword"},
-        "groups":                         {"type": "string", "store": "yes", "index_name": "group"},
+        "flags":                          {"type": "string", "store": "yes", "index": "not_analyzed", "index_name": "flag"},
+        "cf":                             {"type": "object", "dynamic": true},
+        "keywords":                       {"type": "string", "store": "yes", "index": "not_analyzed", "index_name": "keyword"},
+        "groups":                         {"type": "string", "store": "yes", "index": "not_analyzed", "index_name": "group"},
         "major_status":                   {"type": "string", "store": "yes", "index": "not_analyzed"},
-        "major_status_last_changed_date": {"type": "date",   "store": "yes"},
-        "modified_fields":                {"type": "string", "store": "yes", "index_name": "modified"},
+        "modified_fields":                {"type": "string", "store": "yes", "index": "not_analyzed", "index_name": "modified"},
         "opsys":                          {"type": "string", "store": "yes", "index": "not_analyzed"},
         "previous_major_status":          {"type": "string", "store": "yes", "index": "not_analyzed"},
         "previous_status":                {"type": "string", "store": "yes", "index": "not_analyzed"},
@@ -31,11 +44,13 @@
         "resolution":                     {"type": "string", "store": "yes", "index": "not_analyzed"},
         "severity":                       {"type": "string", "store": "yes", "index": "not_analyzed"},
         "status":                         {"type": "string", "store": "yes", "index": "not_analyzed"},
-        "status_last_changed_date":       {"type": "date",   "store": "yes", "index": "not_analyzed"},
         "status_whiteboard":              {"type": "string", "store": "yes", "index": "not_analyzed"},
-        "status_whiteboard_items":        {"type": "string", "store": "yes", "index_name": "whiteboard"},
+        "status_whiteboard_items":        {"type": "string", "store": "yes", "index": "not_analyzed", "index_name": "whiteboard"},
         "target_milestone":               {"type": "string", "store": "yes", "index": "not_analyzed"},
         "version":                        {"type": "string", "store": "yes", "index": "not_analyzed"},
+
+        "major_status_last_changed_date": {"type": "date",   "store": "yes"},
+        "status_last_changed_date":       {"type": "date",   "store": "yes", "index": "not_analyzed"},
 
         "days_in_major_status":           {"type": "integer", "store": "yes"},
         "days_in_status":                 {"type": "integer", "store": "yes"},

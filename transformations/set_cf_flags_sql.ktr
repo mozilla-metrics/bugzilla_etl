@@ -113,38 +113,7 @@
     <compatible>N</compatible>
     <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
         <jsScript_name>Script 1</jsScript_name>
-        <jsScript_script>&#47;*
-
-&#47;&#47; SQL EQUIVALENT:
-
-SELECT
-    CONCAT(
-       &quot;CONCAT( &quot;,
-           GROUP_CONCAT(
-           REPLACE( REPLACE(&quot;IF(`$column_name` != &apos;---&apos;, CONCAT(&apos;$description&apos;, IF(LENGTH(`$column_name`) &gt; 1, &apos;-&apos;, &apos;&apos;), `$column_name`, &apos;&apos;)&quot;, &quot;$column_name&quot;, `name`), &quot;$description&quot;, `description`)
-           SEPARATOR &quot;, &quot;
-       ),
-       &quot;)&quot;
-    )
-AS customFieldsSql FROM `fielddefs` WHERE `name` LIKE &apos;cf_blocking_%&apos;
-
-
-
-&#47;&#47; RESULT:
-
-CONCAT(
-   IF(`cf_blocking_fennec` != &apos;---&apos;, CONCAT(&apos;blocking-fennec&apos;, IF(LENGTH(`cf_blocking_fennec`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_fennec`, &apos;&apos;),
-   IF(`cf_blocking_191` != &apos;---&apos;, CONCAT(&apos;blocking1.9.1&apos;, IF(LENGTH(`cf_blocking_191`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_191`, &apos;&apos;),
-   IF(`cf_blocking_20` != &apos;---&apos;, CONCAT(&apos;blocking2.0&apos;, IF(LENGTH(`cf_blocking_20`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_20`, &apos;&apos;),
-   IF(`cf_blocking_thunderbird30` != &apos;---&apos;, CONCAT(&apos;blocking-thunderbird3.0&apos;, IF(LENGTH(`cf_blocking_thunderbird30`) &gt; 1, &apos;-&apos;, &apos;&apos;), `cf_blocking_thunderbird30`, &apos;&apos;),
-   ...
-)
-
-*&#47;
-
-
-
-var group = &quot;ALL&quot;;
+        <jsScript_script>var group = &quot;ALL&quot;;
 var sql;
 var templateSql = &quot;IF(`%c` != &apos;---&apos;, CONCAT(&apos;%desc&apos;, IF(LENGTH(`%c`) &gt; 1, &apos;-&apos;, &apos;&apos;), `%c`, &apos;,&apos;), &apos;&apos;)&quot;;
 sql = templateSql.replace(&#47;%c&#47;g, name).replace(&#47;%desc&#47;g, description)
@@ -210,7 +179,7 @@ var cfFlagsSql = &quot;TRIM(TRAILING &apos;,&apos; FROM CONCAT(&quot; + customFi
            <schema_name/>
            </partitioning>
     <connection>bugs</connection>
-    <sql>SELECT `name`, `description` FROM `fielddefs` WHERE `name` LIKE &apos;cf_%&apos; AND `name` != &apos;cf_colo_site&apos; AND `id` &lt; 120</sql>
+    <sql>SELECT `name`, `description` FROM `fielddefs` WHERE `name` LIKE &apos;cf_%&apos; AND `name` NOT IN (&apos;cf_colo_site&apos;, &apos;cf_crash_signature&apos;)</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>

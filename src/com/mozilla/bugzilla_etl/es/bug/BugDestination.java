@@ -54,7 +54,7 @@ public class BugDestination extends AbstractDestination<Bug, BugVersion, BugFiel
                      .setSource(out).request();
     }
 
-
+    @Override
     protected String index() {
         return "bugs";
     }
