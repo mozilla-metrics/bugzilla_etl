@@ -51,6 +51,7 @@ import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.FLAGS;
 import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.KEYWORDS;
 import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.MAJOR_STATUS;
 import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.OPSYS;
+import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.PLATFORM;
 import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.PREVIOUS_MAJOR_STATUS;
 import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.PREVIOUS_STATUS;
 import static com.mozilla.bugzilla_etl.model.bug.BugFields.Facet.PRIORITY;
@@ -175,6 +176,7 @@ public abstract class VersionTest {
             facets.put(FLAGS, "");
             facets.put(KEYWORDS, "stops world");
             facets.put(MAJOR_STATUS, "");
+            facets.put(PLATFORM, "x87");
             facets.put(OPSYS, "wonderflonium OS");
             facets.put(PREVIOUS_MAJOR_STATUS, "");
             facets.put(PREVIOUS_STATUS, "");

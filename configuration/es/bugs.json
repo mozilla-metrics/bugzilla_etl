@@ -24,6 +24,7 @@
         "major_status_last_changed_date": {"type": "date",   "store": "yes"},
         "modified_fields":                {"type": "string", "store": "yes", "index_name": "modified"},
         "opsys":                          {"type": "string", "store": "yes", "index": "not_analyzed"},
+        "platform":                       {"type": "string", "store": "yes", "index": "not_analyzed"},
         "previous_major_status":          {"type": "string", "store": "yes", "index": "not_analyzed"},
         "previous_status":                {"type": "string", "store": "yes", "index": "not_analyzed"},
         "priority":                       {"type": "string", "store": "yes", "index": "not_analyzed"},

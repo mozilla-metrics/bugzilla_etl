@@ -42,6 +42,7 @@ public class BugFields {
         KEYWORDS,
         GROUPS,
         OPSYS,
+        PLATFORM,
         MAJOR_STATUS(true),
         MAJOR_STATUS_LAST_CHANGED_DATE(true),
         MODIFIED_FIELDS(true),

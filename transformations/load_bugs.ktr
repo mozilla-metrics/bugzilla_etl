@@ -566,6 +566,34 @@ Make sure to have the database settings:
           </field>
         <field>
           <field_name>removed</field_name>
+          <key_value>rep_platform</key_value>
+          <target_name>platform_from</target_name>
+          <target_type>String</target_type>
+          <target_format/>
+          <target_length>-1</target_length>
+          <target_precision>-1</target_precision>
+          <target_decimal_symbol/>
+          <target_grouping_symbol/>
+          <target_currency_symbol/>
+          <target_null_string/>
+          <target_aggregation_type>-</target_aggregation_type>
+          </field>
+        <field>
+          <field_name>added</field_name>
+          <key_value>rep_platform</key_value>
+          <target_name>platform_to</target_name>
+          <target_type>String</target_type>
+          <target_format/>
+          <target_length>-1</target_length>
+          <target_precision>-1</target_precision>
+          <target_decimal_symbol/>
+          <target_grouping_symbol/>
+          <target_currency_symbol/>
+          <target_null_string/>
+          <target_aggregation_type>-</target_aggregation_type>
+          </field>
+        <field>
+          <field_name>removed</field_name>
           <key_value>priority</key_value>
           <target_name>priority_from</target_name>
           <target_type>String</target_type>
@@ -925,7 +953,7 @@ WHERE
     AND ${BUG_IDS_PARTITION}
     AND (
         field.`name` IN (&apos;assigned_to&apos;, &apos;bug_severity&apos;, &apos;bug_status&apos;, &apos;component&apos;, &apos;flagtypes.name&apos;,
-                         &apos;keywords&apos;, &apos;bug_group&apos;, &apos;op_sys&apos;, &apos;priority&apos;, &apos;product&apos;, &apos;resolution&apos;, &apos;status_whiteboard&apos;,
+                         &apos;keywords&apos;, &apos;bug_group&apos;, &apos;op_sys&apos;, &apos;rep_platform&apos;, &apos;priority&apos;, &apos;product&apos;, &apos;resolution&apos;, &apos;status_whiteboard&apos;,
                          &apos;target_milestone&apos;, &apos;version&apos;)
         OR (field.`name` LIKE &apos;cf_%&apos; AND field.`name` NOT IN (&apos;cf_colo_site&apos;, &apos;cf_crash_signature&apos;, &apos;cf_tracking_thunderbird6&apos;, &apos;cf_tracking_thunderbird7&apos;, &apos;cf_status_thunderbird6&apos;, &apos;cf_status_thunderbird7&apos;))
     )
@@ -965,6 +993,7 @@ ORDER BY
 , reporter.login_name AS reported_by
 , comp.name AS component
 , op_sys AS opsys
+, rep_platform AS platform
 , priority
 , prod.name AS product
 , CASE WHEN resolution = &apos;&apos; THEN &apos;&lt;empty&gt;&apos; ELSE resolution END AS resolution
@@ -1321,6 +1350,10 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
+      </field>      <field>        <name>platform</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
       </field>      <field>        <name>priority</name>
         <rename/>
         <length>-2</length>
@@ -1394,6 +1427,14 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
         <length>-2</length>
         <precision>-2</precision>
       </field>      <field>        <name>opsys_to</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>platform_from</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>platform_to</name>
         <rename/>
         <length>-2</length>
         <precision>-2</precision>
@@ -1710,6 +1751,16 @@ private void outputPreviousRowRow(final boolean isEarliest) throws KettleExcepti
         </field>
         <field>
         <field_name>opsys</field_name>
+
+        <field_type>String</field_type>
+
+        <field_length>-1</field_length>
+
+        <field_precision>-1</field_precision>
+
+        </field>
+        <field>
+        <field_name>platform</field_name>
 
         <field_type>String</field_type>
 
