@@ -215,8 +215,7 @@ FROM `fielddefs`
 WHERE 
    `name` LIKE &apos;cf_%&apos; 
    AND `name` != &apos;cf_crash_signature&apos; 
-   AND `name` != &apos;cf_colo_site&apos; 
-   AND `id` &lt; 130</sql>
+   AND `name` != &apos;cf_colo_site&apos;</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>
