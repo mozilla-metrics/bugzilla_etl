@@ -9,6 +9,11 @@
     <trans_status>0</trans_status>
     <directory>&#47;</directory>
     <parameters>
+        <parameter>
+            <name>PMAX_CF_ID</name>
+            <default_value>160</default_value>
+            <description>Maximum allowed custom field ID.</description>
+        </parameter>
     </parameters>
     <log>
 <trans-log-table><connection/>
@@ -215,11 +220,13 @@ FROM `fielddefs`
 WHERE 
    `name` LIKE &apos;cf_%&apos; 
    AND `name` != &apos;cf_crash_signature&apos; 
-   AND `name` != &apos;cf_colo_site&apos;</sql>
+   AND `name` != &apos;cf_colo_site&apos;
+   AND `id` &lt;= ${PMAX_CF_ID}
+   AND `type` = 2</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>
-    <variables_active>N</variables_active>
+    <variables_active>Y</variables_active>
     <lazy_conversion_active>N</lazy_conversion_active>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>

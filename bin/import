@@ -29,10 +29,11 @@ cmd='"${KETTLE_LIBS}/../kitchen.sh" \
     -file "${ETL_HOME}/jobs/import.kjb" \
     -param:"ES_NODES=${ES_NODES}" \
     -param:"ES_CLUSTER=${ES_CLUSTER}" \
+    -param:"MAX_CF_ID=${MAX_CF_ID}" \
     -param:"FROM_ID=${from}" \
     -param:"TO_ID=${to}"'
 
-echo "CMD: $cmd"
+eval echo "CMD: ${cmd}"
 # do it
 JAVAMAXMEM=4096 eval $cmd <&- >> "${out_log}" 2>>"${err_log}" || exit 1
 

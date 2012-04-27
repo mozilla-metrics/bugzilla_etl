@@ -32,6 +32,11 @@
             <description/>
         </parameter>
         <parameter>
+            <name>MAX_CF_ID</name>
+            <default_value>170</default_value>
+            <description/>
+        </parameter>
+        <parameter>
             <name>TO_ID</name>
             <default_value>600010</default_value>
             <description/>
@@ -100,6 +105,9 @@
             </parameter>            <parameter>            <name>PES_CLUSTER</name>
             <stream_name/>
             <value>${ES_CLUSTER}</value>
+            </parameter>            <parameter>            <name>PMAX_CF_ID</name>
+            <stream_name/>
+            <value>${MAX_CF_ID}</value>
             </parameter>      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
@@ -245,7 +253,10 @@
       <follow_abort_remote>N</follow_abort_remote>
       <create_parent_folder>N</create_parent_folder>
       <parameters>        <pass_all_parameters>Y</pass_all_parameters>
-      </parameters>      <parallel>N</parallel>
+            <parameter>            <name>PMAX_CF_ID</name>
+            <stream_name/>
+            <value>${MAX_CF_ID}</value>
+            </parameter>      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
       <xloc>144</xloc>
