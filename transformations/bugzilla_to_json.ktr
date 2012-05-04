@@ -169,12 +169,12 @@ show up in activities and votes table has no when</note>
     </attributes>
   </connection>
   <order>
-  <hop> <from>Get bugs</from><to>Flatten bugs record</to><enabled>Y</enabled> </hop>  <hop> <from>Flatten bugs record</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get dependencies</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get new activities</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get attachments</from><to>Flatten attachments record</to><enabled>Y</enabled> </hop>  <hop> <from>Flatten attachments record</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get duplicates</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get bug_groups</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get bug_see_also</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get cc</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get keywords</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get flags</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Calculator</from><to>Text file output</to><enabled>Y</enabled> </hop>  <hop> <from>Sorted Merge</from><to>Lower Case</to><enabled>Y</enabled> </hop>  <hop> <from>Lower Case</from><to>Parse Bug History</to><enabled>Y</enabled> </hop>  <hop> <from>Delete unneeded fields</from><to>Calculator</to><enabled>Y</enabled> </hop>  <hop> <from>Parse Bug History</from><to>Rownum</to><enabled>Y</enabled> </hop>  <hop> <from>Rownum</from><to>Delete unneeded fields</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Get bugs</from><to>Flatten bugs record</to><enabled>Y</enabled> </hop>  <hop> <from>Flatten bugs record</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get dependencies</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get new activities</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get attachments</from><to>Flatten attachments record</to><enabled>Y</enabled> </hop>  <hop> <from>Flatten attachments record</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get duplicates</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get bug_groups</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get bug_see_also</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get cc</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get keywords</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get flags</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Calculator</from><to>Text file output</to><enabled>Y</enabled> </hop>  <hop> <from>Sorted Merge</from><to>Lower Case</to><enabled>Y</enabled> </hop>  <hop> <from>Lower Case</from><to>Parse Bug History</to><enabled>Y</enabled> </hop>  <hop> <from>Delete unneeded fields</from><to>Calculator</to><enabled>Y</enabled> </hop>  <hop> <from>Parse Bug History</from><to>Rownum</to><enabled>Y</enabled> </hop>  <hop> <from>Rownum</from><to>Delete unneeded fields</to><enabled>Y</enabled> </hop>  <hop> <from>Calculator</from><to>Index with ElasticSearch</to><enabled>Y</enabled> </hop>  </order>
   <step>
     <name>Calculator</name>
     <type>Calculator</type>
     <description/>
-    <distribute>Y</distribute>
+    <distribute>N</distribute>
     <copies>1</copies>
          <partitioning>
            <method>none</method>
@@ -1303,6 +1303,151 @@ startNewBug(Number(bug_id), Number(modified_ts), String(modified_by), Number(_me
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>1050</xloc>
       <yloc>350</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Index with ElasticSearch</name>
+    <type>UserDefinedJavaClass</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+
+    <definitions>
+        <definition>
+        <class_type>TRANSFORM_CLASS</class_type>
+
+        <class_name>Processor</class_name>
+
+        <class_source><![CDATA[import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexRequestBuilder;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.transport.TransportAddress;
+
+private BulkRequestBuilder bulk = null;
+private Client client;
+private String esNodes = "127.0.0.1:9300";
+private String esCluster = "elasticsearch";
+private String esIndex = "bugs";
+private int batch = 0;
+private static int BULK_LOAD_MAX = 1000;
+
+public String paramOrDefault(String parameterName, String defaultValue)
+{
+    String paramValue = getParameter(parameterName);
+    if (paramValue != null && paramValue.length() > 0)
+    {
+        return paramValue;
+    }
+    return defaultValue;
+}
+public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException
+{
+    batch++;
+    Object[] r = getRow();
+
+    // FIXME: use bulk loader.
+
+    if (r == null) {
+/*        if (bulk != null) {
+            //BulkResponse response = bulk.execute().actionGet(15000);
+            bulk.execute().actionGet(15000);
+            //System.out.format("Loaded %d docs in %d ms\n", batch, response.getTookInMillis());
+        }
+*/        setOutputDone();
+        return false;
+    }
+
+    if (first)
+    {
+        first = false;
+
+        // get esNodes and esCluster from parameters (if available)
+        esNodes = paramOrDefault("ES_NODES", esNodes);
+        esCluster = paramOrDefault("ES_CLUSTER", esCluster);
+        esIndex = paramOrDefault("ES_INDEX", esIndex);
+        ImmutableSettings.Builder settings = ImmutableSettings.settingsBuilder();
+        settings.put("cluster.name", esCluster);
+        TransportClient transportClient = new TransportClient(settings.build());
+
+        String[] nodes = esNodes.split(",");
+        for (int i = 0; i < nodes.length; i++)
+        {
+            String esNode = nodes[i].trim();
+            int colon = esNode.indexOf(':');
+            String host = esNode.substring(0, colon);
+            int port = Integer.parseInt(esNode.substring(colon+1));
+            TransportAddress a = new InetSocketTransportAddress(host, port);
+            transportClient.addTransportAddress(a);
+        }
+
+        client = transportClient;
+    }
+
+    r = createOutputRow(r, data.outputRowMeta.size());
+/*
+    if (batch >= BULK_LOAD_MAX) {
+        //BulkResponse response = bulk.execute().actionGet(15000);
+        bulk.execute().actionGet(15000);
+        //System.out.format("Loaded %d docs in %d ms\n", batch, response.getTookInMillis());
+        batch = 0;
+        bulk = null;
+    }
+
+    if (bulk == null) {
+        bulk = client.prepareBulk();
+    }
+    IndexRequestBuilder builder = client.prepareIndex(esIndex, "bug", get(Fields.In, "bug_version_id").getString(r));
+    builder.setSource(get(Fields.In, "bug_version_json").getString(r));
+    if (!"undefined".equals(get(Fields.In, "bug_version_parent_id").getString(r)))
+        builder.setParent(get(Fields.In, "bug_version_parent_id").getString(r));
+
+    IndexRequest ir = builder.request();
+
+    bulk.add(ir);
+*/
+
+    IndexRequestBuilder builder = client.prepareIndex(esIndex, "bug", get(Fields.In, "bug_version_id").getString(r));
+    builder.setSource(get(Fields.In, "bug_version_json").getString(r));
+//    if (!"undefined".equals(get(Fields.In, "bug_version_parent_id").getString(r)))
+//        builder.setParent(get(Fields.In, "bug_version_parent_id").getString(r));
+
+    try {
+    builder.execute().actionGet();
+    } catch (Exception e) {
+        System.out.println("Exception processing bug version "
+                   + get(Fields.In, "bug_id").getString(r) + "_"
+                   + get(Fields.In, "record_num").getString(r) + " - "
+                   + e);
+        throw e;
+    }
+
+    return true;
+}
+]]></class_source>
+        </definition>
+    </definitions>
+    <fields>
+    </fields><clear_result_fields>N</clear_result_fields>
+<info_steps></info_steps><target_steps></target_steps><usage_parameters></usage_parameters>     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>1052</xloc>
+      <yloc>429</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
