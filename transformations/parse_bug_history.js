@@ -40,7 +40,6 @@ var outputRowSize = getOutputRowMeta().size();
 function processRow(bug_id, modified_ts, modified_by, field_name, field_value, field_value_removed, attach_id, _merge_order) {
     currBugID = bug_id;
 
-
     writeToLog("e", "bug_id={" + bug_id + "}, modified_ts={" + modified_ts + "}, modified_by={" + modified_by + "}, field_name={" + field_name + "}, field_value={" + field_value + "}, field_value_removed={" + field_value_removed + "}, attach_id={" + attach_id + "}, _merge_order={" + _merge_order + "}");
 
     // If we have switched to a new bug
@@ -169,13 +168,8 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
         field_name = "flags";
     }
 
-    var multi_field_value = [field_value];
-    var multi_field_value_removed = [field_value_removed];
-
-    if (field_name == "flags" || field_name == "cc" || field_name == "keywords") {
-        multi_field_value = field_value.split(/\s*,\s*/);
-        multi_field_value_removed = field_value_removed.split(/\s*,\s*/);
-    }
+    var multi_field_value = getMultiFieldValue(field_name, field_value);
+    var multi_field_value_removed = getMultiFieldValue(field_name, field_value_removed);
 
     currActivityID = currBugID+"."+modified_ts;
     if (currActivityID != prevActivityID) {
@@ -265,13 +259,8 @@ function populateIntermediateVersionObjects() {
             if (currBugState[change.field_name] instanceof Array) {
                 var a = currBugState[change.field_name];
 
-                var multi_field_value = [change.field_value];
-                var multi_field_value_removed = [change.field_value_removed];
-
-                if (field_name == "flags" || field_name == "cc" || field_name == "keywords") {
-                    multi_field_value = change.field_value.split(/\s*,\s*/);
-                    multi_field_value_removed = change.field_value_removed.split(/\s*,\s*/);
-                }
+                var multi_field_value = getMultiFieldValue(change.field_name, change.field_value);
+                var multi_field_value_removed = getMultiFieldValue(change.field_name, change.field_value_removed);
 
                 // This was a deletion, find and delete the value(s)
                 if (change.field_value_removed[0] != '') {
@@ -327,4 +316,12 @@ function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anOb
                     + " in " + arrayDesc + ": " + JSON.stringify(anObj));
         }
     }
+}
+
+function getMultiFieldValue(aFieldName, aFieldValue) {
+    if (aFieldName == "flags" || aFieldName == "cc" || aFieldName == "keywords") {
+        return aFieldValue.split(/\s*,\s*/);
+    }
+
+    return [aFieldValue];
 }
