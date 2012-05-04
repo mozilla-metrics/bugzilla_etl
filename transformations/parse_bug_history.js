@@ -40,6 +40,9 @@ var outputRowSize = getOutputRowMeta().size();
 function processRow(bug_id, modified_ts, modified_by, field_name, field_value, field_value_removed, attach_id, _merge_order) {
     currBugID = bug_id;
 
+
+    writeToLog("e", "bug_id={" + bug_id + "}, modified_ts={" + modified_ts + "}, modified_by={" + modified_by + "}, field_name={" + field_name + "}, field_value={" + field_value + "}, field_value_removed={" + field_value_removed + "}, attach_id={" + attach_id + "}, _merge_order={" + _merge_order + "}");
+
     // If we have switched to a new bug
     if (prevBugID < currBugID) {
         // Start replaying versions in ascending order to build full data on each version
@@ -90,7 +93,7 @@ function startNewBug(bug_id, modified_ts, modified_by, _merge_order) {
         attachments: [],
         flags: []
     };
-	currBugState._id = bug_id+"."+modified_ts;
+    currBugState._id = bug_id+"."+modified_ts;
     currActivity = {};
     currBugAttachments = [];
     currBugAttachmentsMap = {};
@@ -165,6 +168,15 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
     if (field_name == "flagtypes.name") {
         field_name = "flags";
     }
+
+    var multi_field_value = [field_value];
+    var multi_field_value_removed = [field_value_removed];
+
+    if (field_name == "flags" || field_name == "cc" || field_name == "keywords") {
+        multi_field_value = field_value.split(/\s*,\s*/);
+        multi_field_value_removed = field_value_removed.split(/\s*,\s*/);
+    }
+
     currActivityID = currBugID+"."+modified_ts;
     if (currActivityID != prevActivityID) {
         currActivity = bugVersionsMap[currActivityID];
@@ -179,21 +191,12 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
         }
         prevActivityID = currActivityID;
     }
-    if (field_name == 'flags') {
-        currActivity.changes.push({
-            field_name: field_name,
-            field_value: field_value,
-            field_value_removed: field_value_removed,
-            attach_id: attach_id
-        });
-    } else {
-        currActivity.changes.push({
-            field_name: field_name,
-            field_value: field_value,
-            field_value_removed: field_value_removed,
-            attach_id: attach_id
-        });
-    }
+    currActivity.changes.push({
+        field_name: field_name,
+        field_value: field_value,
+        field_value_removed: field_value_removed,
+        attach_id: attach_id
+    });
     if (attach_id != '') {
         var attachment = currBugAttachmentsMap[attach_id];
         if (!attachment) {
@@ -201,19 +204,10 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
         }
         if (attachment[field_name] instanceof Array) {
             var a = attachment[field_name];
-            if (field_value_removed == '') {
-                var len = a.length;
-                for (i = 0; i < a.length; i++) {
-                    if (a[i] == field_value) {
-                        a.splice(i,1);
-                        break;
-                    }
-                }
-                if (len == a.length) {
-                    writeToLog("e", "Unable to find added value "+field_name+":"+field_value+" in attachment: "+JSON.stringify(attachment));
-                }
+            if (multi_field_value_removed[0] == '') {
+                removeValues(a, multi_field_value, "added", field_name, "attachment", attachment);
             } else {
-                a.push(field_value_removed);
+                a = a.concat(multi_field_value_removed);
             }
         } else {
             attachment[field_name] = field_value_removed;
@@ -221,19 +215,10 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
     } else {
         if (currBugState[field_name] instanceof Array) {
             var a = currBugState[field_name];
-            if (field_value_removed == '') {
-                var len = a.length;
-                for (i = 0; i < a.length; i++) {
-                    if (a[i] == field_value) {
-                        a.splice(i,1);
-                        break;
-                    }
-                }
-                if (len == a.length) {
-                    writeToLog("e", "Unable to find added value "+field_name+":"+field_value+" in currBugState: "+JSON.stringify(currBugState));
-                }
+            if (multi_field_value_removed[0] == '') {
+                removeValues(a, multi_field_value, "added", field_name, "currBugState", currBugState);
             } else {
-                a.push(field_value_removed);
+                a = a.concat(field_value_removed);
             }
         } else {
             currBugState[field_name] = field_value_removed;
@@ -275,40 +260,42 @@ function populateIntermediateVersionObjects() {
         // Now walk currBugState forward in time by applying the changes from currVersion
         var changes = currVersion.changes;
         for (var changeIdx = 0; changeIdx < changes.length; changeIdx++) {
+            var change = changes[changeIdx];
             // Special logic for multivalue fields
-            if (currBugState[changes[changeIdx].field_name] instanceof Array) {
-                var a = currBugState[changes[changeIdx].field_name];
+            if (currBugState[change.field_name] instanceof Array) {
+                var a = currBugState[change.field_name];
 
-                // This was a deletion, find and delete the value
-                if (changes[changeIdx].field_value_removed != '') {
-                    var len = a.length;
-                    for (i = 0; i < a.length; i++) {
-                        if (a[i] == changes[changeIdx].field_value_removed) {
-                            a.splice(i,1);
-                            break;
-                        }
-                    }
-                    if (len == a.length) {
-                        writeToLog("e", "Unable to find removed value "+JSON.stringify(changes[changeIdx])+" from activity: "+JSON.stringify(currVersion));
-                    }
+                var multi_field_value = [change.field_value];
+                var multi_field_value_removed = [change.field_value_removed];
+
+                if (field_name == "flags" || field_name == "cc" || field_name == "keywords") {
+                    multi_field_value = change.field_value.split(/\s*,\s*/);
+                    multi_field_value_removed = change.field_value_removed.split(/\s*,\s*/);
+                }
+
+                // This was a deletion, find and delete the value(s)
+                if (change.field_value_removed[0] != '') {
+                    removeValues(a, multi_field_value_removed, "removed", JSON.stringify(change), "activity", currBugState);
                 }
 
                 // Handle addition (if any)
-                if (changes[changeIdx].field_value != '') {
-                    if (changes[changeIdx].field_name == 'flags') {
-            field_value_obj: {"modified_ts": modified_ts, "modified_by": modified_by, "field_name": field_value},
-                        a.push({
-                            "modified_ts": currentVersion.modified_ts, 
-                            "modified_by": currentVersion.modified_by, 
-                            "field_name": changes[changeIdx].field_value
-                        });
-                    } else {
-                        a.push(changes[changeIdx].field_value);
+                for each (var added in multi_field_value) {
+                    if (added != '') {
+                        if (change.field_name == 'flags') {
+                            // Bug flag
+                            a.push({
+                                "modified_ts": currVersion.modified_ts, 
+                                "modified_by": currVersion.modified_by, 
+                                "field_name": added
+                            });
+                        } else {
+                            a.push(added);
+                        }
                     }
                 }
             } else {
                 // Simple field change.
-                currBugState[changes[changeIdx].field_name] = changes[changeIdx].field_value;
+                currBugState[change.field_name] = change.field_value;
             }
         }
 
@@ -328,4 +315,16 @@ function splitFlag(flag) {
         parts[1].slice(0,-1);
     }
     return parts;
+}
+
+function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anObj) {
+    for each (var v in someValues) {
+        var foundAt = anArray.indexOf(v);
+        if (foundAt >= 0) {
+            anArray.splice(foundAt, 1);
+        } else {
+            writeToLog("e", "Unable to find " + valueType + " value " + fieldName + ":" + v
+                    + " in " + arrayDesc + ": " + JSON.stringify(anObj));
+        }
+    }
 }
