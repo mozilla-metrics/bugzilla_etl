@@ -40,7 +40,7 @@ var outputRowSize = getOutputRowMeta().size();
 function processRow(bug_id, modified_ts, modified_by, field_name, field_value, field_value_removed, attach_id, _merge_order) {
     currBugID = bug_id;
 
-    writeToLog("e", "bug_id={" + bug_id + "}, modified_ts={" + modified_ts + "}, modified_by={" + modified_by + "}, field_name={" + field_name + "}, field_value={" + field_value + "}, field_value_removed={" + field_value_removed + "}, attach_id={" + attach_id + "}, _merge_order={" + _merge_order + "}");
+    writeToLog("d", "bug_id={" + bug_id + "}, modified_ts={" + modified_ts + "}, modified_by={" + modified_by + "}, field_name={" + field_name + "}, field_value={" + field_value + "}, field_value_removed={" + field_value_removed + "}, attach_id={" + attach_id + "}, _merge_order={" + _merge_order + "}");
 
     // If we have switched to a new bug
     if (prevBugID < currBugID) {
@@ -214,15 +214,36 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
             } else {
                 a = a.concat(field_value_removed);
             }
+        } else if (isMultiField(field_name)) {
+            // field must currently be missing, otherwise it would
+            // be an instanceof Array above.  This handles multi-valued
+            // fields that are not first processed by processMultiValueTableItem().
+            currBugState[field_name] = [field_value_removed];
         } else {
+            // Replace current value
             currBugState[field_name] = field_value_removed;
         }
     }
 }
 
+function sortAscByField(a, b, aField) {
+    if (a[aField] > b[aField])
+        return 1;
+    if (a[aField] < b[aField])
+        return -1;
+    return 0;
+}
+function sortDescByField(a, b, aField) {
+    return -1 * sortAscByField(a, b, aField);
+}
+
 function populateIntermediateVersionObjects() {
-    // Make sure the bugVersions are in order.  They could be mixed because of attachment activity
-    bugVersions.sort(function(a,b){return (a.modified_ts>b.modified_ts?-1:(a.modified_ts<b.modified_ts?1:0));});
+    // Make sure the bugVersions are in descending order by modification time.
+    // They could be mixed because of attachment activity
+    bugVersions.sort(function(a,b){return sortDescByField(a, b, "modified_ts")});
+
+    // Is this necessary?
+    //currBugAttachments.sort(function(a,b){return sortAscByField(a, b, "creation_ts")});
 
     var currVersion;
 
@@ -246,6 +267,7 @@ function populateIntermediateVersionObjects() {
             currBugState[propName] = currVersion[propName];
         }
 
+        // Do we need to sort these?
         while (currBugAttachments[0] && currBugAttachments[0].creation_ts <= currBugState.modified_ts) {
             writeToLog("d", "Adding attachment into version "+currBugState.modified_ts+": "+JSON.stringify(currBugAttachments[0]));
             currBugState.attachments.push(currBugAttachments.shift());
@@ -263,8 +285,9 @@ function populateIntermediateVersionObjects() {
                 var multi_field_value_removed = getMultiFieldValue(change.field_name, change.field_value_removed);
 
                 // This was a deletion, find and delete the value(s)
-                if (change.field_value_removed[0] != '') {
-                    removeValues(a, multi_field_value_removed, "removed", JSON.stringify(change), "activity", currBugState);
+                if (multi_field_value_removed[0] != '') {
+                    //removeValues(a, multi_field_value_removed, "removed", JSON.stringify(change), "activity", currBugState);
+                    removeValues(a, multi_field_value_removed, "removed", change.field_name, "activity", currBugState);
                 }
 
                 // Handle addition (if any)
@@ -282,6 +305,9 @@ function populateIntermediateVersionObjects() {
                         }
                     }
                 }
+            } else if (isMultiField(change.field_name)) {
+                // First appearance of a multi-value field
+                currBugState[change.field_name] = [change.field_value];
             } else {
                 // Simple field change.
                 currBugState[change.field_name] = change.field_value;
@@ -301,29 +327,52 @@ function populateIntermediateVersionObjects() {
 function splitFlag(flag) {
     var parts = flag.split('(');
     if (parts.length == 2) {
-        parts[1].slice(0,-1);
+        parts[1] = parts[1].slice(0,-1);
     }
     return parts;
 }
 
 function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anObj) {
-    for each (var v in someValues) {
-        var foundAt = anArray.indexOf(v);
-        if (foundAt >= 0) {
-            anArray.splice(foundAt, 1);
-        } else {
-            // XXX if this is a "? 12345" type value for "dependson" etc, try looking for
-            //     the value with the leading "? " trimmed off.
-            writeToLog("e", "Unable to find " + valueType + " value " + fieldName + ":" + v
-                    + " in " + arrayDesc + ": " + JSON.stringify(anObj));
+    if (fieldName == "flags") {
+        for each (var v in someValues) {
+            var parts = splitFlag(v);
+            var len = anArray.length;
+            for (var i = 0; i < len; i++) {
+                // Match on flag name (incl. status) and flag value
+                if (anArray[i].field_name == parts[0] && anArray[i].field_value == parts[1]) {
+                     anArray.splice(i, 1);
+                     break;
+                }
+            }
+
+            if (len == anArray.length) {
+                writeToLog("e", "Unable to find " + valueType + " flag " + fieldName + ":" + v
+                        + " (" + JSON.stringify(parts) + ") in " + arrayDesc + ": " + JSON.stringify(anObj));
+            }
+        }
+    } else {
+        for each (var v in someValues) {
+            var foundAt = anArray.indexOf(v);
+            if (foundAt >= 0) {
+                anArray.splice(foundAt, 1);
+            } else {
+                // XXX if this is a "? 12345" type value for "dependson" etc, try looking for
+                //     the value with the leading "? " trimmed off.
+                writeToLog("e", "Unable to find " + valueType + " value " + fieldName + ":" + v
+                        + " in " + arrayDesc + ": " + JSON.stringify(anObj));
+            }
         }
     }
 }
 
-// TODO: "dupe_of" and "bug_group"?
+function isMultiField(aFieldName) {
+    return (aFieldName == "flags" || aFieldName == "cc" || aFieldName == "keywords"
+     || aFieldName == "dependson" || aFieldName == "blocked" || aFieldName == "dupe_by"
+     || aFieldName == "dupe_of" || aFieldName == "bug_group");
+}
+
 function getMultiFieldValue(aFieldName, aFieldValue) {
-    if (aFieldName == "flags" || aFieldName == "cc" || aFieldName == "keywords"
-     || aFieldName == "dependson" || aFieldName == "blocked" || aFieldName == "dupe_by") {
+    if (isMultiField(aFieldName)) {
         return aFieldValue.split(/\s*,\s*/);
     }
 
