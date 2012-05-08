@@ -1,0 +1,125 @@
+{
+    "mappings": {
+        "bug_version": {
+            "dynamic_templates" : [
+            {
+                "default_strings" : {
+                    "match_mapping_type" : "string",
+                    "mapping" : {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                }
+            },
+            {
+                "default_dates" : {
+                    "match" : "*_ts",
+                    "mapping" : {
+                        "type": "date"
+                    }
+                }
+            }
+            ],
+            "_all": {
+                "enabled": false
+            }, 
+            "_source": {
+                "compress": true, 
+                "enabled": true
+            }, 
+            "properties": {
+                "attachments": {
+                    "dynamic": "strict", 
+                    "properties": {
+                        "attach_id": {
+                            "index": "no", 
+                            "type": "integer"
+                        }, 
+                        "created_by": {
+                            "index": "not_analyzed", 
+                            "type": "string"
+                        }, 
+                        "created_ts": {
+                            "type": "date"
+                        }, 
+                        "flags": {
+                            "type": "nested"
+                        }, 
+                        "modified_by": {
+                            "index": "not_analyzed", 
+                            "type": "string"
+                        }, 
+                        "modified_ts": {
+                            "type": "date"
+                        }
+                    }, 
+                    "type": "nested"
+                }, 
+                "blocked": {
+                    "type": "integer"
+                }, 
+                "bug_file_loc": {
+                    "index": "not_analyzed", 
+                    "index_name": "url", 
+                    "type": "string"
+                }, 
+                "bug_id": {
+                    "type": "integer"
+                }, 
+                "bug_severity": {
+                    "index": "not_analyzed", 
+                    "index_name": "severity", 
+                    "type": "string"
+                }, 
+                "bug_status": {
+                    "index": "not_analyzed", 
+                    "index_name": "status", 
+                    "type": "string"
+                }, 
+                "changes": {
+                    "enabled": false, 
+                    "properties": {
+                        "attach_id": {
+                            "type": "integer"
+                        }, 
+                        "field_name": {
+                            "type": "string"
+                        }, 
+                        "field_value": {
+                            "type": "string"
+                        }, 
+                        "field_value_removed": {
+                            "type": "string"
+                        }
+                    }, 
+                    "type": "object"
+                }, 
+                "dependson": {
+                    "index_name": "depends", 
+                    "type": "integer"
+                }, 
+                "expires_on": {
+                    "type": "date"
+                }, 
+                "flags": {
+                    "index_name": "flag", 
+                    "type": "nested"
+                }, 
+                "keywords": {
+                    "index": "not_analyzed", 
+                    "index_name": "keyword", 
+                    "type": "string"
+                }, 
+                "rep_platform": {
+                    "index": "not_analyzed", 
+                    "index_name": "platform", 
+                    "type": "string"
+                }, 
+                "status_whiteboard": {
+                    "index": "not_analyzed", 
+                    "type": "string"
+                } 
+            }
+        }
+    }
+}

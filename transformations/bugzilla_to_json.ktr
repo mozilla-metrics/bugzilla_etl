@@ -10,11 +10,6 @@
     <directory>&#47;</directory>
     <parameters>
         <parameter>
-            <name>BUGS_TABLE_COLUMNS</name>
-            <default_value>bug_severity,bug_status,short_desc,op_sys,priority,rep_platform,version,resolution,target_milestone,status_whiteboard,bug_file_loc</default_value>
-            <description/>
-        </parameter>
-        <parameter>
             <name>BUG_IDS_PARTITION</name>
             <default_value>bug_id IN (3000,4900,7047,7222,9809,12394,40139,53428,98683,180171,182398,299209,717096,729251,735952,735978,736012,736016)</default_value>
             <description/>
@@ -327,7 +322,7 @@ show up in activities and votes table has no when</note>
         <class_name>Main</class_name>
 
         <class_source><![CDATA[private int outputRowSize = 0;
-private String[] attachments_fields = new String[] {"creation_ts", "created_by", "attachments.ispatch", "attachments.isobsolete", "attachments.isprivate"/*, "attachments.isurl"*/};
+private String[] attachments_fields = new String[] {"created_ts", "created_by", "attachments.ispatch", "attachments.isobsolete", "attachments.isprivate"/*, "attachments.isurl"*/};
 
 public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException
 {
@@ -504,8 +499,8 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
 	get(Fields.Out, "bug_id").setValue(newRow, get(Fields.In, "bug_id").getInteger(r));
 	get(Fields.Out, "modified_ts").setValue(newRow, get(Fields.In, "modified_ts").getInteger(r));
 	get(Fields.Out, "modified_by").setValue(newRow, get(Fields.In, "modified_by").getString(r));
-	get(Fields.Out, "field_name").setValue(newRow, "creation_ts");
-	get(Fields.Out, "field_value").setValue(newRow, get(Fields.In, "creation_ts").getString(r));
+	get(Fields.Out, "field_name").setValue(newRow, "created_ts");
+	get(Fields.Out, "field_value").setValue(newRow, get(Fields.In, "created_ts").getString(r));
 	get(Fields.Out, "_merge_order").setValue(newRow, 1L);
     putRow(data.outputRowMeta, newRow);
 
@@ -513,8 +508,8 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
 	get(Fields.Out, "bug_id").setValue(newRow, get(Fields.In, "bug_id").getInteger(r));
 	get(Fields.Out, "modified_ts").setValue(newRow, get(Fields.In, "modified_ts").getInteger(r));
 	get(Fields.Out, "modified_by").setValue(newRow, get(Fields.In, "modified_by").getString(r));
-	get(Fields.Out, "field_name").setValue(newRow, "reporter");
-	get(Fields.Out, "field_value").setValue(newRow, get(Fields.In, "reporter").getString(r));
+	get(Fields.Out, "field_name").setValue(newRow, "created_by");
+	get(Fields.Out, "field_value").setValue(newRow, get(Fields.In, "created_by").getString(r));
 	get(Fields.Out, "_merge_order").setValue(newRow, 1L);
     putRow(data.outputRowMeta, newRow);
 
@@ -662,7 +657,7 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
     <sql>SELECT bug_id
 	, UNIX_TIMESTAMP(a.creation_ts)*1000 AS modified_ts
 	, login_name AS modified_by
-	, UNIX_TIMESTAMP(a.creation_ts)*1000 AS creation_ts
+	, UNIX_TIMESTAMP(a.creation_ts)*1000 AS created_ts
 	, login_name AS created_by
 	, ispatch AS &apos;attachments.ispatch&apos;
 	, isobsolete AS &apos;attachments.isobsolete&apos;
@@ -787,8 +782,8 @@ ORDER BY bug_id;</sql>
     <sql>SELECT bug_id
 	, UNIX_TIMESTAMP(b.creation_ts)*1000 AS modified_ts
 	, pr.login_name AS modified_by
-	, UNIX_TIMESTAMP(b.creation_ts)*1000 AS creation_ts
-	, pr.login_name AS reporter
+	, UNIX_TIMESTAMP(b.creation_ts)*1000 AS created_ts
+	, pr.login_name AS created_by
 	, pa.login_name AS assigned_to
 	, pq.login_name AS qa_contact
 	, prod.`name` AS product

@@ -268,7 +268,7 @@ function populateIntermediateVersionObjects() {
         }
 
         // Do we need to sort these?
-        while (currBugAttachments[0] && currBugAttachments[0].creation_ts <= currBugState.modified_ts) {
+        while (currBugAttachments[0] && currBugAttachments[0].created_ts <= currBugState.modified_ts) {
             writeToLog("d", "Adding attachment into version "+currBugState.modified_ts+": "+JSON.stringify(currBugAttachments[0]));
             currBugState.attachments.push(currBugAttachments.shift());
         }
