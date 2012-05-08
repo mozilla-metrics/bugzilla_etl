@@ -312,14 +312,18 @@ function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anOb
         if (foundAt >= 0) {
             anArray.splice(foundAt, 1);
         } else {
+            // XXX if this is a "? 12345" type value for "dependson" etc, try looking for
+            //     the value with the leading "? " trimmed off.
             writeToLog("e", "Unable to find " + valueType + " value " + fieldName + ":" + v
                     + " in " + arrayDesc + ": " + JSON.stringify(anObj));
         }
     }
 }
 
+// TODO: "dupe_of" and "bug_group"?
 function getMultiFieldValue(aFieldName, aFieldValue) {
-    if (aFieldName == "flags" || aFieldName == "cc" || aFieldName == "keywords") {
+    if (aFieldName == "flags" || aFieldName == "cc" || aFieldName == "keywords"
+     || aFieldName == "dependson" || aFieldName == "blocked" || aFieldName == "dupe_by") {
         return aFieldValue.split(/\s*,\s*/);
     }
 
