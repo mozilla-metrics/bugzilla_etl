@@ -40,7 +40,9 @@ var outputRowSize = getOutputRowMeta().size();
 function processRow(bug_id, modified_ts, modified_by, field_name, field_value, field_value_removed, attach_id, _merge_order) {
     currBugID = bug_id;
 
-    writeToLog("d", "bug_id={" + bug_id + "}, modified_ts={" + modified_ts + "}, modified_by={" + modified_by + "}, field_name={" + field_name + "}, field_value={" + field_value + "}, field_value_removed={" + field_value_removed + "}, attach_id={" + attach_id + "}, _merge_order={" + _merge_order + "}");
+    writeToLog("e", "bug_id={" + bug_id + "}, modified_ts={" + modified_ts + "}, modified_by={" + modified_by 
+          + "}, field_name={" + field_name + "}, field_value={" + field_value + "}, field_value_removed={"
+          + field_value_removed + "}, attach_id={" + attach_id + "}, _merge_order={" + _merge_order + "}");
 
     // If we have switched to a new bug
     if (prevBugID < currBugID) {
@@ -103,14 +105,16 @@ function processSingleValueTableItem(field_name, field_value) {
 }
 
 function processMultiValueTableItem(field_name, field_value) {
-    //writeToLog("e", "About to push "+field_value+" to array field "+field_name+" on bug "+currBugID+" current value:"+JSON.stringify(currBugState[field_name]));
+    //writeToLog("e", "About to push "+field_value+" to array field "+field_name+" on bug "
+    //    +currBugID+" current value:"+JSON.stringify(currBugState[field_name]));
     if (currBugState[field_name] == null) {
         currBugState[field_name] = [];
     }
     try {
         currBugState[field_name].push(field_value);
     } catch(e) {
-        writeToLog("e", "Unable to push "+field_value+" to array field "+field_name+" on bug "+currBugID+" current value:"+JSON.stringify(currBugState[field_name]));
+        writeToLog("e", "Unable to push "+field_value+" to array field "+field_name+" on bug "
+              +currBugID+" current value:"+JSON.stringify(currBugState[field_name]));
     }
 }
 
@@ -146,12 +150,12 @@ function processAttachmentsTableItem(modified_ts, modified_by, field_name, field
 }
 
 function processFlagsTableItem(modified_ts, modified_by, field_name, field_value, field_value_removed, attach_id) {
-    var parts = splitFlag(field_value);
+//    var parts = splitFlag(field_value);
     var flag = {
         modified_ts: modified_ts,
         modified_by: modified_by,
-        field_name: parts[0],
-        field_value: parts[1]
+        field_name: field_value
+//        field_value: parts[1]
     };
     if (attach_id != '') {
         if (!currBugAttachmentsMap[attach_id]) {
@@ -242,21 +246,13 @@ function populateIntermediateVersionObjects() {
     // They could be mixed because of attachment activity
     bugVersions.sort(function(a,b){return sortDescByField(a, b, "modified_ts")});
 
-    // Is this necessary?
-    //currBugAttachments.sort(function(a,b){return sortAscByField(a, b, "creation_ts")});
-
     var currVersion;
-
     // Prime the while loop with an empty next version so our first iteration outputs the initial bug state
     var nextVersion = {_id:currBugState._id,changes:[]};
 
-    // Add an empty item to the bugVersions so we execute the loop once for every actual version
-    //bugVersions.push({_id:"pad2",changes:[]});
-
     while (bugVersions.length > 0) {
         currVersion = nextVersion;
-        nextVersion = bugVersions.pop();
-
+        nextVersion = bugVersions.pop(); // Oldest version
         writeToLog("d", "Populating JSON for version "+currVersion._id);
 
         // Link this version to the next one
@@ -267,7 +263,7 @@ function populateIntermediateVersionObjects() {
             currBugState[propName] = currVersion[propName];
         }
 
-        // Do we need to sort these?
+        // Attachments are already sorted.  No need to sort again.
         while (currBugAttachments[0] && currBugAttachments[0].created_ts <= currBugState.modified_ts) {
             writeToLog("d", "Adding attachment into version "+currBugState.modified_ts+": "+JSON.stringify(currBugAttachments[0]));
             currBugState.attachments.push(currBugAttachments.shift());
@@ -325,6 +321,9 @@ function populateIntermediateVersionObjects() {
             }
         }
 
+        // Do some processing to make sure that diffing betweens runs stays as similar as possible.
+        stabilize(currBugState);
+
         // Emit this version as a JSON string
         var newRow = createRowCopy(outputRowSize);
         var rowIndex = inputRowSize;
@@ -333,6 +332,12 @@ function populateIntermediateVersionObjects() {
         newRow[rowIndex++] = JSON.stringify(currBugState,null,2);
         putRow(newRow);
     }
+}
+
+function stabilize(aBug) {
+   if (aBug["cc"] && aBug["cc"][0]) {
+      aBug["cc"].sort();
+   }
 }
 
 function appendAttachmentFlag(attachments, attachId, addedFlag) {
@@ -403,11 +408,10 @@ function removeAttachmentValues(attachments, someValues, attachId, fieldName) {
 function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anObj) {
     if (fieldName == "flags") {
         for each (var v in someValues) {
-            var parts = splitFlag(v);
             var len = anArray.length;
             for (var i = 0; i < len; i++) {
                 // Match on flag name (incl. status) and flag value
-                if (anArray[i].field_name == parts[0] && anArray[i].field_value == parts[1]) {
+                if (anArray[i].field_name == v) {
                      anArray.splice(i, 1);
                      break;
                 }
@@ -415,7 +419,7 @@ function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anOb
 
             if (len == anArray.length) {
                 writeToLog("e", "Unable to find " + valueType + " flag " + fieldName + ":" + v
-                        + " (" + JSON.stringify(parts) + ") in " + arrayDesc + ": " + JSON.stringify(anObj));
+                        + " in " + arrayDesc + ": " + JSON.stringify(anObj));
             }
         }
     } else {
