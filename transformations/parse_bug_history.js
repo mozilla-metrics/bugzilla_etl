@@ -338,6 +338,9 @@ function stabilize(aBug) {
    if (aBug["cc"] && aBug["cc"][0]) {
       aBug["cc"].sort();
    }
+   if (aBug["changes"]) {
+      aBug["changes"].sort(function(a,b){ return a.field_name > b.field_name ? 1 : (a.field_name < b.field_name ? -1 : 0) });
+   }
 }
 
 function appendAttachmentFlag(attachments, attachId, addedFlag) {
