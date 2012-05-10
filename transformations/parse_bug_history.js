@@ -275,6 +275,7 @@ function populateIntermediateVersionObjects() {
 
         // Now walk currBugState forward in time by applying the changes from currVersion
         var changes = currVersion.changes;
+        writeToLog("e", "Processing changes: "+JSON.stringify(changes));
         for (var changeIdx = 0; changeIdx < changes.length; changeIdx++) {
             var change = changes[changeIdx];
             // Special logic for multivalue fields
@@ -287,19 +288,29 @@ function populateIntermediateVersionObjects() {
                 // This was a deletion, find and delete the value(s)
                 if (multi_field_value_removed[0] != '') {
                     //removeValues(a, multi_field_value_removed, "removed", JSON.stringify(change), "activity", currBugState);
-                    removeValues(a, multi_field_value_removed, "removed", change.field_name, "activity", currBugState);
+                   if (change["attach_id"] != '') {
+                      removeAttachmentValues(currBugState["attachments"], multi_field_value_removed, change["attach_id"], change.field_name);
+                   } else {
+                      removeValues(a, multi_field_value_removed, "removed", change.field_name, "activity", currBugState);
+                   }
                 }
 
                 // Handle addition (if any)
                 for each (var added in multi_field_value) {
                     if (added != '') {
                         if (change.field_name == 'flags') {
-                            // Bug flag
-                            a.push({
-                                "modified_ts": currVersion.modified_ts, 
-                                "modified_by": currVersion.modified_by, 
-                                "field_name": added
-                            });
+                           var addedFlag = {
+                                   "modified_ts": currVersion.modified_ts, 
+                                   "modified_by": currVersion.modified_by, 
+                                   "field_name": added
+                               };
+                           if (change["attach_id"] != '') {
+                               // Attachment flag
+                               appendAttachmentFlag(currBugState["attachments"], change["attach_id"], addedFlag);
+                           } else {
+                               // Bug flag
+                               a.push(addedFlag);
+                           }
                         } else {
                             a.push(added);
                         }
@@ -324,12 +335,69 @@ function populateIntermediateVersionObjects() {
     }
 }
 
+function appendAttachmentFlag(attachments, attachId, addedFlag) {
+   var found = false;
+   for each (var a in attachments) {
+      if (a.attach_id == attachId) {
+         if (!a.flags)
+            a.flags = [];
+
+         a.flags.push(addedFlag);
+         found = true;
+         break;
+      }
+   }
+   if (!found) {
+       writeToLog("e", "Unable to find attachment with id '" + attachId + "' in " + JSON.stringify(attachments) + ".");
+   }
+}
+
 function splitFlag(flag) {
     var parts = flag.split('(');
     if (parts.length == 2) {
         parts[1] = parts[1].slice(0,-1);
     }
     return parts;
+}
+function removeAttachmentValues(attachments, someValues, attachId, fieldName) {
+   var foundAttId = false;
+   for each (var a in attachments) {
+      if (a.attach_id == attachId) {
+         writeToLog("e", "Attempting to remove " + JSON.stringify(someValues) + " from field '" + fieldName + "' in " + JSON.stringify(a) + ".");
+         if (fieldName == "flags") {
+            var len = a[fieldName].length;
+            for each (var v in someValues) {
+               for (var i = 0; i < len; i++) {
+                  if (a[fieldName][i].field_name == v) {
+                     a[fieldName].splice(i, 1);
+                     break;
+                  }
+               }
+            }
+
+            var missedValues = a[fieldName].length - (len - someValues.length);
+            if (missedValues > 0) {
+                writeToLog("e", "Failed to remove " + missedValues + " of " + someValues.length + " values.");
+            }
+         } else {
+            for each (var v in someValues) {
+                var foundAt = attachments[fieldName].indexOf(v);
+                if (foundAt >= 0) {
+                    anArray.splice(foundAt, 1);
+                } else {
+                    writeToLog("e", "Unable to find value " + fieldName + ":" + JSON.stringify(someValues)
+                            + " in attachment: " + JSON.stringify(a));
+                }
+            }
+         }
+         
+         foundAttId = true;
+         break;
+      }
+   }
+   if (!foundAttId) {
+       writeToLog("e", "Unable to find attachment with id '" + attachId + "' in " + JSON.stringify(attachments) + ".");
+   }
 }
 
 function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anObj) {
