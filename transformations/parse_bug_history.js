@@ -199,16 +199,17 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
         var attachment = currBugAttachmentsMap[attach_id];
         if (!attachment) {
             writeToLog("e", "Unable to find attachment "+attach_id+" for bug_id "+currBugID+": "+JSON.stringify(currBugAttachmentsMap));
-        }
-        if (attachment[field_name] instanceof Array) {
-            var a = attachment[field_name];
-            if (multi_field_value_removed[0] == '') {
-                removeValues(a, multi_field_value, "added", field_name, "attachment", attachment);
-            } else {
-                a = a.concat(multi_field_value_removed);
-            }
         } else {
-            attachment[field_name] = field_value_removed;
+           if (attachment[field_name] instanceof Array) {
+               var a = attachment[field_name];
+               if (multi_field_value_removed[0] == '') {
+                   removeValues(a, multi_field_value, "added", field_name, "attachment", attachment);
+               } else {
+                   a = a.concat(multi_field_value_removed);
+               }
+           } else {
+               attachment[field_name] = field_value_removed;
+           }
         }
     } else {
         if (currBugState[field_name] instanceof Array) {
@@ -246,6 +247,9 @@ function populateIntermediateVersionObjects() {
     // They could be mixed because of attachment activity
     bugVersions.sort(function(a,b){return sortDescByField(a, b, "modified_ts")});
 
+    // Tracks the previous distinct value for each field
+    var prevValues = {};
+
     var currVersion;
     // Prime the while loop with an empty next version so our first iteration outputs the initial bug state
     var nextVersion = {_id:currBugState._id,changes:[]};
@@ -274,24 +278,33 @@ function populateIntermediateVersionObjects() {
         writeToLog("e", "Processing changes: "+JSON.stringify(changes));
         for (var changeIdx = 0; changeIdx < changes.length; changeIdx++) {
             var change = changes[changeIdx];
-            // Special logic for multivalue fields
-            if (currBugState[change.field_name] instanceof Array) {
-                var a = currBugState[change.field_name];
+            var target = currBugState;
+            var targetName = "currBugState";
+            if (change["attach_id"] != '') {
+               // Attachment change
+               target = findAttachment(currBugState["attachments"], change["attach_id"]);
+               targetName = "attachment";
+               if (target == null) {
+                  writeToLog("e", "Encountered a change to missing attachment for bug '" + currVersion["bug_id"] + "': " + JSON.stringify(change) + ".");
 
+                  // treat it as a change to the main bug instead :(
+                  target = currBugState;
+                  targetName = "currBugState";
+               }
+            }
+
+            // Multi-value fields
+            if (target[change.field_name] instanceof Array) {
+                var a = target[change.field_name];
                 var multi_field_value = getMultiFieldValue(change.field_name, change.field_value);
                 var multi_field_value_removed = getMultiFieldValue(change.field_name, change.field_value_removed);
 
                 // This was a deletion, find and delete the value(s)
                 if (multi_field_value_removed[0] != '') {
-                    //removeValues(a, multi_field_value_removed, "removed", JSON.stringify(change), "activity", currBugState);
-                   if (change["attach_id"] != '') {
-                      removeAttachmentValues(currBugState["attachments"], multi_field_value_removed, change["attach_id"], change.field_name);
-                   } else {
-                      removeValues(a, multi_field_value_removed, "removed", change.field_name, "activity", currBugState);
-                   }
+                   removeValues(a, multi_field_value_removed, "removed", change.field_name, targetName, target);
                 }
 
-                // Handle addition (if any)
+                // Handle addition(s) (if any)
                 for each (var added in multi_field_value) {
                     if (added != '') {
                         if (change.field_name == 'flags') {
@@ -300,24 +313,18 @@ function populateIntermediateVersionObjects() {
                                    "modified_by": currVersion.modified_by, 
                                    "field_name": added
                                };
-                           if (change["attach_id"] != '') {
-                               // Attachment flag
-                               appendAttachmentFlag(currBugState["attachments"], change["attach_id"], addedFlag);
-                           } else {
-                               // Bug flag
-                               a.push(addedFlag);
-                           }
+                           a.push(addedFlag);
                         } else {
-                            a.push(added);
+                           a.push(added);
                         }
                     }
                 }
             } else if (isMultiField(change.field_name)) {
                 // First appearance of a multi-value field
-                currBugState[change.field_name] = [change.field_value];
+                target[change.field_name] = [change.field_value];
             } else {
                 // Simple field change.
-                currBugState[change.field_name] = change.field_value;
+                target[change.field_name] = change.field_value;
             }
         }
 
@@ -334,6 +341,17 @@ function populateIntermediateVersionObjects() {
     }
 }
 
+function findAttachment(attachments, attachId) {
+   for each (var attachment in attachments) {
+      if (attachment.attach_id == attachId) {
+         return attachment;
+      }
+   }
+
+   writeToLog("e", "Unable to find attachment with id '" + attachId + "' in " + JSON.stringify(attachments) + ".");
+   return null;
+}
+
 function stabilize(aBug) {
    if (aBug["cc"] && aBug["cc"][0]) {
       aBug["cc"].sort();
@@ -343,69 +361,13 @@ function stabilize(aBug) {
    }
 }
 
-function appendAttachmentFlag(attachments, attachId, addedFlag) {
-   var found = false;
-   for each (var a in attachments) {
-      if (a.attach_id == attachId) {
-         if (!a.flags)
-            a.flags = [];
-
-         a.flags.push(addedFlag);
-         found = true;
-         break;
-      }
-   }
-   if (!found) {
-       writeToLog("e", "Unable to find attachment with id '" + attachId + "' in " + JSON.stringify(attachments) + ".");
-   }
-}
-
+// XXX - do we need this?
 function splitFlag(flag) {
     var parts = flag.split('(');
     if (parts.length == 2) {
         parts[1] = parts[1].slice(0,-1);
     }
     return parts;
-}
-function removeAttachmentValues(attachments, someValues, attachId, fieldName) {
-   var foundAttId = false;
-   for each (var a in attachments) {
-      if (a.attach_id == attachId) {
-         writeToLog("e", "Attempting to remove " + JSON.stringify(someValues) + " from field '" + fieldName + "' in " + JSON.stringify(a) + ".");
-         if (fieldName == "flags") {
-            var len = a[fieldName].length;
-            for each (var v in someValues) {
-               for (var i = 0; i < len; i++) {
-                  if (a[fieldName][i].field_name == v) {
-                     a[fieldName].splice(i, 1);
-                     break;
-                  }
-               }
-            }
-
-            var missedValues = a[fieldName].length - (len - someValues.length);
-            if (missedValues > 0) {
-                writeToLog("e", "Failed to remove " + missedValues + " of " + someValues.length + " values.");
-            }
-         } else {
-            for each (var v in someValues) {
-                var foundAt = attachments[fieldName].indexOf(v);
-                if (foundAt >= 0) {
-                    anArray.splice(foundAt, 1);
-                } else {
-                    writeToLog("e", "Unable to find value " + fieldName + ":" + JSON.stringify(someValues)
-                            + " in attachment: " + JSON.stringify(a));
-                }
-            }
-         }
-         
-         foundAttId = true;
-         break;
-      }
-   }
-   if (!foundAttId) {
-       writeToLog("e", "Unable to find attachment with id '" + attachId + "' in " + JSON.stringify(attachments) + ".");
-   }
 }
 
 function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anObj) {
