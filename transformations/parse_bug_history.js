@@ -138,7 +138,7 @@ function processAttachmentsTableItem(modified_ts, modified_by, field_name, field
     });
     if (!currBugAttachmentsMap[attach_id]) {
         currBugAttachmentsMap[attach_id] = {
-            _id: attach_id+"."+modified_ts,
+//            _id: attach_id+"."+modified_ts, // not needed anymore
             attach_id: attach_id,
             modified_ts: modified_ts,
             modified_by: modified_by,
@@ -293,6 +293,24 @@ function populateIntermediateVersionObjects() {
                }
             }
 
+            // Track the previous value
+            // for now, skip attachment changes and multi-value fields
+            if (targetName != "attachment" && !isMultiField(change.field_name)) {
+               // Super-naive approach:
+               var duration_ms = (nextVersion.modified_ts - currVersion.modified_ts);
+               prevValues[change.field_name] = {
+                  value: target[change.field_name],
+                  //change_to_ts: new Date(currVersion.modified_ts), // For debugging
+                  //change_away_ts: new Date(nextVersion.modified_ts), // for debugging
+                  change_to_ts: currVersion.modified_ts,
+                  change_away_ts: nextVersion.modified_ts,
+                  duration_seconds: (duration_ms / 1000),
+                  duration_days: (duration_ms / (1000.0 * 60 * 60 * 24)),
+               }
+            } else {
+               // TODO: handle flags and attachments (but probably not the simple multi-fields)
+            }
+
             // Multi-value fields
             if (target[change.field_name] instanceof Array) {
                 var a = target[change.field_name];
@@ -327,6 +345,8 @@ function populateIntermediateVersionObjects() {
                 target[change.field_name] = change.field_value;
             }
         }
+
+        currBugState.previous_values = prevValues;
 
         // Do some processing to make sure that diffing betweens runs stays as similar as possible.
         stabilize(currBugState);
