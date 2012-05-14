@@ -298,17 +298,19 @@ function populateIntermediateVersionObjects() {
             if (targetName != "attachment" && !isMultiField(change.field_name)) {
                // Super-naive approach:
                var duration_ms = (nextVersion.modified_ts - currVersion.modified_ts);
-               prevValues[change.field_name] = {
-                  value: target[change.field_name],
-                  //change_to_ts: new Date(currVersion.modified_ts), // For debugging
-                  //change_away_ts: new Date(nextVersion.modified_ts), // for debugging
-                  change_to_ts: currVersion.modified_ts,
-                  change_away_ts: nextVersion.modified_ts,
-                  duration_seconds: (duration_ms / 1000),
-                  duration_days: (duration_ms / (1000.0 * 60 * 60 * 24)),
-               }
+               prevValues[change.field_name + "_value"] = target[change.field_name];
+               //prevValues[change.field_name + "_change_to_ts"] = new Date(currVersion.modified_ts); // For debugging;
+               //prevValues[change.field_name + "_change_away_ts"] = new Date(nextVersion.modified_ts); // for debugging;
+               prevValues[change.field_name + "_change_to_ts"] = currVersion.modified_ts;
+               prevValues[change.field_name + "_change_away_ts"] = nextVersion.modified_ts;
+               prevValues[change.field_name + "_duration_seconds"] = (duration_ms / 1000);
+               prevValues[change.field_name + "_duration_days"] = (duration_ms / (1000.0 * 60 * 60 * 24));
+            } else if (targetName == "attachment") {
+               // TODO: handle attachments and attachment flags
+            } else if (change.field_name == "flags") {
+               // TODO: handle flags (but probably not the simple multi-fields)
             } else {
-               // TODO: handle flags and attachments (but probably not the simple multi-fields)
+               writeToLog("d", "Skipping previous_value for multi-value field " + change.field_name);
             }
 
             // Multi-value fields
