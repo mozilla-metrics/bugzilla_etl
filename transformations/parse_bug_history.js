@@ -297,18 +297,24 @@ function populateIntermediateVersionObjects() {
             // for now, skip attachment changes and multi-value fields
             if (targetName != "attachment" && !isMultiField(change.field_name)) {
                // Super-naive approach:
-               var duration_ms = (nextVersion.modified_ts - currVersion.modified_ts);
-               prevValues[change.field_name + "_value"] = target[change.field_name];
-               //prevValues[change.field_name + "_change_to_ts"] = new Date(currVersion.modified_ts); // For debugging;
-               //prevValues[change.field_name + "_change_away_ts"] = new Date(nextVersion.modified_ts); // for debugging;
-               prevValues[change.field_name + "_change_to_ts"] = currVersion.modified_ts;
-               prevValues[change.field_name + "_change_away_ts"] = nextVersion.modified_ts;
-               prevValues[change.field_name + "_duration_seconds"] = (duration_ms / 1000);
-               prevValues[change.field_name + "_duration_days"] = (duration_ms / (1000.0 * 60 * 60 * 24));
+               setPrevious(prevValues, change.field_name, target[change.field_name], currVersion.modified_ts, nextVersion.modified_ts);
             } else if (targetName == "attachment") {
-               // TODO: handle attachments and attachment flags
+               if (change.field_name == "flags") {
+                  // TODO: handle attachment flags
+               } else {
+                  // TODO: handle attachments
+                  if (!prevValues["attachments"]) {
+                     prevValues["attachments"] = [];
+                  }
+                  var att = findAttachment(prevValues["attachments"], change["attach_id"]);
+                  if (!att) {
+                     att = { attach_id: change["attach_id"] };
+                     prevValues["attachments"].push(att);
+                  }
+                  setPrevious(att, change.field_name, target[change.field_name], currVersion.modified_ts, nextVersion.modified_ts);
+               }
             } else if (change.field_name == "flags") {
-               // TODO: handle flags (but probably not the simple multi-fields)
+               // TODO: handle flags (but probably not the other simple multi-fields)
             } else {
                writeToLog("d", "Skipping previous_value for multi-value field " + change.field_name);
             }
@@ -361,6 +367,17 @@ function populateIntermediateVersionObjects() {
         newRow[rowIndex++] = JSON.stringify(currBugState,null,2);
         putRow(newRow);
     }
+}
+
+function setPrevious(dest, aFieldName, aValue, aChangeTo, aChangeAway) {
+    var duration_ms = (aChangeAway - aChangeTo);
+    dest[aFieldName + "_value"] = aValue;
+    //dest[aFieldName + "_change_to_ts"] = new Date(aChangeTo); // For debugging;
+    //dest[aFieldName + "_change_away_ts"] = new Date(aChangeAway); // for debugging;
+    dest[aFieldName + "_change_to_ts"] = aChangeTo;
+    dest[aFieldName + "_change_away_ts"] = aChangeAway;
+    dest[aFieldName + "_duration_seconds"] = (duration_ms / 1000);
+    dest[aFieldName + "_duration_days"] = (duration_ms / (1000.0 * 60 * 60 * 24));
 }
 
 function findAttachment(attachments, attachId) {
