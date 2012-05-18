@@ -217,13 +217,13 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
             if (multi_field_value_removed[0] == '') {
                 removeValues(a, multi_field_value, "added", field_name, "currBugState", currBugState);
             } else {
-                a = a.concat(field_value_removed);
+                a = a.concat(multi_field_value_removed);
             }
         } else if (isMultiField(field_name)) {
             // field must currently be missing, otherwise it would
             // be an instanceof Array above.  This handles multi-valued
             // fields that are not first processed by processMultiValueTableItem().
-            currBugState[field_name] = [field_value_removed];
+            currBugState[field_name] = multi_field_value_removed;
         } else {
             // Replace current value
             currBugState[field_name] = field_value_removed;
@@ -302,7 +302,7 @@ function populateIntermediateVersionObjects() {
                if (change.field_name == "flags") {
                   // TODO: handle attachment flags
                } else {
-                  // TODO: handle attachments
+                  // handle attachments
                   if (!prevValues["attachments"]) {
                      prevValues["attachments"] = [];
                   }
@@ -315,6 +315,14 @@ function populateIntermediateVersionObjects() {
                }
             } else if (change.field_name == "flags") {
                // TODO: handle flags (but probably not the other simple multi-fields)
+               if (!prevValues["flags"]) {
+                  prevValues["flags"] = [];
+               }
+               
+               // FIXME
+               var flag = makeFlagChange(change);
+               //applyFlag(prevValues["flags"], flag);
+               
             } else {
                writeToLog("d", "Skipping previous_value for multi-value field " + change.field_name);
             }
@@ -367,6 +375,22 @@ function populateIntermediateVersionObjects() {
         newRow[rowIndex++] = JSON.stringify(currBugState,null,2);
         putRow(newRow);
     }
+}
+
+function makeFlagChange(change, to_ts, away_ts) {
+   var parts = splitFlag(change.field_value);
+   var duration_ms = (away_ts - to_ts);
+   
+   var flag = {
+      "flag": parts[0],
+      "requestee": parts[1],
+      "change_to_ts": to_ts,
+      "change_away_ts": away_ts,
+      "duration_seconds": (duration_ms / 1000),
+      "duration_days": (duration_ms / (1000.0 * 60 * 60 * 24))
+   }
+
+   return flag;
 }
 
 function setPrevious(dest, aFieldName, aValue, aChangeTo, aChangeAway) {
