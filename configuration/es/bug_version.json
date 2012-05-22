@@ -30,7 +30,6 @@
             }, 
             "properties": {
                 "attachments": {
-                    "dynamic": "strict", 
                     "properties": {
                         "attach_id": {
                             "index": "no", 
@@ -118,6 +117,9 @@
                 }, 
                 "status_whiteboard": {
                     "index": "not_analyzed", 
+                    "type": "string"
+                }, 
+                "version": {
                     "type": "string"
                 } 
             }
