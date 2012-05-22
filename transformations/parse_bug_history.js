@@ -40,13 +40,14 @@ var outputRowSize = getOutputRowMeta().size();
 function processRow(bug_id, modified_ts, modified_by, field_name, field_value, field_value_removed, attach_id, _merge_order) {
     currBugID = bug_id;
 
-    writeToLog("e", "bug_id={" + bug_id + "}, modified_ts={" + modified_ts + "}, modified_by={" + modified_by 
+    writeToLog("d", "bug_id={" + bug_id + "}, modified_ts={" + modified_ts + "}, modified_by={" + modified_by 
           + "}, field_name={" + field_name + "}, field_value={" + field_value + "}, field_value_removed={"
           + field_value_removed + "}, attach_id={" + attach_id + "}, _merge_order={" + _merge_order + "}");
 
     // If we have switched to a new bug
     if (prevBugID < currBugID) {
         // Start replaying versions in ascending order to build full data on each version
+        writeToLog("e", "Emitting intermediate versions for " + prevBugID);
         populateIntermediateVersionObjects();
         startNewBug(bug_id, modified_ts, modified_by, _merge_order);
     }
@@ -159,7 +160,7 @@ function processFlagsTableItem(modified_ts, modified_by, field_name, field_value
     };
     if (attach_id != '') {
         if (!currBugAttachmentsMap[attach_id]) {
-            writeToLog("e", "Unable to find attachment "+attach_id+" for bug_id "+currBugID);
+            writeToLog("d", "Unable to find attachment "+attach_id+" for bug_id "+currBugID);
         }
         currBugAttachmentsMap[attach_id].flags.push(flag);
     } else {
@@ -198,7 +199,7 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
     if (attach_id != '') {
         var attachment = currBugAttachmentsMap[attach_id];
         if (!attachment) {
-            writeToLog("e", "Unable to find attachment "+attach_id+" for bug_id "+currBugID+": "+JSON.stringify(currBugAttachmentsMap));
+            writeToLog("d", "Unable to find attachment "+attach_id+" for bug_id "+currBugID+": "+JSON.stringify(currBugAttachmentsMap));
         } else {
            if (attachment[field_name] instanceof Array) {
                var a = attachment[field_name];
@@ -275,7 +276,7 @@ function populateIntermediateVersionObjects() {
 
         // Now walk currBugState forward in time by applying the changes from currVersion
         var changes = currVersion.changes;
-        writeToLog("e", "Processing changes: "+JSON.stringify(changes));
+        writeToLog("d", "Processing changes: "+JSON.stringify(changes));
         for (var changeIdx = 0; changeIdx < changes.length; changeIdx++) {
             var change = changes[changeIdx];
             var target = currBugState;
@@ -285,7 +286,7 @@ function populateIntermediateVersionObjects() {
                target = findAttachment(currBugState["attachments"], change["attach_id"]);
                targetName = "attachment";
                if (target == null) {
-                  writeToLog("e", "Encountered a change to missing attachment for bug '" + currVersion["bug_id"] + "': " + JSON.stringify(change) + ".");
+                  writeToLog("d", "Encountered a change to missing attachment for bug '" + currVersion["bug_id"] + "': " + JSON.stringify(change) + ".");
 
                   // treat it as a change to the main bug instead :(
                   target = currBugState;
@@ -367,6 +368,11 @@ function populateIntermediateVersionObjects() {
         // Do some processing to make sure that diffing betweens runs stays as similar as possible.
         stabilize(currBugState);
 
+        // FIXME: empty string breaks date parsing.
+        if (currBugState["deadline"] == "") {
+           currBugState["deadline"] = null;
+        }
+
         // Emit this version as a JSON string
         var newRow = createRowCopy(outputRowSize);
         var rowIndex = inputRowSize;
@@ -411,7 +417,7 @@ function findAttachment(attachments, attachId) {
       }
    }
 
-   writeToLog("e", "Unable to find attachment with id '" + attachId + "' in " + JSON.stringify(attachments) + ".");
+   writeToLog("d", "Unable to find attachment with id '" + attachId + "' in " + JSON.stringify(attachments) + ".");
    return null;
 }
 
@@ -446,7 +452,7 @@ function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anOb
             }
 
             if (len == anArray.length) {
-                writeToLog("e", "Unable to find " + valueType + " flag " + fieldName + ":" + v
+                writeToLog("d", "Unable to find " + valueType + " flag " + fieldName + ":" + v
                         + " in " + arrayDesc + ": " + JSON.stringify(anObj));
             }
         }
@@ -458,7 +464,7 @@ function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anOb
             } else {
                 // XXX if this is a "? 12345" type value for "dependson" etc, try looking for
                 //     the value with the leading "? " trimmed off.
-                writeToLog("e", "Unable to find " + valueType + " value " + fieldName + ":" + v
+                writeToLog("d", "Unable to find " + valueType + " value " + fieldName + ":" + v
                         + " in " + arrayDesc + ": " + JSON.stringify(anObj));
             }
         }
