@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
     <name>bugzilla_to_json</name>
@@ -187,7 +187,7 @@ http:&#47;&#47;www.elasticsearch.org&#47;guide&#47;reference&#47;api&#47;update.
     </attributes>
   </connection>
   <order>
-  <hop> <from>Get bugs</from><to>Flatten bugs record</to><enabled>Y</enabled> </hop>  <hop> <from>Flatten bugs record</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get dependencies</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get new activities</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get attachments</from><to>Flatten attachments record</to><enabled>Y</enabled> </hop>  <hop> <from>Flatten attachments record</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get duplicates</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get bug_groups</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get bug_see_also</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get cc</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get keywords</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get flags</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Calculator</from><to>Text file output</to><enabled>Y</enabled> </hop>  <hop> <from>Sorted Merge</from><to>Lower Case</to><enabled>Y</enabled> </hop>  <hop> <from>Lower Case</from><to>Parse Bug History</to><enabled>Y</enabled> </hop>  <hop> <from>Delete unneeded fields</from><to>Calculator</to><enabled>Y</enabled> </hop>  <hop> <from>Parse Bug History</from><to>Rownum</to><enabled>Y</enabled> </hop>  <hop> <from>Rownum</from><to>Delete unneeded fields</to><enabled>Y</enabled> </hop>  <hop> <from>Calculator</from><to>Index with ElasticSearch</to><enabled>Y</enabled> </hop>  <hop> <from>Get incremental modified bugs</from><to>Fetch most recent ES version</to><enabled>N</enabled> </hop>  <hop> <from>Fetch most recent ES version</from><to>Sorted Merge</to><enabled>N</enabled> </hop>  </order>
+  <hop> <from>Get bugs</from><to>Flatten bugs record</to><enabled>Y</enabled> </hop>  <hop> <from>Flatten bugs record</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get dependencies</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get new activities</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get attachments</from><to>Flatten attachments record</to><enabled>Y</enabled> </hop>  <hop> <from>Flatten attachments record</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get duplicates</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get bug_groups</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get bug_see_also</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get cc</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get keywords</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get flags</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Calculator</from><to>Text file output</to><enabled>Y</enabled> </hop>  <hop> <from>Sorted Merge</from><to>Lower Case</to><enabled>Y</enabled> </hop>  <hop> <from>Lower Case</from><to>Parse Bug History</to><enabled>Y</enabled> </hop>  <hop> <from>Delete unneeded fields</from><to>Calculator</to><enabled>Y</enabled> </hop>  <hop> <from>Parse Bug History</from><to>Rownum</to><enabled>Y</enabled> </hop>  <hop> <from>Rownum</from><to>Delete unneeded fields</to><enabled>Y</enabled> </hop>  <hop> <from>Calculator</from><to>Index with ElasticSearch</to><enabled>N</enabled> </hop>  <hop> <from>Get incremental modified bugs</from><to>Fetch most recent ES version</to><enabled>N</enabled> </hop>  <hop> <from>Fetch most recent ES version</from><to>Sorted Merge</to><enabled>N</enabled> </hop>  </order>
   <step>
     <name>Calculator</name>
     <type>Calculator</type>
@@ -212,52 +212,10 @@ http:&#47;&#47;www.elasticsearch.org&#47;guide&#47;reference&#47;api&#47;update.
 <grouping_symbol/>
 <currency_symbol/>
 </calculation>
-       <calculation><field_name>suffix</field_name>
-<calc_type>CONSTANT</calc_type>
-<field_a>.json</field_a>
-<field_b/>
-<field_c/>
-<value_type>String</value_type>
-<value_length>-1</value_length>
-<value_precision>-1</value_precision>
-<remove>Y</remove>
-<conversion_mask/>
-<decimal_symbol/>
-<grouping_symbol/>
-<currency_symbol/>
-</calculation>
-       <calculation><field_name>underscore</field_name>
-<calc_type>CONSTANT</calc_type>
-<field_a>_</field_a>
-<field_b/>
-<field_c/>
-<value_type>String</value_type>
-<value_length>-1</value_length>
-<value_precision>-1</value_precision>
-<remove>Y</remove>
-<conversion_mask/>
-<decimal_symbol/>
-<grouping_symbol/>
-<currency_symbol/>
-</calculation>
-       <calculation><field_name>filename</field_name>
-<calc_type>ADD3</calc_type>
-<field_a>bug_id</field_a>
-<field_b>underscore</field_b>
-<field_c>record_num</field_c>
-<value_type>String</value_type>
-<value_length>-1</value_length>
-<value_precision>-1</value_precision>
-<remove>Y</remove>
-<conversion_mask/>
-<decimal_symbol/>
-<grouping_symbol/>
-<currency_symbol/>
-</calculation>
        <calculation><field_name>full_filename</field_name>
 <calc_type>ADD</calc_type>
 <field_a>prefix</field_a>
-<field_b>filename</field_b>
+<field_b>bug_id</field_b>
 <field_c/>
 <value_type>String</value_type>
 <value_length>-1</value_length>
@@ -344,7 +302,6 @@ http:&#47;&#47;www.elasticsearch.org&#47;guide&#47;reference&#47;api&#47;update.
 
         <class_name>Processor</class_name>
 
-        
         <class_source><![CDATA[import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
@@ -448,7 +405,8 @@ public String getMostRecentVersion(String bugId) {
 }
 
 
-]]></class_source></definition>
+]]></class_source>
+        </definition>
     </definitions>
     <fields>
         <field>
@@ -522,7 +480,7 @@ public String getMostRecentVersion(String bugId) {
 
         </field>
     </fields><clear_result_fields>N</clear_result_fields>
-<info_steps/><target_steps/><usage_parameters/>     <cluster_schema/>
+<info_steps></info_steps><target_steps></target_steps><usage_parameters></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>250</xloc>
       <yloc>350</yloc>
@@ -666,7 +624,7 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
 
         </field>
     </fields><clear_result_fields>Y</clear_result_fields>
-<info_steps/><target_steps/><usage_parameters><usage_parameter><parameter_tag>BUGS_TABLE_COLUMNS</parameter_tag>
+<info_steps></info_steps><target_steps></target_steps><usage_parameters><usage_parameter><parameter_tag>BUGS_TABLE_COLUMNS</parameter_tag>
 <parameter_value>${BUGS_TABLE_COLUMNS}</parameter_value>
 <parameter_description/>
 </usage_parameter></usage_parameters>     <cluster_schema/>
@@ -858,7 +816,7 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
 
         </field>
     </fields><clear_result_fields>Y</clear_result_fields>
-<info_steps/><target_steps/><usage_parameters><usage_parameter><parameter_tag>BUGS_TABLE_COLUMNS</parameter_tag>
+<info_steps></info_steps><target_steps></target_steps><usage_parameters><usage_parameter><parameter_tag>BUGS_TABLE_COLUMNS</parameter_tag>
 <parameter_value>${BUGS_TABLE_COLUMNS}</parameter_value>
 <parameter_description/>
 </usage_parameter></usage_parameters>     <cluster_schema/>
@@ -1359,7 +1317,6 @@ ORDER BY
 
         <class_name>Processor</class_name>
 
-        
         <class_source><![CDATA[import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1506,11 +1463,12 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
 */
     return true;
 }
-]]></class_source></definition>
+]]></class_source>
+        </definition>
     </definitions>
     <fields>
     </fields><clear_result_fields>N</clear_result_fields>
-<info_steps/><target_steps/><usage_parameters/>     <cluster_schema/>
+<info_steps></info_steps><target_steps></target_steps><usage_parameters></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>1052</xloc>
       <yloc>429</yloc>
