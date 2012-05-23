@@ -47,7 +47,7 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value, f
     // If we have switched to a new bug
     if (prevBugID < currBugID) {
         // Start replaying versions in ascending order to build full data on each version
-        writeToLog("e", "Emitting intermediate versions for " + prevBugID);
+        writeToLog("d", "Emitting intermediate versions for " + prevBugID);
         populateIntermediateVersionObjects();
         startNewBug(bug_id, modified_ts, modified_by, _merge_order);
     }
