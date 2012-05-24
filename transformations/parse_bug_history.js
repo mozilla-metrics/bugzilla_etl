@@ -82,7 +82,7 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value, f
 function startNewBug(bug_id, modified_ts, modified_by, _merge_order) {
     if (currBugID >= 999999999) return;
     if (_merge_order != 1) {
-        writeToLog("e", "Current bugs table record not found for bug_id: "+bug_id);
+        writeToLog("e", "Current bugs table record not found for bug_id: "+bug_id+" (merge order " + _merge_order + ")");
     }
     prevBugID = bug_id;
     bugVersions = [];
@@ -378,7 +378,8 @@ function populateIntermediateVersionObjects() {
         var rowIndex = inputRowSize;
         newRow[rowIndex++] = currBugState.bug_id;
         newRow[rowIndex++] = currBugState._id;
-        newRow[rowIndex++] = JSON.stringify(currBugState,null,2);
+        newRow[rowIndex++] = JSON.stringify(currBugState,null,2); // DEBUGGING, expanded output
+        //newRow[rowIndex++] = JSON.stringify(currBugState);
         putRow(newRow);
     }
 }

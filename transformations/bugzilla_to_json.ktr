@@ -11,7 +11,12 @@
     <parameters>
         <parameter>
             <name>BUG_IDS_PARTITION</name>
-            <default_value>(bug_id &gt;= 635000 and bug_id &lt; 640000)</default_value>
+            <default_value>(bug_id = 639999)</default_value>
+            <description/>
+        </parameter>
+        <parameter>
+            <name>ES_NODES</name>
+            <default_value>elasticsearch7.metrics.scl3.mozilla.com:9300,elasticsearch8.metrics.scl3.mozilla.com:9300</default_value>
             <description/>
         </parameter>
         <parameter>
@@ -140,6 +145,30 @@ http:&#47;&#47;www.elasticsearch.org&#47;guide&#47;reference&#47;api&#47;update.
       <heigth>76</heigth>
       <fontname>Lucida Grande</fontname>
       <fontsize>13</fontsize>
+      <fontbold>N</fontbold>
+      <fontitalic>N</fontitalic>
+      <fontcolorred>0</fontcolorred>
+      <fontcolorgreen>0</fontcolorgreen>
+      <fontcolorblue>0</fontcolorblue>
+      <backgroundcolorred>255</backgroundcolorred>
+      <backgroundcolorgreen>165</backgroundcolorgreen>
+      <backgroundcolorblue>0</backgroundcolorblue>
+      <bordercolorred>100</bordercolorred>
+      <bordercolorgreen>100</bordercolorgreen>
+      <bordercolorblue>100</bordercolorblue>
+      <drawshadow>Y</drawshadow>
+    </notepad>
+    <notepad>
+      <note>The text file output step may require
+you to raise the max # of open files
+allowed. In the worst case you get one
+open file per bug.</note>
+      <xloc>1050</xloc>
+      <yloc>276</yloc>
+      <width>220</width>
+      <heigth>62</heigth>
+      <fontname>Sans</fontname>
+      <fontsize>8</fontsize>
       <fontbold>N</fontbold>
       <fontitalic>N</fontitalic>
       <fontcolorred>0</fontcolorred>
@@ -357,7 +386,6 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
             int port = Integer.parseInt(esNode.substring(colon+1));
             TransportAddress a = new InetSocketTransportAddress(host, port);
             transportClient.addTransportAddress(a);
-            System.out.println("Adding ElasticSearch Node " + host + ":" + port);
         }
 
         client = transportClient;
@@ -480,7 +508,10 @@ public String getMostRecentVersion(String bugId) {
 
         </field>
     </fields><clear_result_fields>N</clear_result_fields>
-<info_steps></info_steps><target_steps></target_steps><usage_parameters></usage_parameters>     <cluster_schema/>
+<info_steps></info_steps><target_steps></target_steps><usage_parameters><usage_parameter><parameter_tag>ES_NODES</parameter_tag>
+<parameter_value>${ES_NODES}</parameter_value>
+<parameter_description/>
+</usage_parameter></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>250</xloc>
       <yloc>350</yloc>
@@ -1468,7 +1499,10 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
     </definitions>
     <fields>
     </fields><clear_result_fields>N</clear_result_fields>
-<info_steps></info_steps><target_steps></target_steps><usage_parameters></usage_parameters>     <cluster_schema/>
+<info_steps></info_steps><target_steps></target_steps><usage_parameters><usage_parameter><parameter_tag>ES_NODES</parameter_tag>
+<parameter_value>${ES_NODES}</parameter_value>
+<parameter_description/>
+</usage_parameter></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>1052</xloc>
       <yloc>429</yloc>
