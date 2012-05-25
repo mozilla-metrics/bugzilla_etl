@@ -16,11 +16,6 @@
             <default_value>bug_id in (601311,603959,606939,608973,608974,608977,609246,609249,609276,609540)</default_value>
             <description/>
         </parameter>
-        <parameter>
-            <name>ES_NODES</name>
-            <default_value>localhost:9300</default_value>
-            <description/>
-        </parameter>
     </parameters>
     <slaveservers>
     </slaveservers>

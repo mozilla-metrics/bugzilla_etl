@@ -15,11 +15,6 @@
             <description/>
         </parameter>
         <parameter>
-            <name>ES_NODES</name>
-            <default_value>localhost:9300</default_value>
-            <description/>
-        </parameter>
-        <parameter>
             <name>START_TIME</name>
             <default_value>0</default_value>
             <description/>
