@@ -1005,11 +1005,11 @@ ORDER BY bug_id;</sql>
 	, comp.`name` AS component
 	, ${BUGS_TABLE_COLUMNS}
 FROM bugs b
-	JOIN profiles pr ON b.reporter = pr.userid
-	JOIN profiles pa ON b.assigned_to = pa.userid
-	JOIN profiles pq ON b.qa_contact = pq.userid
-    JOIN products prod ON prod.id = product_id
-    JOIN components comp ON comp.id = component_id
+	LEFT JOIN profiles pr ON b.reporter = pr.userid
+	LEFT JOIN profiles pa ON b.assigned_to = pa.userid
+	LEFT JOIN profiles pq ON b.qa_contact = pq.userid
+    LEFT JOIN products prod ON prod.id = product_id
+    LEFT JOIN components comp ON comp.id = component_id
 WHERE
     UNIX_TIMESTAMP(delta_ts)*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}

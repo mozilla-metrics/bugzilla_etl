@@ -13,7 +13,7 @@
     <parameters>
         <parameter>
             <name>BUG_IDS_PARTITION</name>
-            <default_value>(bug_id &gt; 600000 and bug_id &lt; 600100)</default_value>
+            <default_value>bug_id in (601311,603959,606939,608973,608974,608977,609246,609249,609276,609540)</default_value>
             <description/>
         </parameter>
     </parameters>
