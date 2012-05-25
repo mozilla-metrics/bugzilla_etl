@@ -16,7 +16,7 @@
         </parameter>
         <parameter>
             <name>ES_NODES</name>
-            <default_value>elasticsearch7.metrics.scl3.mozilla.com:9300,elasticsearch8.metrics.scl3.mozilla.com:9300</default_value>
+            <default_value>localhost:9300</default_value>
             <description/>
         </parameter>
         <parameter>
