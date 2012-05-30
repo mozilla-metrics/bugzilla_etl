@@ -3,9 +3,9 @@ package com.mozilla.bugzilla_etl.es;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.client.action.bulk.BulkRequestBuilder;
 
 import com.mozilla.bugzilla_etl.base.Destination;
 import com.mozilla.bugzilla_etl.model.Entity;
@@ -27,6 +27,7 @@ extends AbstractEsClient implements Destination<E, Exception> {
     public static final int TIMEOUT = 15000;
 
 
+    @Override
     public void send(E entity) throws Exception {
         if (bulk == null) {
             bulk = client.prepareBulk();
