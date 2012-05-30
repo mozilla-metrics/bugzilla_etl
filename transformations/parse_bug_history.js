@@ -199,7 +199,7 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
     if (attach_id != '') {
         var attachment = currBugAttachmentsMap[attach_id];
         if (!attachment) {
-            writeToLog("d", "Unable to find attachment "+attach_id+" for bug_id "+currBugID+": "+JSON.stringify(currBugAttachmentsMap));
+            writeToLog("e", "Unable to find attachment "+attach_id+" for bug_id "+currBugID+": "+JSON.stringify(currBugAttachmentsMap));
         } else {
            if (attachment[field_name] instanceof Array) {
                var a = attachment[field_name];
@@ -306,14 +306,15 @@ function populateIntermediateVersionObjects() {
             // Track the previous value
             // for now, skip attachment changes and multi-value fields
             if (targetName != "attachment" && !isMultiField(change.field_name)) {
-               // Super-naive approach:
-               setPrevious(prevValues, change.field_name, target[change.field_name], currVersion.modified_ts, nextVersion.modified_ts);
+               if (target[change.field_name] != change.field_value) {
+                  setPrevious(prevValues, change.field_name, target[change.field_name], currVersion.modified_ts, nextVersion.modified_ts);
+               }
             } else if (targetName == "attachment") {
                if (change.field_name == "flags") {
-                  // TODO: handle attachment flags
+                  // Handle attachment flags
                   processFlagChange(flagMap, change, change["attach_id"], currVersion.modified_ts);
                } else {
-                  // handle attachments
+                  // Handle attachments
                   if (!prevValues["attachments"]) {
                      prevValues["attachments"] = [];
                   }
@@ -323,22 +324,15 @@ function populateIntermediateVersionObjects() {
                      att = { attach_id: change["attach_id"] };
                      prevValues["attachments"].push(att);
                   }
-                  setPrevious(att, change.field_name, target[change.field_name], currVersion.modified_ts, nextVersion.modified_ts);
+
+                  // Make sure it's actually changing.  We seem to get change entries for attachments that show the current field value.
+                  if (target[change.field_name] != change.field_value) {
+                     setPrevious(att, change.field_name, target[change.field_name], currVersion.modified_ts, nextVersion.modified_ts);
+                  }
                }
             } else if (change.field_name == "flags") {
-               // TODO: handle flags (but probably not the other simple multi-fields)
+               // Handle bug flags (but not the other simple multi-fields)
                processFlagChange(flagMap, change, "bug", currVersion.modified_ts);
-
-               //  "flags": [ /* nested objects */
-               //      {
-               //          "flag": "blocking-aviary1.5?"
-               //          "requestee": "dre@mozilla.com",
-               //          "change_to_ts": 1120086097000,
-               //          "change_away_ts": 1120086413000,
-               //          "duration_seconds": 316,
-               //          "duration_days": 0.0036574074074074074
-               //      }
-               //  ],
             } else {
                writeToLog("d", "Skipping previous_value for multi-value field " + change.field_name);
             }
@@ -380,15 +374,18 @@ function populateIntermediateVersionObjects() {
 
         currBugState.previous_values = prevValues;
 
+        // TODO: if we remove the completed flags from flagMap as we apply them
+        //       we don't have to reset with each bug version.
         // unset flags
         currBugState.previous_values["flags"] = undefined;
 
+        // Apply the previous value flags
         applyFlags(currBugState, flagMap);
 
         // Do some processing to make sure that diffing betweens runs stays as similar as possible.
         stabilize(currBugState);
 
-        // FIXME: empty string breaks date parsing.
+        // Empty string breaks date parsing, remove it from bug state.
         if (currBugState["deadline"] == "") {
            //currBugState["deadline"] = null;
            currBugState["deadline"] = undefined;
@@ -405,7 +402,7 @@ function populateIntermediateVersionObjects() {
     }
 }
 
-// aFlagContainer is either "bug" if it's a bug flag, or an attachment id if it's 
+// aFlagLabel is either "bug" if it's a bug flag, or an attachment id if it's 
 // an attachment flag.
 function processFlagChange(aFlagMap, aChange, aFlagLabel, aTimestamp) {
    if (!aFlagMap[aFlagLabel]) {
@@ -439,45 +436,17 @@ function processFlags(aFlagList, aFieldValue, aTsField, aTimestamp) {
    }
 }
 
+// TODO: if we remove the "used" flags as we go, we do not have to reset the 
+//       flags between each bug version.
 function applyFlags(aBug, aFlagMap) {
+   // Apply bug flags
    applyOneFlagSet(aBug["previous_values"], aFlagMap["bug"]);
-   /*
-   for each (var flag in aFlagMap["bug"]) {
-      if (flag["change_to_ts"] && flag["change_away_ts"]) {
-         // it's a flag with a full previous value
-         if (aBug["previous_values"]["flags"]) {
-            aBug["previous_values"]["flags"].push(flag);
-         } else {
-            aBug["previous_values"]["flags"] = [flag];
-         }
-      } else if (flag["change_away_ts"]) {
-         writeToLog("e", "Found a previous flag with only change_away_ts: " + JSON.stringify(flag));
-      } else {
-         writeToLog("d", "Skipping incomplete previous flag: " + JSON.stringify(flag));
-      }
-   }
-   */
 
+   // Apply attachment flags
    // Only grab attachments that are in the bug.
    // FIXME: should we iterate aBug["previous_values"]["attachments"] or aBug["attachments"]?
    for each (var attachment in aBug["previous_values"]["attachments"]) {
       applyOneFlagSet(attachment, aFlagMap[attachment["attach_id"]]);
-      /*
-      for each (var flag in aFlagMap[attachment["attach_id"]]) {
-         if (flag["change_to_ts"] && flag["change_away_ts"]) {
-            // it's a flag with a full previous value
-            if (attachment["flags"]) {
-               attachment["flags"].push(flag);
-            } else {
-               attachment["flags"] = [flag];
-            }
-         } else if (flag["change_away_ts"]) {
-            writeToLog("e", "Found a previous flag with only change_away_ts: " + JSON.stringify(flag));
-         } else {
-            writeToLog("d", "Skipping incomplete previous flag: " + JSON.stringify(flag));
-         }
-      }
-      */
    }
 }
 
@@ -498,28 +467,6 @@ function applyOneFlagSet(aPrevValues, aFlagSet) {
    }
 }
 
-/*
-function makeFlagChange(change, to_ts, away_ts) {
-   var removed_values = getMultiFieldValue("flags", change.field_value_removed);
-   for each (var removed_value in removed_values) {
-      // FIXME
-   }
-   var parts = splitFlag(change.field_value_removed);
-   var duration_ms = (away_ts - to_ts);
-   
-   var flag = {
-      "flag": parts[0],
-      "requestee": parts[1],
-      "change_to_ts": to_ts,
-      "change_away_ts": away_ts,
-      "duration_seconds": (duration_ms / 1000),
-      "duration_days": (duration_ms / (1000.0 * 60 * 60 * 24))
-   }
-
-   return flag;
-}
-*/
-
 function setPrevious(dest, aFieldName, aValue, aChangeTo, aChangeAway) {
     var duration_ms = (aChangeAway - aChangeTo);
     dest[aFieldName + "_value"] = aValue;
@@ -533,14 +480,6 @@ function setPrevious(dest, aFieldName, aValue, aChangeTo, aChangeAway) {
 
 function findAttachment(attachments, attachId) {
    return findByKey(attachments, "attach_id", attachId);
-   /*
-   for each (var attachment in attachments) {
-      if (attachment.attach_id == attachId) {
-         return attachment;
-      }
-   }
-   return null;
-   */
 }
 
 function findByKey(aList, aField, aValue) {
@@ -558,7 +497,7 @@ function stabilize(aBug) {
       aBug["cc"].sort();
    }
    if (aBug["changes"]) {
-      aBug["changes"].sort(function(a,b){ return a.field_name > b.field_name ? 1 : (a.field_name < b.field_name ? -1 : 0) });
+      aBug["changes"].sort(function(a,b){ return sortAscByField(a, b, "field_name") });
    }
 }
 
