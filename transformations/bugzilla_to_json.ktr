@@ -239,7 +239,7 @@ open file per bug.</note>
        <calculation><field_name>full_filename</field_name>
 <calc_type>ADD</calc_type>
 <field_a>prefix</field_a>
-<field_b>bug_id</field_b>
+<field_b>bug_version_id</field_b>
 <field_c/>
 <value_type>String</value_type>
 <value_length>-1</value_length>
@@ -1312,7 +1312,8 @@ WHERE
     AND ${BUG_IDS_PARTITION}
 ORDER BY
     bug_id,
-    bug_when DESC</sql>
+    bug_when DESC,
+    attach_id</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>
