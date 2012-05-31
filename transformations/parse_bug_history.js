@@ -213,6 +213,7 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
                    a = a.concat(multi_field_value_removed);
                }
            } else {
+               writeToLog("d", "Setting attachment " + attach_id + "[" + field_name + "] to '" + field_value_removed + "'");
                attachment[field_name] = field_value_removed;
            }
         }
@@ -377,7 +378,7 @@ function populateIntermediateVersionObjects() {
         // TODO: if we remove the completed flags from flagMap as we apply them
         //       we don't have to reset with each bug version.
         // unset flags
-        currBugState.previous_values["flags"] = undefined;
+        //currBugState.previous_values["flags"] = undefined;
 
         // Apply the previous value flags
         applyFlags(currBugState, flagMap);
@@ -451,18 +452,25 @@ function applyFlags(aBug, aFlagMap) {
 }
 
 function applyOneFlagSet(aPrevValues, aFlagSet) {
-   for each (var flag in aFlagSet) {
-      if (flag["change_to_ts"] && flag["change_away_ts"]) {
-         // it's a flag with a full previous value
-         if (aPrevValues["flags"]) {
-            aPrevValues["flags"].push(flag);
+   if (aFlagSet) {
+      for (var i = 0; i < aFlagSet.length; i++) {
+         var flag = aFlagSet[i];
+         if (flag["change_to_ts"] && flag["change_away_ts"]) {
+            // it's a flag with a full previous value
+            if (aPrevValues["flags"]) {
+               aPrevValues["flags"].push(flag);
+            } else {
+               aPrevValues["flags"] = [flag];
+            }
+
+            // Remove this flag:
+            writeToLog("d", "Removing used up flag: " + JSON.stringify(flag));
+            aFlagSet[i] = {};
+         } else if (flag["change_away_ts"]) {
+            writeToLog("e", "Found a previous flag with only change_away_ts: " + JSON.stringify(flag));
          } else {
-            aPrevValues["flags"] = [flag];
+            writeToLog("d", "Skipping incomplete previous flag: " + JSON.stringify(flag));
          }
-      } else if (flag["change_away_ts"]) {
-         writeToLog("e", "Found a previous flag with only change_away_ts: " + JSON.stringify(flag));
-      } else {
-         writeToLog("d", "Skipping incomplete previous flag: " + JSON.stringify(flag));
       }
    }
 }
