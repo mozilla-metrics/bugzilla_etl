@@ -43,7 +43,48 @@
                             "type": "date"
                         }, 
                         "flags": {
-                            "type": "nested"
+                            "properties": {
+                                "modified_by": {
+                                    "index": "not_analyzed", 
+                                    "type": "string"
+                                }, 
+                                "modified_ts": {
+                                    "type": "date"
+                                },
+                                "value": {
+                                    "index": "not_analyzed", 
+                                    "type": "string"
+                                },
+                                "previous_value": {
+                                    "index": "not_analyzed", 
+                                    "type": "string"
+                                },
+                                "request_type": {
+                                    "index": "not_analyzed", 
+                                    "type": "string"
+                                },
+                                "request_status": {
+                                    "index": "not_analyzed", 
+                                    "type": "string"
+                                },
+                                "requestee": {
+                                    "index": "not_analyzed", 
+                                    "type": "string"
+                                },
+                                "previous_modified_ts": {
+                                    "type": "date"
+                                },
+                                "previous_modified_by": {
+                                    "index": "not_analyzed", 
+                                    "type": "string"
+                                },
+                                "duration_days": {
+                                    "type": "integer"
+                                },
+                            },
+                            "index_name": "flag", 
+                            "type": "nested",
+                            "dynamic": "strict"
                         }, 
                         "modified_by": {
                             "index": "not_analyzed", 
@@ -51,11 +92,32 @@
                         }, 
                         "modified_ts": {
                             "type": "date"
+                        },
+                        "attachments.ispatch": {
+                            "index_name": "is_patch",
+                            "type": "boolean"
+                        },
+                        "attachments.isobsolete": {
+                            "index_name": "is_obsolete",
+                            "type": "boolean"
+                        },
+                        "attachments.isprivate": {
+                            "index_name": "is_private",
+                            "type": "boolean"
+                        },
+                        "attachments.description": {
+                            "enabled": false,
+                            "type": "string"
+                        },
+                        "previous_values": {
+                            "type": "object"
                         }
                     }, 
-                    "type": "nested"
+                    "type": "nested",
+                    "dynamic": "strict"
                 }, 
                 "blocked": {
+                    "index_name": "blocked_by",
                     "type": "integer"
                 }, 
                 "bug_file_loc": {
@@ -95,15 +157,55 @@
                     "type": "object"
                 }, 
                 "dependson": {
-                    "index_name": "depends", 
+                    "index_name": "depends_on", 
                     "type": "integer"
                 }, 
                 "expires_on": {
                     "type": "date"
                 }, 
                 "flags": {
+                    "properties": {
+                        "modified_by": {
+                            "index": "not_analyzed", 
+                            "type": "string"
+                        }, 
+                        "modified_ts": {
+                            "type": "date"
+                        },
+                        "value": {
+                            "index": "not_analyzed", 
+                            "type": "string"
+                        },
+                        "previous_value": {
+                            "index": "not_analyzed", 
+                            "type": "string"
+                        },
+                        "request_type": {
+                            "index": "not_analyzed", 
+                            "type": "string"
+                        },
+                        "request_status": {
+                            "index": "not_analyzed", 
+                            "type": "string"
+                        },
+                        "requestee": {
+                            "index": "not_analyzed", 
+                            "type": "string"
+                        },
+                        "previous_modified_ts": {
+                            "type": "date"
+                        },
+                        "previous_modified_by": {
+                            "index": "not_analyzed", 
+                            "type": "string"
+                        },
+                        "duration_days": {
+                            "type": "integer"
+                        },
+                    },
                     "index_name": "flag", 
-                    "type": "nested"
+                    "type": "nested",
+                    "dynamic": "strict"
                 }, 
                 "keywords": {
                     "index": "not_analyzed", 
