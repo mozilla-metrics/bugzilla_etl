@@ -30,7 +30,6 @@ var prevBugID;
 var bugVersions;
 var bugVersionsMap;
 var currBugState;
-var currBugAttachments;
 var currBugAttachmentsMap;
 var prevActivityID;
 var currActivity;
@@ -81,7 +80,6 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value, f
 
 function startNewBug(bug_id, modified_ts, modified_by, _merge_order) {
     if (currBugID >= 999999999) return;
-
     if (_merge_order != 1) {
         writeToLog("e", "Current bugs table record not found for bug_id: "+bug_id+" (merge order " + _merge_order + ")");
     }
@@ -98,7 +96,6 @@ function startNewBug(bug_id, modified_ts, modified_by, _merge_order) {
     };
     currBugState._id = bug_id+"."+modified_ts;
     currActivity = {};
-    currBugAttachments = [];
     currBugAttachmentsMap = {};
 }
 
@@ -132,12 +129,11 @@ function processAttachmentsTableItem(modified_ts, modified_by, field_name, field
         bugVersions.push(currActivity);
         bugVersionsMap[currActivityID] = currActivity;
         prevActivityID = currActivityID;
+        currActivity.changes.push({
+            field_name: "attachment_added",
+            attach_id: attach_id
+        });
     }
-    currActivity.changes.push({
-        field_name: field_name,
-        field_value: field_value,
-        attach_id: attach_id
-    });
     if (!currBugAttachmentsMap[attach_id]) {
         currBugAttachmentsMap[attach_id] = {
             attach_id: attach_id,
@@ -145,7 +141,6 @@ function processAttachmentsTableItem(modified_ts, modified_by, field_name, field
             modified_by: modified_by,
             flags: []
         };
-        currBugAttachments.push(currBugAttachmentsMap[attach_id]);
     }
     currBugAttachmentsMap[attach_id][field_name] = field_value;
 }
@@ -160,7 +155,7 @@ function processFlagsTableItem(modified_ts, modified_by, field_name, field_value
     };
     if (attach_id != '') {
         if (!currBugAttachmentsMap[attach_id]) {
-            writeToLog("e", "Unable to find attachment "+attach_id+" for bug_id "+currBugID);
+            writeToLog("d", "Unable to find attachment "+attach_id+" for bug_id "+currBugID);
         }
         currBugAttachmentsMap[attach_id].flags.push(flag);
     } else {
@@ -205,13 +200,15 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
                var a = attachment[field_name];
                // Can have both added and removed values.
                if (multi_field_value[0] != '') {
+                   // Theory: If we fail to remove an added value, that means the value was added, then later removed.
                    removeValues(a, multi_field_value, "added", field_name, "attachment", attachment);
                }
 
                if (multi_field_value_removed[0] != '') {
-                  addValues(a, multi_field_value_removed, "removed attachment", field_name, currActivity);
+                   a = a.concat(multi_field_value_removed);
                }
            } else {
+               writeToLog("d", "Setting attachment " + attach_id + "[" + field_name + "] to '" + field_value_removed + "'");
                attachment[field_name] = field_value_removed;
            }
         }
@@ -220,11 +217,12 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
             var a = currBugState[field_name];
             // Can have both added and removed values.
             if (multi_field_value[0] != '') {
+                // Theory: If we fail to remove an added value, that means the value was added, then later removed.
                 removeValues(a, multi_field_value, "added", field_name, "currBugState", currBugState);
             }
 
             if (multi_field_value_removed[0] != '') {
-                addValues(a, multi_field_value_removed, "removed bug", field_name, currActivity);
+                a = a.concat(multi_field_value_removed);
             }
         } else if (isMultiField(field_name)) {
             // field must currently be missing, otherwise it would
@@ -276,12 +274,6 @@ function populateIntermediateVersionObjects() {
             currBugState[propName] = currVersion[propName];
         }
 
-        // Attachments are already sorted.  No need to sort again.
-        while (currBugAttachments[0] && currBugAttachments[0].created_ts <= currBugState.modified_ts) {
-            writeToLog("d", "Inserting attachment: " + JSON.stringify(currBugAttachments[0]));
-            currBugState.attachments.push(currBugAttachments.shift());
-        }
-
         // Now walk currBugState forward in time by applying the changes from currVersion
         var changes = currVersion.changes;
         //writeToLog("d", "Processing changes: "+JSON.stringify(changes));
@@ -289,17 +281,25 @@ function populateIntermediateVersionObjects() {
             var change = changes[changeIdx];
             var target = currBugState;
             var targetName = "currBugState";
-            if (change["attach_id"] != '') {
-               // Attachment change
-               target = findAttachment(currBugState["attachments"], change["attach_id"]);
-               targetName = "attachment";
-               if (target == null) {
-                  writeToLog("e", "Encountered a change to missing attachment for bug '" + currVersion["bug_id"] + "': " + JSON.stringify(change) + ".");
+            var attachID = change["attach_id"];
+            if (attachID != '') {
+                // Handle the special change record that signals the creation of the attachment
+                if (change.field_name == "attachment_added") {
+                    // This change only exists when the attachment has been added to the map, so no missing case needed.
+                    currBugState.attachments.push(currBugAttachmentsMap[attachID]);
+                    continue;
+                } else {
+                    // Attachment change
+                    target = currBugAttachmentsMap[attachID];
+                    targetName = "attachment";
+                    if (target == null) {
+                        writeToLog("e", "Encountered a change to missing attachment for bug '" + currVersion["bug_id"] + "': " + JSON.stringify(change) + ".");
 
-                  // treat it as a change to the main bug instead :(
-                  target = currBugState;
-                  targetName = "currBugState";
-               }
+                        // treat it as a change to the main bug instead :(
+                        target = currBugState;
+                        targetName = "currBugState";
+                    }
+                }
             }
 
             // Track the previous value
@@ -317,6 +317,7 @@ function populateIntermediateVersionObjects() {
                   if (!prevValues["attachments"]) {
                      prevValues["attachments"] = [];
                   }
+                  //XXX: Can we just put this info in the attachment object stored in the current "target" variable instead?
                   var att = findAttachment(prevValues["attachments"], change["attach_id"]);
                   if (!att) {
                      //writeToLog("d", "Unable to find attachment with id '" + attachId + "' in " + JSON.stringify(attachments) + ".");
@@ -327,8 +328,6 @@ function populateIntermediateVersionObjects() {
                   // Make sure it's actually changing.  We seem to get change entries for attachments that show the current field value.
                   if (target[change.field_name] != change.field_value) {
                      setPrevious(att, change.field_name, target[change.field_name], currVersion.modified_ts, nextVersion.modified_ts);
-                  } else {
-                     writeToLog("d", "Skipping fake attachment change to attach: " + JSON.stringify(target) + ", change: " + JSON.stringify(change));
                   }
                }
             } else if (change.field_name == "flags") {
@@ -350,8 +349,6 @@ function populateIntermediateVersionObjects() {
                 }
 
                 // Handle addition(s) (if any)
-                addValues(a, multi_field_value, "added", change.field_name, currVersion);
-                /*
                 for each (var added in multi_field_value) {
                     if (added != '') {
                         if (change.field_name == 'flags') {
@@ -366,7 +363,6 @@ function populateIntermediateVersionObjects() {
                         }
                     }
                 }
-                */
             } else if (isMultiField(change.field_name)) {
                 // First appearance of a multi-value field
                 target[change.field_name] = [change.field_value];
@@ -378,13 +374,18 @@ function populateIntermediateVersionObjects() {
 
         currBugState.previous_values = prevValues;
 
+        // TODO: if we remove the completed flags from flagMap as we apply them
+        //       we don't have to reset with each bug version.
+        // unset flags
+        //currBugState.previous_values["flags"] = undefined;
+
         // Apply the previous value flags
         applyFlags(currBugState, flagMap);
 
         // Do some processing to make sure that diffing betweens runs stays as similar as possible.
         stabilize(currBugState);
 
-        // Empty string breaks ES date parsing, remove it from bug state.
+        // Empty string breaks date parsing, remove it from bug state.
         if (currBugState["deadline"] == "") {
            //currBugState["deadline"] = null;
            currBugState["deadline"] = undefined;
@@ -396,7 +397,7 @@ function populateIntermediateVersionObjects() {
         newRow[rowIndex++] = currBugState.bug_id;
         newRow[rowIndex++] = currBugState._id;
         newRow[rowIndex++] = JSON.stringify(currBugState,null,2); // DEBUGGING, expanded output
-        //newRow[rowIndex++] = JSON.stringify(currBugState); // condensed output
+        //newRow[rowIndex++] = JSON.stringify(currBugState);
         putRow(newRow);
     }
 }
@@ -435,6 +436,8 @@ function processFlags(aFlagList, aFieldValue, aTsField, aTimestamp) {
    }
 }
 
+// TODO: if we remove the "used" flags as we go, we do not have to reset the 
+//       flags between each bug version.
 function applyFlags(aBug, aFlagMap) {
    // Apply bug flags
    applyOneFlagSet(aBug["previous_values"], aFlagMap["bug"]);
@@ -461,8 +464,7 @@ function applyOneFlagSet(aPrevValues, aFlagSet) {
 
             // Remove this flag:
             writeToLog("d", "Removing used up flag: " + JSON.stringify(flag));
-            aFlagSet.splice(i, 1);
-            i--;
+            aFlagSet[i] = {};
          } else if (flag["change_away_ts"]) {
             writeToLog("e", "Found a previous flag with only change_away_ts: " + JSON.stringify(flag));
          } else {
@@ -513,28 +515,6 @@ function splitFlag(flag) {
         parts[1] = parts[1].slice(0,-1);
     }
     return parts;
-}
-
-function addValues(anArray, someValues, valueType, fieldName, anObj) {
-   writeToLog("d", "Adding " + valueType + " " + fieldName + " values:" + JSON.stringify(someValues));
-   if (fieldName == "flags") {
-      for each (var added in someValues) {
-          if (added != '') {
-              var addedFlag = {
-                      "modified_ts": anObj.modified_ts,
-                      "modified_by": anObj.modified_by,
-                      "field_name": added
-                  };
-              anArray.push(addedFlag);
-          }
-      }
-   } else {
-      for each (var added in someValues) {
-          if (added != '') {
-              anArray.push(added);
-          }
-      }
-   }
 }
 
 function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anObj) {

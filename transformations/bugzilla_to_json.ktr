@@ -887,8 +887,8 @@ WHERE bug_id IN (
 	)
 ORDER BY
     bug_id,
-	attach_id
-</sql>
+	attach_id,
+	a.creation_ts</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>
