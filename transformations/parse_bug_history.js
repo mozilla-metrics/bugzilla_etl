@@ -25,6 +25,7 @@ For each bug version object that was created above:
 
 */
 
+const FLAG_PATTERN = /^(.*)([?+-])(\([^)]*\))?$/;
 var currBugID;
 var prevBugID;
 var bugVersions;
@@ -105,8 +106,6 @@ function processSingleValueTableItem(field_name, field_value) {
 }
 
 function processMultiValueTableItem(field_name, field_value) {
-    //writeToLog("e", "About to push "+field_value+" to array field "+field_name+" on bug "
-    //    +currBugID+" current value:"+JSON.stringify(currBugState[field_name]));
     if (currBugState[field_name] == null) {
         currBugState[field_name] = [];
     }
@@ -147,13 +146,7 @@ function processAttachmentsTableItem(modified_ts, modified_by, field_name, field
 }
 
 function processFlagsTableItem(modified_ts, modified_by, field_name, field_value, field_value_removed, attach_id) {
-//    var parts = splitFlag(field_value);
-    var flag = {
-        modified_ts: modified_ts,
-        modified_by: modified_by,
-        field_name: field_value
-//        field_value: parts[1]
-    };
+    var flag = makeFlag(field_value, modified_ts, modified_by);
     if (attach_id != '') {
         if (!currBugAttachmentsMap[attach_id]) {
             writeToLog("e", "Unable to find attachment "+attach_id+" for bug_id "+currBugID);
@@ -291,7 +284,8 @@ function populateIntermediateVersionObjects() {
                     target = currBugAttachmentsMap[attachID];
                     targetName = "attachment";
                     if (target == null) {
-                        writeToLog("e", "Encountered a change to missing attachment for bug '" + currVersion["bug_id"] + "': " + JSON.stringify(change) + ".");
+                        writeToLog("e", "Encountered a change to missing attachment for bug '" 
+                              + currVersion["bug_id"] + "': " + JSON.stringify(change) + ".");
 
                         // treat it as a change to the main bug instead :(
                         target = currBugState;
@@ -303,23 +297,24 @@ function populateIntermediateVersionObjects() {
             // Track the previous value
             // for now, skip attachment changes and multi-value fields
             if (targetName != "attachment" && !isMultiField(change.field_name)) {
+               // Single-value field has changed in the main bug.
                if (target[change.field_name] != change.field_value) {
                   setPrevious(prevValues, change.field_name, target[change.field_name], currVersion.modified_ts, nextVersion.modified_ts);
                }
             } else if (targetName == "attachment") {
                if (change.field_name == "flags") {
                   // Handle attachment flags
-                  processFlagChange(flagMap, change, change["attach_id"], currVersion.modified_ts);
+                  processFlagChange(flagMap, change, attachID, currVersion.modified_ts);
                } else {
                   // Handle attachments
                   if (!prevValues["attachments"]) {
                      prevValues["attachments"] = [];
                   }
                   //XXX: Can we just put this info in the attachment object stored in the current "target" variable instead?
-                  var att = findAttachment(prevValues["attachments"], change["attach_id"]);
+                  var att = findAttachment(prevValues["attachments"], attachID);
                   if (!att) {
-                     //writeToLog("d", "Unable to find attachment with id '" + attachId + "' in " + JSON.stringify(attachments) + ".");
-                     att = { attach_id: change["attach_id"] };
+                     //writeToLog("d", "Unable to find attachment with id '" + attachID + "' in " + JSON.stringify(attachments) + ".");
+                     att = { attach_id: attachID };
                      prevValues["attachments"].push(att);
                   }
 
@@ -350,22 +345,6 @@ function populateIntermediateVersionObjects() {
 
                 // Handle addition(s) (if any)
                 addValues(a, multi_field_value, "added", change.field_name, currVersion);
-                /*
-                for each (var added in multi_field_value) {
-                    if (added != '') {
-                        if (change.field_name == 'flags') {
-                           var addedFlag = {
-                                   "modified_ts": currVersion.modified_ts, 
-                                   "modified_by": currVersion.modified_by, 
-                                   "field_name": added
-                               };
-                           a.push(addedFlag);
-                        } else {
-                           a.push(added);
-                        }
-                    }
-                }
-                */
             } else if (isMultiField(change.field_name)) {
                 // First appearance of a multi-value field
                 target[change.field_name] = [change.field_value];
@@ -427,8 +406,8 @@ function processFlags(aFlagList, aFieldValue, aTsField, aTimestamp) {
 
          if (existingFlag["change_to_ts"] && existingFlag["change_away_ts"]) {
             var duration_ms = existingFlag["change_away_ts"] - existingFlag["change_to_ts"];
-            existingFlag["duration_seconds"] = (duration_ms / 1000);
-            existingFlag["duration_days"] = (duration_ms / (1000.0 * 60 * 60 * 24));
+//            existingFlag["duration_seconds"] = (duration_ms / 1000);
+            existingFlag["duration_days"] = Math.floor(duration_ms / (1000.0 * 60 * 60 * 24));
          }
       }
    }
@@ -478,8 +457,8 @@ function setPrevious(dest, aFieldName, aValue, aChangeTo, aChangeAway) {
     //dest[aFieldName + "_change_away_ts"] = new Date(aChangeAway); // for debugging;
     dest[aFieldName + "_change_to_ts"] = aChangeTo;
     dest[aFieldName + "_change_away_ts"] = aChangeAway;
-    dest[aFieldName + "_duration_seconds"] = (duration_ms / 1000);
-    dest[aFieldName + "_duration_days"] = (duration_ms / (1000.0 * 60 * 60 * 24));
+//    dest[aFieldName + "_duration_seconds"] = (duration_ms / 1000);
+    dest[aFieldName + "_duration_days"] = Math.floor(duration_ms / (1000.0 * 60 * 60 * 24));
 }
 
 function findAttachment(attachments, attachId) {
@@ -505,13 +484,21 @@ function stabilize(aBug) {
    }
 }
 
-// XXX - do we need this?
-function splitFlag(flag) {
-    var parts = flag.split('(');
-    if (parts.length == 2) {
-        parts[1] = parts[1].slice(0,-1);
-    }
-    return parts;
+function makeFlag(flag, modified_ts, modified_by) {
+   var flagParts = {
+      modified_ts: modified_ts,
+      modified_by: modified_by,
+      value: flag
+   };
+   var matches = FLAG_PATTERN.exec(flag);
+   if (matches) {
+      flagParts.request_type = matches[1];
+      flagParts.request_status = matches[2];
+      if (matches[3] && matches[3].length > 2) {
+         flagParts.requestee = matches[3].substring(1, matches[3].length - 1);
+      }
+   }
+   return flagParts;
 }
 
 function addValues(anArray, someValues, valueType, fieldName, anObj) {
@@ -519,11 +506,7 @@ function addValues(anArray, someValues, valueType, fieldName, anObj) {
    if (fieldName == "flags") {
       for each (var added in someValues) {
           if (added != '') {
-              var addedFlag = {
-                      "modified_ts": anObj.modified_ts,
-                      "modified_by": anObj.modified_by,
-                      "field_name": added
-                  };
+              var addedFlag = makeFlag(added, anObj.modified_ts, anObj.modified_by);
               anArray.push(addedFlag);
           }
       }
@@ -542,7 +525,7 @@ function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anOb
             var len = anArray.length;
             for (var i = 0; i < len; i++) {
                 // Match on flag name (incl. status) and flag value
-                if (anArray[i].field_name == v) {
+                if (anArray[i].value == v) {
                      anArray.splice(i, 1);
                      break;
                 }
