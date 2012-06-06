@@ -37,12 +37,15 @@ var currActivity;
 var inputRowSize = getInputRowMeta().size();
 var outputRowSize = getOutputRowMeta().size();
 
-function processRow(bug_id, modified_ts, modified_by, field_name, field_value, field_value_removed, attach_id, _merge_order) {
+function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in, field_value_removed, attach_id, _merge_order) {
     currBugID = bug_id;
 
     writeToLog("d", "bug_id={" + bug_id + "}, modified_ts={" + modified_ts + "}, modified_by={" + modified_by 
-          + "}, field_name={" + field_name + "}, field_value={" + field_value + "}, field_value_removed={"
+          + "}, field_name={" + field_name + "}, field_value={" + field_value_in + "}, field_value_removed={"
           + field_value_removed + "}, attach_id={" + attach_id + "}, _merge_order={" + _merge_order + "}");
+
+    // Treat timestamps as int values
+    var field_value = field_name.match(/_ts$/) ? parseInt(field_value_in) : field_value_in;
 
     // If we have switched to a new bug
     if (prevBugID < currBugID) {
@@ -295,11 +298,11 @@ function populateIntermediateVersionObjects() {
             }
 
             // Track the previous value
-            // for now, skip attachment changes and multi-value fields
+            // TODO: single-value fields can be treated the same for attachments / bugs.
             if (targetName != "attachment" && !isMultiField(change.field_name)) {
                // Single-value field has changed in the main bug.
                if (target[change.field_name] != change.field_value) {
-                  setPrevious(prevValues, change.field_name, target[change.field_name], currVersion.modified_ts, nextVersion.modified_ts);
+                  setPrevious(target, change.field_name, target[change.field_name], currVersion.modified_ts, nextVersion.modified_ts);
                }
             } else if (targetName == "attachment") {
                if (change.field_name == "flags") {
@@ -307,20 +310,9 @@ function populateIntermediateVersionObjects() {
                   processFlagChange(flagMap, change, attachID, currVersion.modified_ts);
                } else {
                   // Handle attachments
-                  if (!prevValues["attachments"]) {
-                     prevValues["attachments"] = [];
-                  }
-                  //XXX: Can we just put this info in the attachment object stored in the current "target" variable instead?
-                  var att = findAttachment(prevValues["attachments"], attachID);
-                  if (!att) {
-                     //writeToLog("d", "Unable to find attachment with id '" + attachID + "' in " + JSON.stringify(attachments) + ".");
-                     att = { attach_id: attachID };
-                     prevValues["attachments"].push(att);
-                  }
-
                   // Make sure it's actually changing.  We seem to get change entries for attachments that show the current field value.
                   if (target[change.field_name] != change.field_value) {
-                     setPrevious(att, change.field_name, target[change.field_name], currVersion.modified_ts, nextVersion.modified_ts);
+                     setPrevious(target, change.field_name, target[change.field_name], currVersion.modified_ts);
                   } else {
                      writeToLog("d", "Skipping fake attachment change to attach: " + JSON.stringify(target) + ", change: " + JSON.stringify(change));
                   }
@@ -354,10 +346,11 @@ function populateIntermediateVersionObjects() {
             }
         }
 
-        currBugState.previous_values = prevValues;
+        //currBugState.previous_values = prevValues;
 
         // Apply the previous value flags
-        applyFlags(currBugState, flagMap);
+        // FIXME
+        //applyFlags(currBugState, flagMap);
 
         // Do some processing to make sure that diffing betweens runs stays as similar as possible.
         stabilize(currBugState);
@@ -450,15 +443,34 @@ function applyOneFlagSet(aPrevValues, aFlagSet) {
    }
 }
 
-function setPrevious(dest, aFieldName, aValue, aChangeTo, aChangeAway) {
-    var duration_ms = (aChangeAway - aChangeTo);
-    dest[aFieldName + "_value"] = aValue;
-    //dest[aFieldName + "_change_to_ts"] = new Date(aChangeTo); // For debugging;
-    //dest[aFieldName + "_change_away_ts"] = new Date(aChangeAway); // for debugging;
-    dest[aFieldName + "_change_to_ts"] = aChangeTo;
-    dest[aFieldName + "_change_away_ts"] = aChangeAway;
-//    dest[aFieldName + "_duration_seconds"] = (duration_ms / 1000);
-    dest[aFieldName + "_duration_days"] = Math.floor(duration_ms / (1000.0 * 60 * 60 * 24));
+function setPrevious(dest, aFieldName, aValue, aChangeAway) {
+    if (!dest["previous_values"]) {
+       dest["previous_values"] = {};
+    }
+
+    var pv = dest["previous_values"];
+
+    var vField = aFieldName + "_value";
+    var caField = aFieldName + "_change_away_ts";
+    var ctField = aFieldName + "_change_to_ts";
+    var ddField = aFieldName + "_duration_days";
+
+    // If we have a previous change for this field, then use the 
+    // change-away time as the new change-to time.
+    if (pv[caField]) {
+       pv[ctField] = pv[caField];
+    } else {
+       // Otherwise, this is the first change for this field, so 
+       // use the creation timestamp.
+       pv[ctField] = dest["created_ts"];
+    }
+
+    pv[vField] = aValue;
+    pv[caField] = aChangeAway;
+    
+    var duration_ms = pv[caField] - pv[ctField];
+
+    pv[ddField] = Math.floor(duration_ms / (1000.0 * 60 * 60 * 24));
 }
 
 function findAttachment(attachments, attachId) {
