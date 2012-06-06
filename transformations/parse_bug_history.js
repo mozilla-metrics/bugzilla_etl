@@ -273,6 +273,7 @@ function populateIntermediateVersionObjects() {
         //writeToLog("d", "Processing changes: "+JSON.stringify(changes));
         for (var changeIdx = 0; changeIdx < changes.length; changeIdx++) {
             var change = changes[changeIdx];
+            writeToLog("d", "Processing change: " + JSON.stringify(change));
             var target = currBugState;
             var targetName = "currBugState";
             var attachID = change["attach_id"];
@@ -298,30 +299,18 @@ function populateIntermediateVersionObjects() {
             }
 
             // Track the previous value
-            // TODO: single-value fields can be treated the same for attachments / bugs.
-            if (targetName != "attachment" && !isMultiField(change.field_name)) {
-               // Single-value field has changed in the main bug.
+            if (!isMultiField(change.field_name)) {
+               // Single-value field has changed in bug or attachment
+               // Make sure it's actually changing.  We seem to get change entries for attachments that show the current field value.
                if (target[change.field_name] != change.field_value) {
-                  setPrevious(target, change.field_name, target[change.field_name], currVersion.modified_ts, nextVersion.modified_ts);
-               }
-            } else if (targetName == "attachment") {
-               if (change.field_name == "flags") {
-                  // Handle attachment flags
-                  processFlagChange(flagMap, change, attachID, currVersion.modified_ts);
+                  setPrevious(target, change.field_name, target[change.field_name], currVersion.modified_ts);
                } else {
-                  // Handle attachments
-                  // Make sure it's actually changing.  We seem to get change entries for attachments that show the current field value.
-                  if (target[change.field_name] != change.field_value) {
-                     setPrevious(target, change.field_name, target[change.field_name], currVersion.modified_ts);
-                  } else {
-                     writeToLog("d", "Skipping fake attachment change to attach: " + JSON.stringify(target) + ", change: " + JSON.stringify(change));
-                  }
+                  writeToLog("d", "Skipping fake change to " + targetName + ": " + JSON.stringify(target) + ", change: " + JSON.stringify(change));
                }
             } else if (change.field_name == "flags") {
-               // Handle bug flags (but not the other simple multi-fields)
-               processFlagChange(flagMap, change, "bug", currVersion.modified_ts);
+               processFlagChange(target, change, currVersion.modified_ts, currVersion.modified_by);
             } else {
-               writeToLog("d", "Skipping previous_value for multi-value field " + change.field_name);
+               writeToLog("d", "Skipping previous_value for " + targetName + " multi-value field " + change.field_name);
             }
 
             // Multi-value fields
@@ -346,12 +335,6 @@ function populateIntermediateVersionObjects() {
             }
         }
 
-        //currBugState.previous_values = prevValues;
-
-        // Apply the previous value flags
-        // FIXME
-        //applyFlags(currBugState, flagMap);
-
         // Do some processing to make sure that diffing betweens runs stays as similar as possible.
         stabilize(currBugState);
 
@@ -372,72 +355,77 @@ function populateIntermediateVersionObjects() {
     }
 }
 
-// aFlagLabel is either "bug" if it's a bug flag, or an attachment id if it's 
-// an attachment flag.
-function processFlagChange(aFlagMap, aChange, aFlagLabel, aTimestamp) {
-   if (!aFlagMap[aFlagLabel]) {
-      aFlagMap[aFlagLabel] = [];
-   }
+function processFlagChange(aTarget, aChange, aTimestamp, aModifiedBy) {
+   var addedFlags = getMultiFieldValue("flags", aChange.field_value);
+   var removedFlags = getMultiFieldValue("flags", aChange.field_value_removed);
 
-   processFlags(aFlagMap[aFlagLabel], aChange.field_value, "change_to_ts", aTimestamp);
-   processFlags(aFlagMap[aFlagLabel], aChange.field_value_removed, "change_away_ts", aTimestamp);
-}
-
-function processFlags(aFlagList, aFieldValue, aTsField, aTimestamp) {
-   var values = getMultiFieldValue("flags", aFieldValue);
-   for each (var value in values) {
-      if (value != '') {
-         var existingFlag = findByKey(aFlagList, "flag", value);
-         if (!existingFlag) {
-            existingFlag = {
-               flag: value,
-            };
-            aFlagList.push(existingFlag);
-         }
-
-         existingFlag[aTsField] = aTimestamp;
-
-         if (existingFlag["change_to_ts"] && existingFlag["change_away_ts"]) {
-            var duration_ms = existingFlag["change_away_ts"] - existingFlag["change_to_ts"];
-//            existingFlag["duration_seconds"] = (duration_ms / 1000);
-            existingFlag["duration_days"] = Math.floor(duration_ms / (1000.0 * 60 * 60 * 24));
-         }
+   // First, mark any removed flags as straight-up deletions.
+   for each (var flagStr in removedFlags) {
+      if (flagStr == "") {
+         continue;
       }
+      var flag = makeFlag(flagStr, aTimestamp, aModifiedBy);
+      var existingFlag = findByKey(aTarget["flags"], "value", flagStr);
+
+      // Carry forward some previous values:
+      existingFlag["change_to_ts"] = existingFlag["modified_ts"];
+      if (existingFlag["modified_by"] != aModifiedBy) {
+         existingFlag["previous_modified_by"] = existingFlag["modified_by"];
+         existingFlag["modified_by"] = aModifiedBy;
+      }
+
+      // Add changed stuff:
+      existingFlag["modified_ts"] = aTimestamp;
+      existingFlag["previous_status"] = flag["request_status"];
+      existingFlag["previous_value"] = flagStr;
+      existingFlag["request_status"] = "D";
+      existingFlag["value"] = "";
+      // request_type stays the same.
+      // requestee stays the same.
+
+      var duration_ms = existingFlag["modified_ts"] - existingFlag["change_to_ts"];
+      existingFlag["duration_days"] =  Math.floor(duration_ms / (1000.0 * 60 * 60 * 24));
    }
-}
 
-function applyFlags(aBug, aFlagMap) {
-   // Apply bug flags
-   applyOneFlagSet(aBug["previous_values"], aFlagMap["bug"]);
+   // See if we can align any of the added flags with previous deletions.
+   for each (var flagStr in addedFlags) {
+      // Try to match them up with a "dangling" removed flag
+      if (flagStr == "") {
+         continue;
+      }
 
-   // Apply attachment flags
-   // Only grab attachments that are in the bug.
-   // FIXME: should we iterate aBug["previous_values"]["attachments"] or aBug["attachments"]?
-   for each (var attachment in aBug["previous_values"]["attachments"]) {
-      applyOneFlagSet(attachment, aFlagMap[attachment["attach_id"]]);
-   }
-}
+      var flag = makeFlag(flagStr, aTimestamp, aModifiedBy);
 
-function applyOneFlagSet(aPrevValues, aFlagSet) {
-   if (aFlagSet) {
-      for (var i = 0; i < aFlagSet.length; i++) {
-         var flag = aFlagSet[i];
-         if (flag["change_to_ts"] && flag["change_away_ts"]) {
-            // it's a flag with a full previous value
-            if (aPrevValues["flags"]) {
-               aPrevValues["flags"].push(flag);
+      if (aTarget["flags"]) {
+         var candidates = aTarget["flags"].filter(function(element, index, array) {
+            return (element["value"] == ""
+                 && flag["request_type"] == element["request_type"]
+                 && flag["request_status"] != element["previous_status"]);
+         });
+
+         if (candidates) {
+            if (candidates.length >= 1) {
+               if (candidates.length > 1) {
+                  // Multiple matches - use the first one.
+                  writeToLog("d", "Matched added flag " + JSON.stringify(flag) + " to multiple removed flags.  Using the first of these:");
+                  for each (var candidate in candidates) {
+                     writeToLog("d", "      " + JSON.stringify(candidate));
+                  }
+               } else {
+                  // Obvious - it matched exactly one.
+                  writeToLog("d", "Matched added flag " + JSON.stringify(flag) + " to removed flag " + JSON.stringify(candidates[0]));
+               }
+
+               for each (var f in ["value", "request_status", "requestee"]) {
+                  if (flag[f]) {
+                     candidates[0][f] = flag[f];
+                  }
+               }
+               // We need to avoid adding this flag twice, since we rolled an add into a delete.
             } else {
-               aPrevValues["flags"] = [flag];
+               // No matching candidate. Totally new flag.
+               writeToLog("d", "Did not match added flag " + JSON.stringify(flag) + " to anything: " + JSON.stringify(aTarget["flags"]));
             }
-
-            // Remove this flag:
-            writeToLog("d", "Removing used up flag: " + JSON.stringify(flag));
-            aFlagSet.splice(i, 1);
-            i--;
-         } else if (flag["change_away_ts"]) {
-            writeToLog("e", "Found a previous flag with only change_away_ts: " + JSON.stringify(flag));
-         } else {
-            writeToLog("d", "Skipping incomplete previous flag: " + JSON.stringify(flag));
          }
       }
    }
@@ -449,12 +437,12 @@ function setPrevious(dest, aFieldName, aValue, aChangeAway) {
     }
 
     var pv = dest["previous_values"];
-
-    var vField = aFieldName + "_value";
+    var vField =  aFieldName + "_value";
     var caField = aFieldName + "_change_away_ts";
     var ctField = aFieldName + "_change_to_ts";
     var ddField = aFieldName + "_duration_days";
 
+    pv[vField] = aValue;
     // If we have a previous change for this field, then use the 
     // change-away time as the new change-to time.
     if (pv[caField]) {
@@ -464,17 +452,9 @@ function setPrevious(dest, aFieldName, aValue, aChangeAway) {
        // use the creation timestamp.
        pv[ctField] = dest["created_ts"];
     }
-
-    pv[vField] = aValue;
     pv[caField] = aChangeAway;
-    
     var duration_ms = pv[caField] - pv[ctField];
-
     pv[ddField] = Math.floor(duration_ms / (1000.0 * 60 * 60 * 24));
-}
-
-function findAttachment(attachments, attachId) {
-   return findByKey(attachments, "attach_id", attachId);
 }
 
 function findByKey(aList, aField, aValue) {
@@ -518,8 +498,16 @@ function addValues(anArray, someValues, valueType, fieldName, anObj) {
    if (fieldName == "flags") {
       for each (var added in someValues) {
           if (added != '') {
-              var addedFlag = makeFlag(added, anObj.modified_ts, anObj.modified_by);
-              anArray.push(addedFlag);
+              // Check if this flag has already been incorporated into a removed flag.  If so, don't add it again.
+              var dupes = anArray.filter(function(element, index, array) {
+                 return element["value"] == added && element["modified_by"] == anObj.modified_by && element["modified_ts"] == anObj.modified_ts;
+              });
+              if (dupes && dupes.length > 0) {
+                 writeToLog("d", "Skipping duplicated added flag '" + added + "' since info is already in " + JSON.stringify(dupes[0]));
+              } else {
+                 var addedFlag = makeFlag(added, anObj.modified_ts, anObj.modified_by);
+                 anArray.push(addedFlag);
+              }
           }
       }
    } else {
