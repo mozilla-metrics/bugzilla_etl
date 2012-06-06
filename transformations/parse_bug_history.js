@@ -368,7 +368,7 @@ function processFlagChange(aTarget, aChange, aTimestamp, aModifiedBy) {
       var existingFlag = findByKey(aTarget["flags"], "value", flagStr);
 
       // Carry forward some previous values:
-      existingFlag["change_to_ts"] = existingFlag["modified_ts"];
+      existingFlag["previous_modified_ts"] = existingFlag["modified_ts"];
       if (existingFlag["modified_by"] != aModifiedBy) {
          existingFlag["previous_modified_by"] = existingFlag["modified_by"];
          existingFlag["modified_by"] = aModifiedBy;
@@ -383,7 +383,7 @@ function processFlagChange(aTarget, aChange, aTimestamp, aModifiedBy) {
       // request_type stays the same.
       // requestee stays the same.
 
-      var duration_ms = existingFlag["modified_ts"] - existingFlag["change_to_ts"];
+      var duration_ms = existingFlag["modified_ts"] - existingFlag["previous_modified_ts"];
       existingFlag["duration_days"] =  Math.floor(duration_ms / (1000.0 * 60 * 60 * 24));
    }
 
