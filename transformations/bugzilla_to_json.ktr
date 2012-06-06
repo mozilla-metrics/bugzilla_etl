@@ -744,6 +744,24 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
 	get(Fields.Out, "_merge_order").setValue(newRow, 1L);
     putRow(data.outputRowMeta, newRow);
 
+	newRow = createOutputRow(null, outputRowSize);
+	get(Fields.Out, "bug_id").setValue(newRow, get(Fields.In, "bug_id").getInteger(r));
+	get(Fields.Out, "modified_ts").setValue(newRow, get(Fields.In, "modified_ts").getInteger(r));
+	get(Fields.Out, "modified_by").setValue(newRow, get(Fields.In, "modified_by").getString(r));
+	get(Fields.Out, "field_name").setValue(newRow, "product");
+	get(Fields.Out, "field_value").setValue(newRow, get(Fields.In, "product").getString(r));
+	get(Fields.Out, "_merge_order").setValue(newRow, 1L);
+    putRow(data.outputRowMeta, newRow);
+
+	newRow = createOutputRow(null, outputRowSize);
+	get(Fields.Out, "bug_id").setValue(newRow, get(Fields.In, "bug_id").getInteger(r));
+	get(Fields.Out, "modified_ts").setValue(newRow, get(Fields.In, "modified_ts").getInteger(r));
+	get(Fields.Out, "modified_by").setValue(newRow, get(Fields.In, "modified_by").getString(r));
+	get(Fields.Out, "field_name").setValue(newRow, "component");
+	get(Fields.Out, "field_value").setValue(newRow, get(Fields.In, "component").getString(r));
+	get(Fields.Out, "_merge_order").setValue(newRow, 1L);
+    putRow(data.outputRowMeta, newRow);
+
 	for (int i = 0; i < bugs_fields.length; i++) {
 		String value = get(Fields.In, bugs_fields[i]).getString(r);
 		if (!"---".equals(value)) {
