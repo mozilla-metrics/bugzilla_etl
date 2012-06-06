@@ -339,9 +339,10 @@ function populateIntermediateVersionObjects() {
         stabilize(currBugState);
 
         // Empty string breaks ES date parsing, remove it from bug state.
-        if (currBugState["deadline"] == "") {
-           //currBugState["deadline"] = null;
-           currBugState["deadline"] = undefined;
+        for each (var dateField in ["deadline", "cf_due_date"]) {
+           if (currBugState[dateField] == "") {
+              currBugState[dateField] = undefined;
+           }
         }
 
         // Emit this version as a JSON string

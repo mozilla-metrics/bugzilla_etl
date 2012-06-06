@@ -113,6 +113,14 @@
                             "enabled": false,
                             "type": "string"
                         },
+                        "attachments.mimetype": {
+                            "enabled": false,
+                            "type": "string"
+                        },
+                        "attachments.filename": {
+                            "enabled": false,
+                            "type": "string"
+                        },
                         "previous_values": {
                             "type": "object"
                         }
@@ -192,6 +200,10 @@
                             "index": "not_analyzed", 
                             "type": "string"
                         },
+                        "previous_status": {
+                            "index": "not_analyzed", 
+                            "type": "string"
+                        },
                         "requestee": {
                             "index": "not_analyzed", 
                             "type": "string"
@@ -214,6 +226,10 @@
                 "keywords": {
                     "index": "not_analyzed", 
                     "index_name": "keyword", 
+                    "type": "string"
+                }, 
+                "cf_due_date": {
+                    "index": "not_analyzed", 
                     "type": "string"
                 }, 
                 "rep_platform": {
