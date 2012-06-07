@@ -401,28 +401,55 @@ function processFlagChange(aTarget, aChange, aTimestamp, aModifiedBy) {
          var candidates = aTarget["flags"].filter(function(element, index, array) {
             return (element["value"] == ""
                  && flag["request_type"] == element["request_type"]
-                 && flag["request_status"] != element["previous_status"]);
+                 && flag["request_status"] != element["previous_status"]); // Skip "r?(dre@mozilla)" -> "r?(mark@mozilla)"
          });
 
          if (candidates) {
             if (candidates.length >= 1) {
+               var chosen_one = candidates[0];
                if (candidates.length > 1) {
                   // Multiple matches - use the first one.
-                  writeToLog("d", "Matched added flag " + JSON.stringify(flag) + " to multiple removed flags.  Using the first of these:");
+                  writeToLog("d", "Matched added flag " + JSON.stringify(flag) + " to multiple removed flags.  Using the best of these:");
                   for each (var candidate in candidates) {
                      writeToLog("d", "      " + JSON.stringify(candidate));
                   }
+                  var matched_ts = candidates.filter(function(element, index, array) {
+                     return flag["modified_ts"] == element["modified_ts"];
+                  });
+                  if (matched_ts && matched_ts.length == 1) {
+                     writeToLog("d", "Matching on modified_ts fixed it");
+                     chosen_one = matched_ts[0];
+                  } else {
+                     writeToLog("d", "Matching on modified_ts left us with " + (matched_ts ? matched_ts.length : "no") + " matches");
+                     // If we had no matches (or many matches), try matching on requestee.
+                     var matched_req = candidates.filter(function(element, index, array) {
+                        // Do case-insenitive comparison
+                        if (element["requestee"]) {
+                           return flag["modified_by"].toLowerCase() ==  element["requestee"].toLowerCase();
+                        }
+                        return false;
+                     });
+                     if (matched_req && matched_req.length == 1) {
+                        writeToLog("d", "Matching on requestee fixed it");
+                        chosen_one = matched_req[0];
+                     } else {
+                        writeToLog("e", "Matching on requestee left us with " + (matched_req ? matched_req.length : "no") + " matches. Skipping match.");
+                        chosen_one = null;
+                     }
+                  }
                } else {
-                  // Obvious - it matched exactly one.
-                  writeToLog("d", "Matched added flag " + JSON.stringify(flag) + " to removed flag " + JSON.stringify(candidates[0]));
+                  // Obvious case - matched exactly one.
+                  writeToLog("d", "Matched added flag " + JSON.stringify(flag) + " to removed flag " + JSON.stringify(chosen_one));
                }
 
-               for each (var f in ["value", "request_status", "requestee"]) {
-                  if (flag[f]) {
-                     candidates[0][f] = flag[f];
+               if (chosen_one) {
+                  for each (var f in ["value", "request_status", "requestee"]) {
+                     if (flag[f]) {
+                        chosen_one[f] = flag[f];
+                     }
                   }
                }
-               // We need to avoid adding this flag twice, since we rolled an add into a delete.
+               // We need to avoid later adding this flag twice, since we rolled an add into a delete.
             } else {
                // No matching candidate. Totally new flag.
                writeToLog("d", "Did not match added flag " + JSON.stringify(flag) + " to anything: " + JSON.stringify(aTarget["flags"]));
@@ -533,7 +560,7 @@ function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anOb
             }
 
             if (len == anArray.length) {
-                writeToLog("d", "Unable to find " + valueType + " flag " + fieldName + ":" + v
+                writeToLog("e", "Unable to find " + valueType + " flag " + fieldName + ":" + v
                         + " in " + arrayDesc + ": " + JSON.stringify(anObj));
             }
         }
@@ -545,7 +572,7 @@ function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anOb
             } else {
                 // XXX if this is a "? 12345" type value for "dependson" etc, try looking for
                 //     the value with the leading "? " trimmed off.
-                writeToLog("d", "Unable to find " + valueType + " value " + fieldName + ":" + v
+                writeToLog("e", "Unable to find " + valueType + " value " + fieldName + ":" + v
                         + " in " + arrayDesc + ": " + JSON.stringify(anObj));
             }
         }
