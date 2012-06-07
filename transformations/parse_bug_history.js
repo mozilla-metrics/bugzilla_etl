@@ -55,6 +55,12 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
         startNewBug(bug_id, modified_ts, modified_by, _merge_order);
     }
 
+    // bugzilla bug - some values were truncated, introducing uncertainty / errors:
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=55161
+    if (field_value_in == "? ?") {
+       writeToLog("d", "Encountered uncertain value.  Skipping update.");
+       processSingleValueTableItem("uncertain", "1");
+    }
 
     if (currBugID < 999999999) {
         // Determine where we are in the bug processing workflow
@@ -368,24 +374,28 @@ function processFlagChange(aTarget, aChange, aTimestamp, aModifiedBy) {
       var flag = makeFlag(flagStr, aTimestamp, aModifiedBy);
       var existingFlag = findByKey(aTarget["flags"], "value", flagStr);
 
-      // Carry forward some previous values:
-      existingFlag["previous_modified_ts"] = existingFlag["modified_ts"];
-      if (existingFlag["modified_by"] != aModifiedBy) {
-         existingFlag["previous_modified_by"] = existingFlag["modified_by"];
-         existingFlag["modified_by"] = aModifiedBy;
+      if (existingFlag) {
+         // Carry forward some previous values:
+         existingFlag["previous_modified_ts"] = existingFlag["modified_ts"];
+         if (existingFlag["modified_by"] != aModifiedBy) {
+            existingFlag["previous_modified_by"] = existingFlag["modified_by"];
+            existingFlag["modified_by"] = aModifiedBy;
+         }
+
+         // Add changed stuff:
+         existingFlag["modified_ts"] = aTimestamp;
+         existingFlag["previous_status"] = flag["request_status"];
+         existingFlag["previous_value"] = flagStr;
+         existingFlag["request_status"] = "D";
+         existingFlag["value"] = "";
+         // request_type stays the same.
+         // requestee stays the same.
+
+         var duration_ms = existingFlag["modified_ts"] - existingFlag["previous_modified_ts"];
+         existingFlag["duration_days"] =  Math.floor(duration_ms / (1000.0 * 60 * 60 * 24));
+      } else {
+         writeToLog("e", "Did not find a corresponding flag for removed value '" + flagStr + "' in " + JSON.stringify(aTarget["flags"]));
       }
-
-      // Add changed stuff:
-      existingFlag["modified_ts"] = aTimestamp;
-      existingFlag["previous_status"] = flag["request_status"];
-      existingFlag["previous_value"] = flagStr;
-      existingFlag["request_status"] = "D";
-      existingFlag["value"] = "";
-      // request_type stays the same.
-      // requestee stays the same.
-
-      var duration_ms = existingFlag["modified_ts"] - existingFlag["previous_modified_ts"];
-      existingFlag["duration_days"] =  Math.floor(duration_ms / (1000.0 * 60 * 60 * 24));
    }
 
    // See if we can align any of the added flags with previous deletions.
