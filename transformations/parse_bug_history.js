@@ -1,3 +1,4 @@
+/* vim: set filetype=javascript ts=2 et sw=2 tw=80: */
 /* Workflow:
 Create the current state object
 
@@ -25,7 +26,14 @@ For each bug version object that was created above:
 
 */
 
+// Used to split a flag into (type, status [,requestee])
+// Example: "review?(mreid@mozilla.com)" -> (review, ?, mreid@mozilla.com)
+// Example: "review-" -> (review, -)
 const FLAG_PATTERN = /^(.*)([?+-])(\([^)]*\))?$/;
+
+// Fields that could have been truncated per bug 55161
+const TRUNC_FIELDS = ["cc", "blocked", "dependson", "keywords"];
+
 var currBugID;
 var prevBugID;
 var bugVersions;
@@ -44,9 +52,6 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
           + "}, field_name={" + field_name + "}, field_value={" + field_value_in + "}, field_value_removed={"
           + field_value_removed + "}, attach_id={" + attach_id + "}, _merge_order={" + _merge_order + "}");
 
-    // Treat timestamps as int values
-    var field_value = field_name.match(/_ts$/) ? parseInt(field_value_in) : field_value_in;
-
     // If we have switched to a new bug
     if (prevBugID < currBugID) {
         // Start replaying versions in ascending order to build full data on each version
@@ -55,12 +60,47 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
         startNewBug(bug_id, modified_ts, modified_by, _merge_order);
     }
 
-    // bugzilla bug - some values were truncated, introducing uncertainty / errors:
+    // bugzilla bug workaround - some values were truncated, introducing uncertainty / errors:
     // https://bugzilla.mozilla.org/show_bug.cgi?id=55161
-    if (field_value_in == "? ?") {
-       writeToLog("d", "Encountered uncertain value.  Skipping update.");
-       processSingleValueTableItem("uncertain", "1");
-    }
+    if (TRUNC_FIELDS.indexOf(field_name) >= 0) {
+       var uncertain = false;
+
+       // Unknown value extracted from a possibly truncated field
+       if (field_value_in == "? ?" || field_value_removed == "? ?") {
+          uncertain = true;
+          if (field_value_in == "? ?") {
+             writeToLog("d", "Encountered uncertain added value.  Skipping.");
+             field_value_in = "";
+          }
+          if (field_value_removed == "? ?") {
+             writeToLog("d", "Encountered uncertain removed value.  Skipping.");
+             field_value_removed = "";
+          }
+       }
+
+       // Possibly truncated value extracted from a possibly truncated field
+       if (field_value_in.indexOf("? ") == 0) {
+          uncertain = true;
+          field_value_in = field_value_in.substring(2);
+       }
+       if (field_value_removed.indexOf("? ") == 0) {
+          uncertain = true;
+          field_value_removed = field_value_removed.substring(2);
+       }
+
+       if (uncertain) {
+          // TODO: process this as an activity?
+          writeToLog("d", "Setting this bug to be uncertain.");
+          processBugsActivitiesTableItem(modified_ts, modified_by, "uncertain", "1", "", "");
+          if (field_value_in == "" && field_value_removed == "") {
+             writeToLog("d", "Nothing added or removed. Skipping update.");
+             return;
+          }
+       }
+     }
+
+    // Treat timestamps as int values
+    var field_value = field_name.match(/_ts$/) ? parseInt(field_value_in) : field_value_in;
 
     if (currBugID < 999999999) {
         // Determine where we are in the bug processing workflow
@@ -83,8 +123,6 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
             default:
                 break;
         }
-
-        //return [currBugState,currActivity];
     }
 }
 
