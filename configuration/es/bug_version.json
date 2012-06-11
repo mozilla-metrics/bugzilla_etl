@@ -2,15 +2,35 @@
     "settings": {
         "analysis": {
             "analyzer": {
+                "whiteboard_words": {
+                    "type": "custom",
+                    "tokenizer": "whiteboard_words_pattern",
+                    "filter": ["stop"]
+                },
+                "whiteboard_shingle_words": {
+                    "type": "custom",
+                    "tokenizer": "whiteboard_words_pattern",
+                    "filter": ["stop", "shingle"]
+                },
                 "whiteboard_tokens": {
-                    "type": "pattern",
-                    "pattern": "\\s*([,;]*\\[|\\][\\s\\[]*|[;,])\\s*",
+                    "type": "custom",
+                    "tokenizer": "whiteboard_tokens_pattern",
                     "filter": ["stop"]
                 },
                 "whiteboard_shingle_tokens": {
-                    "type": "pattern",
-                    "pattern": "\\s*([,;]*\\[|\\][\\s\\[]*|[;,])\\s*",
+                    "type": "custom",
+                    "tokenizer": "whiteboard_tokens_pattern",
                     "filter": ["stop", "shingle"]
+                }
+            },
+            "tokenizer": {
+                "whiteboard_tokens_pattern": {
+                    "type": "pattern",
+                    "pattern": "\\s*([,;]*\\[|\\][\\s\\[]*|[;,])\\s*"
+                },
+                "whiteboard_words_pattern": {
+                    "type": "pattern",
+                    "pattern": "[\\[\\];,\\s]+"
                 }
             }
         }
@@ -264,8 +284,10 @@
                     "type": "multi_field",
                     "fields": {
                         "status_whiteboard": {"type": "string", "index": "not_analyzed"},
+                        "words": {"index": "analyzed", "type": "string", "analyzer": "whiteboard_words"},
+                        "words": {"index": "analyzed", "type": "string", "analyzer": "whiteboard_shingle_words"},
                         "tokenized": {"index": "analyzed", "type": "string", "analyzer": "whiteboard_tokens"},
-                        "shingled": {"index": "analyzed", "type": "string", "analyzer": "whiteboard_shingle_tokens"}
+                        "tokenized_shingled": {"index": "analyzed", "type": "string", "analyzer": "whiteboard_shingle_tokens"}
                     }
                 }, 
                 "version": {
