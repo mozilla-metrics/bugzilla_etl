@@ -897,7 +897,7 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
 	, attach_id
 FROM
     attachments a
-	JOIN (SELECT userid, login_name, realname FROM profiles) p ON a.submitter_id = p.userid
+	JOIN profiles p ON a.submitter_id = p.userid
 WHERE bug_id IN (
 	SELECT bug_id FROM bugs WHERE 
     UNIX_TIMESTAMP(delta_ts)*1000 &gt; ${START_TIME}
@@ -1327,7 +1327,7 @@ ORDER BY bug_id;</sql>
 FROM
     sanitized_bugs_activity a
     JOIN fielddefs field ON a.fieldid = field.`id`
-	JOIN (SELECT userid, login_name, realname FROM profiles) p ON a.who = p.userid
+	JOIN profiles p ON a.who = p.userid
 WHERE
     UNIX_TIMESTAMP(bug_when)*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
