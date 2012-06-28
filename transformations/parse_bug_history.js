@@ -57,7 +57,7 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
         // Start replaying versions in ascending order to build full data on each version
         writeToLog("d", "Emitting intermediate versions for " + prevBugID);
         populateIntermediateVersionObjects();
-        startNewBug(bug_id, modified_ts, modified_by, _merge_order);
+        startNewBug(bug_id, modified_ts, modified_by, field_value_in, _merge_order);
     }
 
     // bugzilla bug workaround - some values were truncated, introducing uncertainty / errors:
@@ -105,6 +105,9 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
     if (currBugID < 999999999) {
         // Determine where we are in the bug processing workflow
         switch (_merge_order) {
+            case 0:
+                writeToLog("d", "Received a record from ElasticSearch");
+                break;
             case 1:
                 processSingleValueTableItem(field_name, field_value);
                 break;
@@ -126,26 +129,34 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
     }
 }
 
-function startNewBug(bug_id, modified_ts, modified_by, _merge_order) {
-    if (currBugID >= 999999999) return;
+function startNewBug(bug_id, modified_ts, modified_by, field_value, _merge_order) {
+  if (currBugID >= 999999999) return;
 
-    if (_merge_order != 1) {
-        writeToLog("e", "Current bugs table record not found for bug_id: "+bug_id+" (merge order " + _merge_order + ")");
-    }
-    prevBugID = bug_id;
-    bugVersions = [];
-    bugVersionsMap = {};
+  prevBugID = bug_id;
+  bugVersions = [];
+  bugVersionsMap = {};
+  currActivity = {};
+  currBugAttachmentsMap = {};
+
+  if (_merge_order == 0) {
+    // Found this bug in ElasticSearch
+    currBugState = JSON.parse(field_value);
+  } else if (_merge_order == 1) {
+    // This is a new bug, not currently in ElasticSearch
     currBugState = {
-        bug_id: bug_id,
-        modified_ts: modified_ts,
-        modified_by: modified_by,
-        reported_by: modified_by,
-        attachments: [],
-        flags: []
+      bug_id: bug_id,
+      modified_ts: modified_ts,
+      modified_by: modified_by,
+      reported_by: modified_by,
+      attachments: [],
+      flags: []
     };
     currBugState._id = bug_id+"."+modified_ts;
-    currActivity = {};
-    currBugAttachmentsMap = {};
+  } else {
+    // Problem: No entry in either ElasticSearch or the 'bugs' table.
+    writeToLog("e", "Current bugs table record not found for bug_id: "
+        + bug_id + " (merge order " + _merge_order + ")");
+  }
 }
 
 function processSingleValueTableItem(field_name, field_value) {
