@@ -15,6 +15,11 @@
             <description/>
         </parameter>
         <parameter>
+            <name>END_TIME</name>
+            <default_value>0</default_value>
+            <description>If non-zero, we will not process any changes after this time.</description>
+        </parameter>
+        <parameter>
             <name>START_TIME</name>
             <default_value>0</default_value>
             <description/>
@@ -386,17 +391,21 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
         client = transportClient;
     }
 
-    r = createOutputRow(r, data.outputRowMeta.size());
-
     String bugId = get(Fields.In, "bug_id").getString(r);
-
-    // TODO: do we want the version # too (for setting filenames)?
     String mostRecentVersion = getMostRecentVersion(bugId);
 
-    get(Fields.Out, "field_value").setValue(r, mostRecentVersion);
-    get(Fields.Out, "_merge_order").setValue(r, 0L);
+    // Only output a row if we found a version in ElasticSearch
+    if (mostRecentVersion != null && mostRecentVersion.length() > 0) {
+       r = createOutputRow(r, data.outputRowMeta.size());
 
-    putRow(data.outputRowMeta, r);
+
+       // TODO: do we want the version # too (for setting filenames)?
+
+       get(Fields.Out, "field_value").setValue(r, mostRecentVersion);
+       get(Fields.Out, "_merge_order").setValue(r, 0L);
+
+       putRow(data.outputRowMeta, r);
+    }
 
     return true;
 }
@@ -406,20 +415,20 @@ public String getMostRecentVersion(String bugId) {
     String[] searchIndex = new String[]{esIndex};
     String[] searchTypes = new String[]{"bug_version"};
     try {
-    SearchResponse response = (SearchResponse)client.prepareSearch(searchIndex).setTypes(searchTypes)
-            .setSearchType(SearchType.DEFAULT)
-            .setTimeout("5s")
-            .setQuery(QueryBuilders.fieldQuery(field, bugId))
-            .setFrom(0).setSize(1024).setExplain(false)
-            .addSort("modified_ts", SortOrder.DESC)
-            .execute()
-            .actionGet();
-    
-    final SearchHits hits = response.getHits();
-    
-    if (hits.getTotalHits() > 0) {
-        return hits.hits()[0].sourceAsString();
-    }
+       SearchResponse response = (SearchResponse)client.prepareSearch(searchIndex).setTypes(searchTypes)
+               .setSearchType(SearchType.DEFAULT)
+               .setTimeout("5s")
+               .setQuery(QueryBuilders.fieldQuery(field, bugId))
+               .setFrom(0).setSize(1024).setExplain(false)
+               .addSort("modified_ts", SortOrder.DESC)
+               .execute()
+               .actionGet();
+       
+       final SearchHits hits = response.getHits();
+       
+       if (hits.getTotalHits() > 0) {
+           return hits.hits()[0].sourceAsString();
+       }
     } catch (Exception e) {
         System.out.println("ERROR: " + e.getMessage());
         e.printStackTrace();
@@ -898,7 +907,9 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
 FROM
     attachments a
 	JOIN profiles p ON a.submitter_id = p.userid
-WHERE bug_id IN (
+WHERE
+    UNIX_TIMESTAMP(a.modification_time)*1000 &gt; ${START_TIME}
+    AND bug_id IN (
 	SELECT bug_id FROM bugs WHERE 
     UNIX_TIMESTAMP(delta_ts)*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
@@ -1215,7 +1226,9 @@ FROM
 JOIN `flagtypes` ft ON f.type_id = ft.id
 JOIN profiles ps ON f.setter_id = ps.userid
 LEFT JOIN profiles pr ON f.requestee_id = pr.userid
-WHERE bug_id IN (
+WHERE 
+    UNIX_TIMESTAMP(f.modification_date)*1000 &gt; ${START_TIME}
+    AND bug_id IN (
 	SELECT bug_id FROM bugs WHERE 
     UNIX_TIMESTAMP(delta_ts)*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
@@ -1587,7 +1600,7 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
            <schema_name/>
            </partitioning>
     <compatible>N</compatible>
-    <optimizationLevel/>
+    <optimizationLevel>9</optimizationLevel>
     <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
         <jsScript_name>Script 1</jsScript_name>
         <jsScript_script>&#47;&#47;var debugData = processRow(bug_id, modified, modified_on, modified_at, modified_by, field_name, field_value, field_value_removed, attach_id, _merge_order);
@@ -1601,8 +1614,7 @@ trans_Status = SKIP_TRANSFORMATION;</jsScript_script>
       </jsScript>      <jsScript>        <jsScript_type>1</jsScript_type>
         <jsScript_name>Item_0</jsScript_name>
         <jsScript_script>LoadScriptFile(getVariable(&quot;Internal.Transformation.Filename.Directory&quot;,&quot;&quot;)+&quot;&#47;parse_bug_history.js&quot;);
-
-startNewBug(Number(bug_id), Number(modified_ts), String(modified_by), Number(_merge_order));</jsScript_script>
+startNewBug(Number(bug_id), Number(modified_ts), String(modified_by), Number(_merge_order), String(field_value));</jsScript_script>
       </jsScript>    </jsScripts>    <fields>      <field>        <name>new_bug_id</name>
         <rename>new_bug_id</rename>
         <type>Number</type>

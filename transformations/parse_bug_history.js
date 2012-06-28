@@ -1,4 +1,4 @@
-/* vim: set filetype=javascript ts=2 et sw=2 tw=80: */
+/* vim: set filetype=javascript ts=2 et sw=2: */
 /* Workflow:
 Create the current state object
 
@@ -34,6 +34,8 @@ const FLAG_PATTERN = /^(.*)([?+-])(\([^)]*\))?$/;
 // Fields that could have been truncated per bug 55161
 const TRUNC_FIELDS = ["cc", "blocked", "dependson", "keywords"];
 
+const DEDUP_FIELDS = ["see_also", "dependson", "blocked", "dupe_of", "dupe_by", "bug_group", "cc", "keywords"];
+
 var currBugID;
 var prevBugID;
 var bugVersions;
@@ -44,6 +46,8 @@ var prevActivityID;
 var currActivity;
 var inputRowSize = getInputRowMeta().size();
 var outputRowSize = getOutputRowMeta().size();
+var START_TIME = getVariable("START_TIME", 0);
+var END_TIME = getVariable("END_TIME", 0);
 
 function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in, field_value_removed, attach_id, _merge_order) {
     currBugID = bug_id;
@@ -52,12 +56,18 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
           + "}, field_name={" + field_name + "}, field_value={" + field_value_in + "}, field_value_removed={"
           + field_value_removed + "}, attach_id={" + attach_id + "}, _merge_order={" + _merge_order + "}");
 
+    // For debugging purposes:
+    if (END_TIME > 0 && modified_ts > END_TIME) {
+        writeToLog("l", "Skipping change after END_TIME (" + END_TIME + ")");
+        return;
+    }
+
     // If we have switched to a new bug
     if (prevBugID < currBugID) {
         // Start replaying versions in ascending order to build full data on each version
         writeToLog("d", "Emitting intermediate versions for " + prevBugID);
         populateIntermediateVersionObjects();
-        startNewBug(bug_id, modified_ts, modified_by, field_value_in, _merge_order);
+        startNewBug(bug_id, modified_ts, modified_by, _merge_order, field_value_in);
     }
 
     // bugzilla bug workaround - some values were truncated, introducing uncertainty / errors:
@@ -129,7 +139,7 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
     }
 }
 
-function startNewBug(bug_id, modified_ts, modified_by, field_value, _merge_order) {
+function startNewBug(bug_id, modified_ts, modified_by, merge_order, bug_json) {
   if (currBugID >= 999999999) return;
 
   prevBugID = bug_id;
@@ -138,10 +148,14 @@ function startNewBug(bug_id, modified_ts, modified_by, field_value, _merge_order
   currActivity = {};
   currBugAttachmentsMap = {};
 
-  if (_merge_order == 0) {
+  switch(merge_order) {
+  case 0:
+    writeToLog("d", "Got a version from ES");
     // Found this bug in ElasticSearch
-    currBugState = JSON.parse(field_value);
-  } else if (_merge_order == 1) {
+    currBugState = JSON.parse(bug_json);
+    break;
+  case 1:
+    writeToLog("d", "Got a version from bugs");
     // This is a new bug, not currently in ElasticSearch
     currBugState = {
       bug_id: bug_id,
@@ -152,10 +166,12 @@ function startNewBug(bug_id, modified_ts, modified_by, field_value, _merge_order
       flags: []
     };
     currBugState._id = bug_id+"."+modified_ts;
-  } else {
+    break;
+  default:
     // Problem: No entry in either ElasticSearch or the 'bugs' table.
     writeToLog("e", "Current bugs table record not found for bug_id: "
-        + bug_id + " (merge order " + _merge_order + ")");
+        + bug_id + " (merge order " + merge_order + ")");
+    break;
   }
 }
 
@@ -309,19 +325,36 @@ function populateIntermediateVersionObjects() {
     var nextVersion = {_id:currBugState._id,changes:[]};
 
     var flagMap = {};
+    var currBugVersion = 1;
+    if (currBugState.version_num) {
+      var currBugVersion = currBugState.version_num;
+    }
 
-    while (bugVersions.length > 0) {
+    while (bugVersions.length > 0 || nextVersion) {
         currVersion = nextVersion;
-        nextVersion = bugVersions.pop(); // Oldest version
+        if (bugVersions.length > 0) {
+          nextVersion = bugVersions.pop(); // Oldest version
+        } else {
+          nextVersion = undefined;
+        }
         writeToLog("d", "Populating JSON for version "+currVersion._id);
 
-        // Link this version to the next one
-        currBugState.expires_on = nextVersion.modified_ts;
+        // Link this version to the next one (if there is a next one)
+        if (nextVersion) {
+          writeToLog("d", "We have a nextVersion:"+nextVersion.modified_ts +
+              " (ver " + (currBugVersion + 1) + ")");
+          currBugState.expires_on = nextVersion.modified_ts;
+        } else {
+          // Otherwise, we don't know when the version expires.
+          writeToLog("d", "We have no nextVersion after #" + currBugVersion);
+          currBugState.expires_on = undefined;
+        }
 
         // Copy all attributes from the current version into currBugState
         for (var propName in currVersion) {
             currBugState[propName] = currVersion[propName];
         }
+
 
         // Now walk currBugState forward in time by applying the changes from currVersion
         var changes = currVersion.changes;
@@ -406,14 +439,23 @@ function populateIntermediateVersionObjects() {
            }
         }
 
-        // Emit this version as a JSON string
-        var newRow = createRowCopy(outputRowSize);
-        var rowIndex = inputRowSize;
-        newRow[rowIndex++] = currBugState.bug_id;
-        newRow[rowIndex++] = currBugState._id;
-        newRow[rowIndex++] = JSON.stringify(currBugState,null,2); // DEBUGGING, expanded output
-        //newRow[rowIndex++] = JSON.stringify(currBugState); // condensed output
-        putRow(newRow);
+        currBugState.version_num = currBugVersion++;
+
+        // Output this version if either it was modified after START_TIME, or if it
+        // expired after START_TIME (the latter will update the last known version of the bug
+        // that did not have a value for "expires_on").
+        if (currBugState.modified_ts >= START_TIME || currBugState.expires_on >= START_TIME) {
+          // Emit this version as a JSON string
+          var newRow = createRowCopy(outputRowSize);
+          var rowIndex = inputRowSize;
+          newRow[rowIndex++] = currBugState.bug_id;
+          newRow[rowIndex++] = currBugState._id;
+          newRow[rowIndex++] = JSON.stringify(currBugState,null,2); // DEBUGGING, expanded output
+          //newRow[rowIndex++] = JSON.stringify(currBugState); // condensed output
+          putRow(newRow);
+        } else {
+          writeToLog("d", "Not outputting " + currBugState._id + " - it is before START_TIME (" + START_TIME + ")");
+        }
     }
 }
 
@@ -567,6 +609,25 @@ function stabilize(aBug) {
    if (aBug["changes"]) {
       aBug["changes"].sort(function(a,b){ return sortAscByField(a, b, "field_name") });
    }
+
+   // dedup fields that don't have an associated timestamp:
+   for each (var field in DEDUP_FIELDS) {
+     if (aBug[field] && aBug[field][0]) {
+       aBug[field] = unique(aBug[field]);
+     }
+   }
+}
+
+function unique(anArray) {
+  var hash = {};
+  var uniques = [];
+  for each (var val in anArray) {
+    if (!hash[val]) {
+      uniques.push(val);
+      hash[val] = true;
+    }
+  }
+  return uniques;
 }
 
 function makeFlag(flag, modified_ts, modified_by) {

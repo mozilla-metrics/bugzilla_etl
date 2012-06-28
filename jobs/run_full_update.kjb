@@ -16,6 +16,16 @@
             <default_value>bug_id in (601311,603959,606939,608973,608974,608977,609246,609249,609276,609540)</default_value>
             <description/>
         </parameter>
+        <parameter>
+            <name>END_TIME</name>
+            <default_value>0</default_value>
+            <description>If non-zero, we will not process any changes after this time.</description>
+        </parameter>
+        <parameter>
+            <name>START_TIME</name>
+            <default_value>0</default_value>
+            <description/>
+        </parameter>
     </parameters>
     <slaveservers>
     </slaveservers>
@@ -117,16 +127,7 @@
       <follow_abort_remote>N</follow_abort_remote>
       <create_parent_folder>N</create_parent_folder>
       <parameters>        <pass_all_parameters>Y</pass_all_parameters>
-            <parameter>            <name>BUG_IDS_PARTITION</name>
-            <stream_name/>
-            <value/>
-            </parameter>            <parameter>            <name>ES_NODES</name>
-            <stream_name/>
-            <value/>
-            </parameter>            <parameter>            <name>START_TIME</name>
-            <stream_name/>
-            <value/>
-            </parameter>      </parameters>      <parallel>N</parallel>
+      </parameters>      <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
       <xloc>200</xloc>
