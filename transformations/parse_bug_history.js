@@ -34,8 +34,6 @@ const FLAG_PATTERN = /^(.*)([?+-])(\([^)]*\))?$/;
 // Fields that could have been truncated per bug 55161
 const TRUNC_FIELDS = ["cc", "blocked", "dependson", "keywords"];
 
-const DEDUP_FIELDS = ["see_also", "dependson", "blocked", "dupe_of", "dupe_by", "bug_group", "cc", "keywords"];
-
 var currBugID;
 var prevBugID;
 var bugVersions;
@@ -609,25 +607,6 @@ function stabilize(aBug) {
    if (aBug["changes"]) {
       aBug["changes"].sort(function(a,b){ return sortAscByField(a, b, "field_name") });
    }
-
-   // dedup fields that don't have an associated timestamp:
-   for each (var field in DEDUP_FIELDS) {
-     if (aBug[field] && aBug[field][0]) {
-       aBug[field] = unique(aBug[field]);
-     }
-   }
-}
-
-function unique(anArray) {
-  var hash = {};
-  var uniques = [];
-  for each (var val in anArray) {
-    if (!hash[val]) {
-      uniques.push(val);
-      hash[val] = true;
-    }
-  }
-  return uniques;
 }
 
 function makeFlag(flag, modified_ts, modified_by) {
