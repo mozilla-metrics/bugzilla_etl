@@ -18,11 +18,13 @@ Walk backward through activity records from bugs_activity (and other activity ty
         If an addition, find and remove the added item from the original state object
 
 When finished with all activities, the current state object should reflect the original state of the bug when created.
-Now, build the full state of each intermediate version of the bug. 
+Now, build the full state of each intermediate version of the bug.
 
 For each bug version object that was created above:
     Merge the current state object into this version object
     Update fields according to the modification data
+
+When doing an incremental update (ie. with START_TIME specified), Look at any bug that has been modified since the cutoff time, and build all versions.  Only index versions after START_TIME in ElasticSearch.
 
 */
 
@@ -30,6 +32,10 @@ For each bug version object that was created above:
 // Example: "review?(mreid@mozilla.com)" -> (review, ?, mreid@mozilla.com)
 // Example: "review-" -> (review, -)
 const FLAG_PATTERN = /^(.*)([?+-])(\([^)]*\))?$/;
+
+// Used to reformat incoming dates into the expected form.
+// Example match: "2012/01/01 00:00:00.000"
+const DATE_PATTERN = /^[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}/;
 
 // Fields that could have been truncated per bug 55161
 const TRUNC_FIELDS = ["cc", "blocked", "dependson", "keywords"];
@@ -44,13 +50,13 @@ var prevActivityID;
 var currActivity;
 var inputRowSize = getInputRowMeta().size();
 var outputRowSize = getOutputRowMeta().size();
-var START_TIME = getVariable("START_TIME", 0);
-var END_TIME = getVariable("END_TIME", 0);
+var START_TIME = parseInt(getVariable("START_TIME", 0));
+var END_TIME = parseInt(getVariable("END_TIME", 0));
 
 function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in, field_value_removed, attach_id, _merge_order) {
     currBugID = bug_id;
 
-    writeToLog("d", "bug_id={" + bug_id + "}, modified_ts={" + modified_ts + "}, modified_by={" + modified_by 
+    writeToLog("d", "bug_id={" + bug_id + "}, modified_ts={" + modified_ts + "}, modified_by={" + modified_by
           + "}, field_name={" + field_name + "}, field_value={" + field_value_in + "}, field_value_removed={"
           + field_value_removed + "}, attach_id={" + attach_id + "}, _merge_order={" + _merge_order + "}");
 
@@ -65,10 +71,10 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
         // Start replaying versions in ascending order to build full data on each version
         writeToLog("d", "Emitting intermediate versions for " + prevBugID);
         populateIntermediateVersionObjects();
-        startNewBug(bug_id, modified_ts, modified_by, _merge_order, field_value_in);
+        startNewBug(bug_id, modified_ts, modified_by, _merge_order);
     }
 
-    // bugzilla bug workaround - some values were truncated, introducing uncertainty / errors:
+    // Bugzilla bug workaround - some values were truncated, introducing uncertainty / errors:
     // https://bugzilla.mozilla.org/show_bug.cgi?id=55161
     if (TRUNC_FIELDS.indexOf(field_name) >= 0) {
        var uncertain = false;
@@ -97,7 +103,7 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
        }
 
        if (uncertain) {
-          // TODO: process this as an activity?
+          // Process the "uncertain" flag as an activity
           writeToLog("d", "Setting this bug to be uncertain.");
           processBugsActivitiesTableItem(modified_ts, modified_by, "uncertain", "1", "", "");
           if (field_value_in == "" && field_value_removed == "") {
@@ -113,9 +119,6 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
     if (currBugID < 999999999) {
         // Determine where we are in the bug processing workflow
         switch (_merge_order) {
-            case 0:
-                writeToLog("d", "Received a record from ElasticSearch");
-                break;
             case 1:
                 processSingleValueTableItem(field_name, field_value);
                 break;
@@ -132,12 +135,13 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
                 processBugsActivitiesTableItem(modified_ts, modified_by, field_name, field_value, field_value_removed, attach_id);
                 break;
             default:
+                writeToLog("e", "Unhandled merge_order: '" + _merge_order + "'");
                 break;
         }
     }
 }
 
-function startNewBug(bug_id, modified_ts, modified_by, merge_order, bug_json) {
+function startNewBug(bug_id, modified_ts, modified_by, merge_order) {
   if (currBugID >= 999999999) return;
 
   prevBugID = bug_id;
@@ -145,30 +149,20 @@ function startNewBug(bug_id, modified_ts, modified_by, merge_order, bug_json) {
   bugVersionsMap = {};
   currActivity = {};
   currBugAttachmentsMap = {};
+  currBugState = {
+    bug_id: bug_id,
+    modified_ts: modified_ts,
+    modified_by: modified_by,
+    reported_by: modified_by,
+    attachments: [],
+    flags: []
+  };
+  currBugState._id = bug_id + "." + modified_ts;
 
-  switch(merge_order) {
-  case 0:
-    writeToLog("d", "Got a version from ES");
-    // Found this bug in ElasticSearch
-    currBugState = JSON.parse(bug_json);
-    break;
-  case 1:
-    writeToLog("d", "Got a version from bugs");
-    // This is a new bug, not currently in ElasticSearch
-    currBugState = {
-      bug_id: bug_id,
-      modified_ts: modified_ts,
-      modified_by: modified_by,
-      reported_by: modified_by,
-      attachments: [],
-      flags: []
-    };
-    currBugState._id = bug_id+"."+modified_ts;
-    break;
-  default:
-    // Problem: No entry in either ElasticSearch or the 'bugs' table.
+  if (merge_order != 1) {
+    // Problem: No entry found in the 'bugs' table.
     writeToLog("e", "Current bugs table record not found for bug_id: "
-        + bug_id + " (merge order " + merge_order + ")");
+        + bug_id + " (merge order should have been 1, but was " + merge_order + ")");
     break;
   }
 }
@@ -184,8 +178,9 @@ function processMultiValueTableItem(field_name, field_value) {
     try {
         currBugState[field_name].push(field_value);
     } catch(e) {
-        writeToLog("e", "Unable to push "+field_value+" to array field "+field_name+" on bug "
-              +currBugID+" current value:"+JSON.stringify(currBugState[field_name]));
+        writeToLog("e", "Unable to push " + field_value + " to array field "
+            + field_name + " on bug " + currBugID + " current value:"
+            + JSON.stringify(currBugState[field_name]));
     }
 }
 
@@ -221,7 +216,7 @@ function processFlagsTableItem(modified_ts, modified_by, field_name, field_value
     var flag = makeFlag(field_value, modified_ts, modified_by);
     if (attach_id != '') {
         if (!currBugAttachmentsMap[attach_id]) {
-            writeToLog("e", "Unable to find attachment "+attach_id+" for bug_id "+currBugID);
+            writeToLog("e", "Unable to find attachment " + attach_id + " for bug_id " + currBugID);
         }
         currBugAttachmentsMap[attach_id].flags.push(flag);
     } else {
@@ -237,7 +232,7 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
     var multi_field_value = getMultiFieldValue(field_name, field_value);
     var multi_field_value_removed = getMultiFieldValue(field_name, field_value_removed);
 
-    currActivityID = currBugID+"."+modified_ts;
+    currActivityID = currBugID + "." + modified_ts;
     if (currActivityID != prevActivityID) {
         currActivity = bugVersionsMap[currActivityID];
         if (!currActivity) {
@@ -260,7 +255,8 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
     if (attach_id != '') {
         var attachment = currBugAttachmentsMap[attach_id];
         if (!attachment) {
-            writeToLog("e", "Unable to find attachment "+attach_id+" for bug_id "+currBugID+": "+JSON.stringify(currBugAttachmentsMap));
+            writeToLog("e", "Unable to find attachment " + attach_id + " for bug_id "
+                + currBugID + ": " + JSON.stringify(currBugAttachmentsMap));
         } else {
            if (attachment[field_name] instanceof Array) {
                var a = attachment[field_name];
@@ -306,6 +302,7 @@ function sortAscByField(a, b, aField) {
         return -1;
     return 0;
 }
+
 function sortDescByField(a, b, aField) {
     return -1 * sortAscByField(a, b, aField);
 }
@@ -324,10 +321,8 @@ function populateIntermediateVersionObjects() {
 
     var flagMap = {};
     var currBugVersion = 1;
-    if (currBugState.version_num) {
-      var currBugVersion = currBugState.version_num;
-    }
 
+    // continue if there are more bug versions, or there is one final nextVersion
     while (bugVersions.length > 0 || nextVersion) {
         currVersion = nextVersion;
         if (bugVersions.length > 0) {
@@ -335,12 +330,12 @@ function populateIntermediateVersionObjects() {
         } else {
           nextVersion = undefined;
         }
-        writeToLog("d", "Populating JSON for version "+currVersion._id);
+        writeToLog("d", "Populating JSON for version " + currVersion._id);
 
         // Link this version to the next one (if there is a next one)
         if (nextVersion) {
-          writeToLog("d", "We have a nextVersion:"+nextVersion.modified_ts +
-              " (ver " + (currBugVersion + 1) + ")");
+          writeToLog("d", "We have a nextVersion:" + nextVersion.modified_ts
+              + " (ver " + (currBugVersion + 1) + ")");
           currBugState.expires_on = nextVersion.modified_ts;
         } else {
           // Otherwise, we don't know when the version expires.
@@ -352,7 +347,6 @@ function populateIntermediateVersionObjects() {
         for (var propName in currVersion) {
             currBugState[propName] = currVersion[propName];
         }
-
 
         // Now walk currBugState forward in time by applying the changes from currVersion
         var changes = currVersion.changes;
@@ -374,7 +368,7 @@ function populateIntermediateVersionObjects() {
                     target = currBugAttachmentsMap[attachID];
                     targetName = "attachment";
                     if (target == null) {
-                        writeToLog("e", "Encountered a change to missing attachment for bug '" 
+                        writeToLog("e", "Encountered a change to missing attachment for bug '"
                               + currVersion["bug_id"] + "': " + JSON.stringify(change) + ".");
 
                         // treat it as a change to the main bug instead :(
@@ -387,16 +381,19 @@ function populateIntermediateVersionObjects() {
             // Track the previous value
             if (!isMultiField(change.field_name)) {
                // Single-value field has changed in bug or attachment
-               // Make sure it's actually changing.  We seem to get change entries for attachments that show the current field value.
+               // Make sure it's actually changing.  We seem to get change
+               //  entries for attachments that show the current field value.
                if (target[change.field_name] != change.field_value) {
                   setPrevious(target, change.field_name, target[change.field_name], currVersion.modified_ts);
                } else {
-                  writeToLog("d", "Skipping fake change to " + targetName + ": " + JSON.stringify(target) + ", change: " + JSON.stringify(change));
+                  writeToLog("d", "Skipping fake change to " + targetName + ": "
+                      + JSON.stringify(target) + ", change: " + JSON.stringify(change));
                }
             } else if (change.field_name == "flags") {
                processFlagChange(target, change, currVersion.modified_ts, currVersion.modified_by);
             } else {
-               writeToLog("d", "Skipping previous_value for " + targetName + " multi-value field " + change.field_name);
+               writeToLog("d", "Skipping previous_value for " + targetName
+                   + " multi-value field " + change.field_name);
             }
 
             // Multi-value fields
@@ -430,13 +427,14 @@ function populateIntermediateVersionObjects() {
            if (currBugState[dateField] == "") {
               // Skip empty strings
               currBugState[dateField] = undefined;
-           } else if (currBugState[dateField] && currBugState[dateField].match(/^[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}/)) {
+           } else if (currBugState[dateField] && currBugState[dateField].match(DATE_PATTERN)) {
               // Convert "2012/01/01 00:00:00.000" to "2012-01-01"
               // Example: bug 643420 (deadline)
               currBugState[dateField] = currBugState[dateField].substring(0,10).replace(/\//g, '-');
            }
         }
 
+        // FIXME: do we want to keep this?  Useful for debugging / quick ref.
         currBugState.version_num = currBugVersion++;
 
         // Output this version if either it was modified after START_TIME, or if it
@@ -452,7 +450,8 @@ function populateIntermediateVersionObjects() {
           //newRow[rowIndex++] = JSON.stringify(currBugState); // condensed output
           putRow(newRow);
         } else {
-          writeToLog("d", "Not outputting " + currBugState._id + " - it is before START_TIME (" + START_TIME + ")");
+          writeToLog("d", "Not outputting " + currBugState._id
+              + " - it is before START_TIME (" + START_TIME + ")");
         }
     }
 }
@@ -489,7 +488,8 @@ function processFlagChange(aTarget, aChange, aTimestamp, aModifiedBy) {
          var duration_ms = existingFlag["modified_ts"] - existingFlag["previous_modified_ts"];
          existingFlag["duration_days"] =  Math.floor(duration_ms / (1000.0 * 60 * 60 * 24));
       } else {
-         writeToLog("e", "Did not find a corresponding flag for removed value '" + flagStr + "' in " + JSON.stringify(aTarget["flags"]));
+         writeToLog("e", "Did not find a corresponding flag for removed value '"
+             + flagStr + "' in " + JSON.stringify(aTarget["flags"]));
       }
    }
 
@@ -576,12 +576,12 @@ function setPrevious(dest, aFieldName, aValue, aChangeAway) {
     var ddField = aFieldName + "_duration_days";
 
     pv[vField] = aValue;
-    // If we have a previous change for this field, then use the 
+    // If we have a previous change for this field, then use the
     // change-away time as the new change-to time.
     if (pv[caField]) {
        pv[ctField] = pv[caField];
     } else {
-       // Otherwise, this is the first change for this field, so 
+       // Otherwise, this is the first change for this field, so
        // use the creation timestamp.
        pv[ctField] = dest["created_ts"];
     }
@@ -598,7 +598,6 @@ function findByKey(aList, aField, aValue) {
    }
    return null;
 }
-
 
 function stabilize(aBug) {
    if (aBug["cc"] && aBug["cc"][0]) {
@@ -633,7 +632,9 @@ function addValues(anArray, someValues, valueType, fieldName, anObj) {
           if (added != '') {
               // Check if this flag has already been incorporated into a removed flag.  If so, don't add it again.
               var dupes = anArray.filter(function(element, index, array) {
-                 return element["value"] == added && element["modified_by"] == anObj.modified_by && element["modified_ts"] == anObj.modified_ts;
+                 return element["value"] == added
+                     && element["modified_by"] == anObj.modified_by
+                     && element["modified_ts"] == anObj.modified_ts;
               });
               if (dupes && dupes.length > 0) {
                  writeToLog("d", "Skipping duplicated added flag '" + added + "' since info is already in " + JSON.stringify(dupes[0]));
@@ -675,8 +676,6 @@ function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anOb
             if (foundAt >= 0) {
                 anArray.splice(foundAt, 1);
             } else {
-                // XXX if this is a "? 12345" type value for "dependson" etc, try looking for
-                //     the value with the leading "? " trimmed off.
                 writeToLog("e", "Unable to find " + valueType + " value " + fieldName + ":" + v
                         + " in " + arrayDesc + ": " + JSON.stringify(anObj));
             }
