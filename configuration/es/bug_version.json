@@ -193,6 +193,9 @@
                     "index_name": "status", 
                     "type": "string"
                 }, 
+                "bug_version_num": {
+                    "type": "integer"
+                },
                 "changes": {
                     "enabled": false, 
                     "properties": {
@@ -292,7 +295,7 @@
                 }, 
                 "version": {
                     "type": "string"
-                } 
+                }
             }
         }
     }

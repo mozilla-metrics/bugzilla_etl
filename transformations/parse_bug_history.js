@@ -163,7 +163,6 @@ function startNewBug(bug_id, modified_ts, modified_by, merge_order) {
     // Problem: No entry found in the 'bugs' table.
     writeToLog("e", "Current bugs table record not found for bug_id: "
         + bug_id + " (merge order should have been 1, but was " + merge_order + ")");
-    break;
   }
 }
 
@@ -435,7 +434,7 @@ function populateIntermediateVersionObjects() {
         }
 
         // FIXME: do we want to keep this?  Useful for debugging / quick ref.
-        currBugState.version_num = currBugVersion++;
+        currBugState.bug_version_num = currBugVersion++;
 
         // Output this version if either it was modified after START_TIME, or if it
         // expired after START_TIME (the latter will update the last known version of the bug
