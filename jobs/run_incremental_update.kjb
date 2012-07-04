@@ -154,7 +154,7 @@
       <yloc>180</yloc>
       </entry>
     <entry>
-      <name>Update LAST_RUN timestamp</name>
+      <name>Update last run timestamp</name>
       <description/>
       <type>TRANS</type>
       <specification_method>filename</specification_method>
@@ -216,7 +216,7 @@
     </hop>
     <hop>
       <from>Run incremental update</from>
-      <to>Update LAST_RUN timestamp</to>
+      <to>Update last run timestamp</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -224,7 +224,7 @@
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Update LAST_RUN timestamp</from>
+      <from>Update last run timestamp</from>
       <to>Success</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>

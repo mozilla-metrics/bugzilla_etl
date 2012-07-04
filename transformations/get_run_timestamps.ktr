@@ -132,7 +132,7 @@
     <encoding/>
     <add_to_result_filenames>Y</add_to_result_filenames>
     <file>
-      <name>${Internal.Transformation.Filename.Directory}&#47;..&#47;LAST_RUN</name>
+      <name>${bugs_lastrun_file}</name>
       <filemask/>
       <exclude_filemask/>
       <file_required>Y</file_required>
