@@ -339,7 +339,7 @@ function populateIntermediateVersionObjects() {
         } else {
           // Otherwise, we don't know when the version expires.
           writeToLog("d", "We have no nextVersion after #" + currBugVersion);
-          currBugState.expires_on = undefined;
+          currBugState.expires_on = null;
         }
 
         // Copy all attributes from the current version into currBugState

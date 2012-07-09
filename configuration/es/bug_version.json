@@ -75,7 +75,7 @@
                 "attachments": {
                     "properties": {
                         "attach_id": {
-                            "index": "no", 
+                            "index": "not_analyzed",
                             "type": "integer"
                         }, 
                         "created_by": {
@@ -219,7 +219,8 @@
                     "type": "integer"
                 }, 
                 "expires_on": {
-                    "type": "date"
+                    "type": "date",
+                    "null_value": 9999999999000
                 }, 
                 "flags": {
                     "properties": {
