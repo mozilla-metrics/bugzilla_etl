@@ -319,6 +319,8 @@ function populateIntermediateVersionObjects() {
     var nextVersion = {_id:currBugState._id,changes:[]};
 
     var flagMap = {};
+
+    // A monotonically increasing version number (useful for debugging)
     var currBugVersion = 1;
 
     // continue if there are more bug versions, or there is one final nextVersion
@@ -396,7 +398,10 @@ function populateIntermediateVersionObjects() {
             }
 
             // Multi-value fields
-            if (target[change.field_name] instanceof Array) {
+            if (change.field_name == "flags") {
+              // Already handled by "processFlagChange" above.
+              writeToLog("d", "Skipping previously processed flag change");
+            } else if (target[change.field_name] instanceof Array) {
                 var a = target[change.field_name];
                 var multi_field_value = getMultiFieldValue(change.field_name, change.field_value);
                 var multi_field_value_removed = getMultiFieldValue(change.field_name, change.field_value_removed);
@@ -433,7 +438,6 @@ function populateIntermediateVersionObjects() {
            }
         }
 
-        // FIXME: do we want to keep this?  Useful for debugging / quick ref.
         currBugState.bug_version_num = currBugVersion++;
 
         // Output this version if either it was modified after START_TIME, or if it
@@ -493,71 +497,76 @@ function processFlagChange(aTarget, aChange, aTimestamp, aModifiedBy) {
    }
 
    // See if we can align any of the added flags with previous deletions.
+   // If so, try to match them up with a "dangling" removed flag
    for each (var flagStr in addedFlags) {
-      // Try to match them up with a "dangling" removed flag
       if (flagStr == "") {
          continue;
       }
 
       var flag = makeFlag(flagStr, aTimestamp, aModifiedBy);
 
-      if (aTarget["flags"]) {
-         var candidates = aTarget["flags"].filter(function(element, index, array) {
-            return (element["value"] == ""
-                 && flag["request_type"] == element["request_type"]
-                 && flag["request_status"] != element["previous_status"]); // Skip "r?(dre@mozilla)" -> "r?(mark@mozilla)"
-         });
+      if (!aTarget["flags"]) {
+        writeToLog("d", "Warning: processFlagChange called with unset 'flags'");
+        aTarget["flags"] = [];
+      }
 
-         if (candidates) {
-            if (candidates.length >= 1) {
-               var chosen_one = candidates[0];
-               if (candidates.length > 1) {
-                  // Multiple matches - use the first one.
-                  writeToLog("d", "Matched added flag " + JSON.stringify(flag) + " to multiple removed flags.  Using the best of these:");
-                  for each (var candidate in candidates) {
-                     writeToLog("d", "      " + JSON.stringify(candidate));
-                  }
-                  var matched_ts = candidates.filter(function(element, index, array) {
-                     return flag["modified_ts"] == element["modified_ts"];
-                  });
-                  if (matched_ts && matched_ts.length == 1) {
-                     writeToLog("d", "Matching on modified_ts fixed it");
-                     chosen_one = matched_ts[0];
-                  } else {
-                     writeToLog("d", "Matching on modified_ts left us with " + (matched_ts ? matched_ts.length : "no") + " matches");
-                     // If we had no matches (or many matches), try matching on requestee.
-                     var matched_req = candidates.filter(function(element, index, array) {
-                        // Do case-insenitive comparison
-                        if (element["requestee"]) {
-                           return flag["modified_by"].toLowerCase() ==  element["requestee"].toLowerCase();
-                        }
-                        return false;
-                     });
-                     if (matched_req && matched_req.length == 1) {
-                        writeToLog("d", "Matching on requestee fixed it");
-                        chosen_one = matched_req[0];
-                     } else {
-                        writeToLog("e", "Matching on requestee left us with " + (matched_req ? matched_req.length : "no") + " matches. Skipping match.");
-                        chosen_one = null;
-                     }
-                  }
+      var candidates = aTarget["flags"].filter(function(element, index, array) {
+         return (element["value"] == ""
+              && flag["request_type"] == element["request_type"]
+              && flag["request_status"] != element["previous_status"]); // Skip "r?(dre@mozilla)" -> "r?(mark@mozilla)"
+      });
+
+      if (candidates) {
+         if (candidates.length >= 1) {
+            var chosen_one = candidates[0];
+            if (candidates.length > 1) {
+               // Multiple matches - use the best one.
+               writeToLog("d", "Matched added flag " + JSON.stringify(flag) + " to multiple removed flags.  Using the best of these:");
+               for each (var candidate in candidates) {
+                  writeToLog("d", "      " + JSON.stringify(candidate));
+               }
+               var matched_ts = candidates.filter(function(element, index, array) {
+                  return flag["modified_ts"] == element["modified_ts"];
+               });
+               if (matched_ts && matched_ts.length == 1) {
+                  writeToLog("d", "Matching on modified_ts fixed it");
+                  chosen_one = matched_ts[0];
                } else {
-                  // Obvious case - matched exactly one.
-                  writeToLog("d", "Matched added flag " + JSON.stringify(flag) + " to removed flag " + JSON.stringify(chosen_one));
-               }
-
-               if (chosen_one) {
-                  for each (var f in ["value", "request_status", "requestee"]) {
-                     if (flag[f]) {
-                        chosen_one[f] = flag[f];
+                  writeToLog("d", "Matching on modified_ts left us with " + (matched_ts ? matched_ts.length : "no") + " matches");
+                  // If we had no matches (or many matches), try matching on requestee.
+                  var matched_req = candidates.filter(function(element, index, array) {
+                     // Do case-insenitive comparison
+                     if (element["requestee"]) {
+                        return flag["modified_by"].toLowerCase() ==  element["requestee"].toLowerCase();
                      }
+                     return false;
+                  });
+                  if (matched_req && matched_req.length == 1) {
+                     writeToLog("d", "Matching on requestee fixed it");
+                     chosen_one = matched_req[0];
+                  } else {
+                     writeToLog("e", "Matching on requestee left us with " + (matched_req ? matched_req.length : "no") + " matches. Skipping match.");
+                     // TODO: add "uncertain" flag?
+                     chosen_one = null;
                   }
                }
-               // We need to avoid later adding this flag twice, since we rolled an add into a delete.
             } else {
-               // No matching candidate. Totally new flag.
-               writeToLog("d", "Did not match added flag " + JSON.stringify(flag) + " to anything: " + JSON.stringify(aTarget["flags"]));
+               // Obvious case - matched exactly one.
+               writeToLog("d", "Matched added flag " + JSON.stringify(flag) + " to removed flag " + JSON.stringify(chosen_one));
             }
+
+            if (chosen_one) {
+               for each (var f in ["value", "request_status", "requestee"]) {
+                  if (flag[f]) {
+                     chosen_one[f] = flag[f];
+                  }
+               }
+            }
+            // We need to avoid later adding this flag twice, since we rolled an add into a delete.
+         } else {
+            // No matching candidate. Totally new flag.
+            writeToLog("d", "Did not match added flag " + JSON.stringify(flag) + " to anything: " + JSON.stringify(aTarget["flags"]));
+            aTarget["flags"].push(flag);
          }
       }
    }
@@ -629,6 +638,7 @@ function addValues(anArray, someValues, valueType, fieldName, anObj) {
    if (fieldName == "flags") {
       for each (var added in someValues) {
           if (added != '') {
+              // TODO: Some bugs (like 685605) actually have duplicate flags.  Do we want to keep them?
               // Check if this flag has already been incorporated into a removed flag.  If so, don't add it again.
               var dupes = anArray.filter(function(element, index, array) {
                  return element["value"] == added
