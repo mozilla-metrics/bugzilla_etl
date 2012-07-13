@@ -95,9 +95,9 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>Read LAST_RUN file</from><to>Set START_TIME</to><enabled>Y</enabled> </hop>  <hop> <from>Get Current DB time</from><to>Set NEXT_START_TIME</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Read LAST_RUN file</from><to>Set START_TIME</to><enabled>Y</enabled> </hop>  <hop> <from>Get most recent bug timestamp</from><to>Set NEXT_START_TIME</to><enabled>Y</enabled> </hop>  </order>
   <step>
-    <name>Get Current DB time</name>
+    <name>Get most recent bug timestamp</name>
     <type>TableInput</type>
     <description/>
     <distribute>Y</distribute>
@@ -107,7 +107,7 @@
            <schema_name/>
            </partitioning>
     <connection>bugs</connection>
-    <sql>SELECT UNIX_TIMESTAMP(now())*1000 AS current_run_timestamp;</sql>
+    <sql>SELECT MAX(UNIX_TIMESTAMP(delta_ts)*1000) AS current_run_timestamp FROM bugs;</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>
