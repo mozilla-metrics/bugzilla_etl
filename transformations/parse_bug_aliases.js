@@ -473,8 +473,8 @@ function populateIntermediateVersionObjects() {
       writeToLog("d", "Found single dupe '" + dupe + "' " + dupeSingles[dupe] + " times.");
       var newRow = createRowCopy(outputRowSize);
       var rowIndex = inputRowSize;
-      newRow[rowIndex++] = "single"
       newRow[rowIndex++] = dupe
+      newRow[rowIndex++] = "single"
       newRow[rowIndex++] = dupeSingles[dupe];
       newRow[rowIndex++] = prevBugID;
       putRow(newRow);
@@ -485,8 +485,8 @@ function populateIntermediateVersionObjects() {
       writeToLog("d", "Found multi dupe '" + dupe + "' " + dupeMultis[dupe] + " times.");
       var newRow = createRowCopy(outputRowSize);
       var rowIndex = inputRowSize;
-      newRow[rowIndex++] = "multi"
       newRow[rowIndex++] = dupe
+      newRow[rowIndex++] = "multi"
       newRow[rowIndex++] = dupeMultis[dupe];
       newRow[rowIndex++] = prevBugID;
       putRow(newRow);
@@ -678,6 +678,7 @@ function addValues(anArray, someValues, valueType, fieldName, anObj) {
           if (added != '') {
               // TODO: Some bugs (like 685605) actually have duplicate flags.  Do we want to keep them?
               // Check if this flag has already been incorporated into a removed flag.  If so, don't add it again.
+            /*
               var dupes = anArray.filter(function(element, index, array) {
                  return element["value"] == added
                      && element["modified_by"] == anObj.modified_by
@@ -686,9 +687,10 @@ function addValues(anArray, someValues, valueType, fieldName, anObj) {
               if (dupes && dupes.length > 0) {
                  writeToLog("d", "Skipping duplicated added flag '" + added + "' since info is already in " + JSON.stringify(dupes[0]));
               } else {
+            */
                  var addedFlag = makeFlag(added, anObj.modified_ts, anObj.modified_by);
                  anArray.push(addedFlag);
-              }
+            //  }
           }
       }
    } else {

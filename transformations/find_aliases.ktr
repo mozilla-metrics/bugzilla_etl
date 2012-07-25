@@ -1066,14 +1066,14 @@ trans_Status = SKIP_TRANSFORMATION;</jsScript_script>
         <jsScript_name>Item_0</jsScript_name>
         <jsScript_script>LoadScriptFile(getVariable(&quot;Internal.Transformation.Filename.Directory&quot;,&quot;&quot;)+&quot;&#47;parse_bug_aliases.js&quot;);
 startNewBug(Number(bug_id), Number(modified_ts), String(modified_by), Number(_merge_order));</jsScript_script>
-      </jsScript>    </jsScripts>    <fields>      <field>        <name>alias_type</name>
-        <rename>alias_type</rename>
+      </jsScript>    </jsScripts>    <fields>      <field>        <name>alias</name>
+        <rename>alias</rename>
         <type>String</type>
         <length>-1</length>
         <precision>-1</precision>
         <replace>N</replace>
-      </field>      <field>        <name>alias</name>
-        <rename>alias</rename>
+      </field>      <field>        <name>alias_type</name>
+        <rename>alias_type</rename>
         <type>String</type>
         <length>-1</length>
         <precision>-1</precision>
@@ -1116,6 +1116,7 @@ startNewBug(Number(bug_id), Number(modified_ts), String(modified_by), Number(_me
       </remove>      <remove>        <name>field_value_removed</name>
       </remove>      <remove>        <name>modified_by</name>
       </remove>      <remove>        <name>modified_ts</name>
+      </remove>      <remove>        <name>bug_id</name>
       </remove>    </fields>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>748</xloc>
