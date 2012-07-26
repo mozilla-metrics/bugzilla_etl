@@ -67,7 +67,7 @@
       <draw>Y</draw>
       <nr>0</nr>
       <xloc>200</xloc>
-      <yloc>50</yloc>
+      <yloc>40</yloc>
       </entry>
     <entry>
       <name>Get visible bugs table fields</name>
@@ -99,7 +99,7 @@
       <draw>Y</draw>
       <nr>0</nr>
       <xloc>200</xloc>
-      <yloc>150</yloc>
+      <yloc>200</yloc>
       </entry>
     <entry>
       <name>Run bugzilla_to_json</name>
@@ -131,19 +131,42 @@
       <draw>Y</draw>
       <nr>0</nr>
       <xloc>200</xloc>
-      <yloc>250</yloc>
+      <yloc>280</yloc>
+      </entry>
+    <entry>
+      <name>Get BZ Aliases</name>
+      <description/>
+      <type>TRANS</type>
+      <specification_method>filename</specification_method>
+      <trans_object_id/>
+      <filename>${Internal.Job.Filename.Directory}&#47;..&#47;transformations&#47;get_bz_aliases.ktr</filename>
+      <transname/>
+      <arg_from_previous>N</arg_from_previous>
+      <params_from_previous>N</params_from_previous>
+      <exec_per_row>N</exec_per_row>
+      <clear_rows>N</clear_rows>
+      <clear_files>N</clear_files>
+      <set_logfile>N</set_logfile>
+      <logfile/>
+      <logext/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <loglevel>Basic</loglevel>
+      <cluster>N</cluster>
+      <slave_server_name/>
+      <set_append_logfile>N</set_append_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <follow_abort_remote>N</follow_abort_remote>
+      <create_parent_folder>N</create_parent_folder>
+      <parameters>        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
+      <xloc>200</xloc>
+      <yloc>120</yloc>
       </entry>
   </entries>
   <hops>
-    <hop>
-      <from>START</from>
-      <to>Get visible bugs table fields</to>
-      <from_nr>0</from_nr>
-      <to_nr>0</to_nr>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>Y</unconditional>
-    </hop>
     <hop>
       <from>Get visible bugs table fields</from>
       <to>Run bugzilla_to_json</to>
@@ -152,6 +175,24 @@
       <enabled>Y</enabled>
       <evaluation>Y</evaluation>
       <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>START</from>
+      <to>Get BZ Aliases</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>Y</unconditional>
+    </hop>
+    <hop>
+      <from>Get BZ Aliases</from>
+      <to>Get visible bugs table fields</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>Y</unconditional>
     </hop>
   </hops>
   <notepads>
