@@ -660,6 +660,7 @@ function addValues(anArray, someValues, valueType, fieldName, anObj) {
     for each (var added in someValues) {
       if (added != '') {
         // TODO: Some bugs (like 685605) actually have duplicate flags. Do we want to keep them?
+        /*
         // Check if this flag has already been incorporated into a removed flag. If so, don't add it again.
         var dupes = anArray.filter(function(element, index, array) {
           return element["value"] == added
@@ -670,8 +671,9 @@ function addValues(anArray, someValues, valueType, fieldName, anObj) {
           writeToLog("d", "Skipping duplicated added flag '" + added + "' since info is already in " + JSON.stringify(dupes[0]));
         } else {
           var addedFlag = makeFlag(added, anObj.modified_ts, anObj.modified_by);
+        */
           anArray.push(addedFlag);
-        }
+        //}
       }
     }
   } else {
