@@ -480,9 +480,6 @@ function findFlag(aFlagList, aFlag) {
 }
 
 function processFlagChange(aTarget, aChange, aTimestamp, aModifiedBy) {
-   writeToLog("d", "Processing flag change.  Added: '" + aChange.field_value
-       + "', removed: '" + aChange.field_value_removed + "'");
-   writeToLog("d", "Target was: " + JSON.stringify(aTarget));
    var addedFlags = getMultiFieldValue("flags", aChange.field_value);
    var removedFlags = getMultiFieldValue("flags", aChange.field_value_removed);
 
