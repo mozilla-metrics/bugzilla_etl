@@ -40,11 +40,7 @@ const DATE_PATTERN = /^[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}/;
 // Fields that could have been truncated per bug 55161
 const TRUNC_FIELDS = ["cc", "blocked", "dependson", "keywords"];
 
-var dupeSingles = {};
-var dupeMultis = {};
-
 var bzAliases = null;
-
 var currBugID;
 var prevBugID;
 var bugVersions;
@@ -147,15 +143,6 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
                 writeToLog("e", "Unhandled merge_order: '" + _merge_order + "'");
                 break;
         }
-    } else {
-      // Output our wicked-sweet dupe lists:
-      for (var dupe in dupeSingles) {
-        writeToLog("d", "Found single dupe '" + dupe + "' " + dupeSingles[dupe] + " times.");
-      }
-      for (var dupe in dupeMultis) {
-        writeToLog("d", "Found multi dupe '" + dupe + "' " + dupeMultis[dupe] + " times.");
-      }
-
     }
 }
 
@@ -725,25 +712,6 @@ function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anOb
         writeToLog("e", "Unable to find " + valueType + " flag " + fieldName + ":" + v
                  + " in " + arrayDesc + ": " + JSON.stringify(anObj));
 
-        var dupeTarget = dupeSingles;
-        if (anArray.length > 1) {
-          dupeTarget = dupeMultis;
-        }
-
-        var vFlag = makeFlag(v, 0, 0);
-
-        for each (var item in anArray) {
-          if (vFlag.request_type == item.request_type
-              && vFlag.request_status == item.request_status) {
-            if (dupeTarget[vFlag.requestee + "=" + item.requestee]) {
-              dupeTarget[vFlag.requestee + "=" + item.requestee] += 1;
-            } else {
-              dupeTarget[vFlag.requestee + "=" + item.requestee] = 1;
-            }
-          } else {
-            writeToLog("d", "Skipping potential dupe: '" + v + "' != '" + item.value + "'");
-          }
-        }
       }
     }
   } else {
@@ -752,7 +720,12 @@ function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anOb
       if (foundAt >= 0) {
         anArray.splice(foundAt, 1);
       } else {
-        writeToLog("e", "Unable to find " + valueType + " value " + fieldName + ":" + v
+        var logLevel = "e";
+        if (fieldName == "cc") {
+          // Don't make too much noise about mismatched cc items.
+          logLevel = "d";
+        }
+        writeToLog(logLevel, "Unable to find " + valueType + " value " + fieldName + ":" + v
                  + " in " + arrayDesc + ": " + JSON.stringify(anObj));
       }
     }
