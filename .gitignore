@@ -9,4 +9,4 @@ log
 local
 build
 configuration/hbase-client
-
+*.swp
