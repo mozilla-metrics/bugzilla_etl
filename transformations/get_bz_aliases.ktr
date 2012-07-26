@@ -68,7 +68,138 @@
   <notepads>
   </notepads>
   <order>
-  <hop> <from>Read aliases file</from><to>Filter &apos;single&apos; rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;single&apos; rows</from><to>Sort by alias</to><enabled>Y</enabled> </hop>  <hop> <from>Sort by alias</from><to>Get total alias count</to><enabled>Y</enabled> </hop>  <hop> <from>Get total alias count</from><to>Filter singles</to><enabled>Y</enabled> </hop>  <hop> <from>Concatenate aliases</from><to>Set Variables</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;single&apos; rows</from><to>skip &apos;multi&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Filter singles</from><to>skip one-offs</to><enabled>Y</enabled> </hop>  <hop> <from>Filter singles</from><to>Filter &apos;undefined&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;undefined&apos;</from><to>skip &apos;undefined=&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;undefined&apos;</from><to>Concatenate aliases</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Read aliases file</from><to>Filter &apos;single&apos; rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;single&apos; rows</from><to>Sort by alias</to><enabled>Y</enabled> </hop>  <hop> <from>Sort by alias</from><to>Get total alias count</to><enabled>Y</enabled> </hop>  <hop> <from>Concatenate aliases</from><to>Set Variables</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;undefined=&apos;</from><to>skip &apos;undefined&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Get total alias count</from><to>Filter &apos;undefined=&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;undefined=&apos;</from><to>Filter &apos;=undefined&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;undefined=&apos;</from><to>Filter &apos;=undefined&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;=undefined&apos;</from><to>Concatenate aliases</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;single&apos; rows</from><to>skip &apos;multi&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;=undefined&apos;</from><to>skip &apos;undefined&apos;</to><enabled>Y</enabled> </hop>  </order>
+  <step>
+    <name>Concatenate aliases</name>
+    <type>GroupBy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+      <all_rows>N</all_rows>
+      <ignore_aggregate>N</ignore_aggregate>
+      <field_ignore/>
+      <directory>%%java.io.tmpdir%%</directory>
+      <prefix>grp</prefix>
+      <add_linenr>N</add_linenr>
+      <linenr_fieldname/>
+      <give_back_row>N</give_back_row>
+      <group>
+      </group>
+      <fields>
+        <field>
+          <aggregate>aliases</aggregate>
+          <subject>alias</subject>
+          <type>CONCAT_COMMA</type>
+          <valuefield/>
+        </field>
+      </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>360</xloc>
+      <yloc>300</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter &apos;single&apos; rows</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+<send_true_to>Sort by alias</send_true_to>
+<send_false_to>skip &apos;multi&apos;</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <leftvalue>alias_type</leftvalue>
+ <function>=</function>
+ <rightvalue/>
+ <value><name>constant</name><type>String</type><text>single</text><length>-1</length><precision>-1</precision><isnull>N</isnull><mask/></value> </condition>
+    </compare>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>160</xloc>
+      <yloc>60</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Filter &apos;undefined=&apos;</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+<send_true_to>skip &apos;undefined&apos;</send_true_to>
+<send_false_to>Filter &apos;=undefined&apos;</send_false_to>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <leftvalue>alias</leftvalue>
+ <function>STARTS WITH</function>
+ <rightvalue/>
+ <value><name>constant</name><type>String</type><text>undefined=</text><length>-1</length><precision>-1</precision><isnull>N</isnull><mask/></value> </condition>
+    </compare>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>360</xloc>
+      <yloc>140</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Get total alias count</name>
+    <type>GroupBy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+      <all_rows>N</all_rows>
+      <ignore_aggregate>N</ignore_aggregate>
+      <field_ignore/>
+      <directory>%%java.io.tmpdir%%</directory>
+      <prefix>grp</prefix>
+      <add_linenr>N</add_linenr>
+      <linenr_fieldname/>
+      <give_back_row>N</give_back_row>
+      <group>
+        <field>
+          <name>alias</name>
+        </field>
+      </group>
+      <fields>
+        <field>
+          <aggregate>total_count</aggregate>
+          <subject>alias_count</subject>
+          <type>SUM</type>
+          <valuefield/>
+        </field>
+      </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>360</xloc>
+      <yloc>60</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
   <step>
     <name>Read aliases file</name>
     <type>TextFileInput</type>
@@ -212,8 +343,8 @@
     </step>
 
   <step>
-    <name>Get total alias count</name>
-    <type>GroupBy</type>
+    <name>Set Variables</name>
+    <type>SetVariable</type>
     <description/>
     <distribute>Y</distribute>
     <copies>1</copies>
@@ -221,59 +352,19 @@
            <method>none</method>
            <schema_name/>
            </partitioning>
-      <all_rows>N</all_rows>
-      <ignore_aggregate>N</ignore_aggregate>
-      <field_ignore/>
-      <directory>%%java.io.tmpdir%%</directory>
-      <prefix>grp</prefix>
-      <add_linenr>N</add_linenr>
-      <linenr_fieldname/>
-      <give_back_row>N</give_back_row>
-      <group>
-        <field>
-          <name>alias</name>
-        </field>
-      </group>
-      <fields>
-        <field>
-          <aggregate>total_count</aggregate>
-          <subject>alias_count</subject>
-          <type>SUM</type>
-          <valuefield/>
+    <fields>
+      <field>
+        <field_name>aliases</field_name>
+        <variable_name>BZ_ALIASES</variable_name>
+        <variable_type>JVM</variable_type>
+        <default_value/>
         </field>
       </fields>
+    <use_formatting>Y</use_formatting>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>360</xloc>
-      <yloc>60</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Filter &apos;single&apos; rows</name>
-    <type>FilterRows</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-<send_true_to>Sort by alias</send_true_to>
-<send_false_to>skip &apos;multi&apos;</send_false_to>
-    <compare>
-<condition>
- <negated>N</negated>
- <leftvalue>alias_type</leftvalue>
- <function>=</function>
- <rightvalue/>
- <value><name>constant</name><type>String</type><text>single</text><length>-1</length><precision>-1</precision><isnull>N</isnull><mask/></value> </condition>
-    </compare>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>160</xloc>
-      <yloc>60</yloc>
+      <yloc>380</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -311,97 +402,6 @@
     </step>
 
   <step>
-    <name>Filter singles</name>
-    <type>FilterRows</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-<send_true_to>Filter &apos;undefined&apos;</send_true_to>
-<send_false_to>skip one-offs</send_false_to>
-    <compare>
-<condition>
- <negated>N</negated>
- <leftvalue>total_count</leftvalue>
- <function>&gt;</function>
- <rightvalue/>
- <value><name>constant</name><type>Integer</type><text>1</text><length>-1</length><precision>0</precision><isnull>N</isnull><mask>#;-#</mask></value> </condition>
-    </compare>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>360</xloc>
-      <yloc>140</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Concatenate aliases</name>
-    <type>GroupBy</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-      <all_rows>N</all_rows>
-      <ignore_aggregate>N</ignore_aggregate>
-      <field_ignore/>
-      <directory>%%java.io.tmpdir%%</directory>
-      <prefix>grp</prefix>
-      <add_linenr>N</add_linenr>
-      <linenr_fieldname/>
-      <give_back_row>N</give_back_row>
-      <group>
-      </group>
-      <fields>
-        <field>
-          <aggregate>aliases</aggregate>
-          <subject>alias</subject>
-          <type>CONCAT_COMMA</type>
-          <valuefield/>
-        </field>
-      </fields>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>360</xloc>
-      <yloc>300</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Set Variables</name>
-    <type>SetVariable</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <fields>
-      <field>
-        <field_name>aliases</field_name>
-        <variable_name>BZ_ALIASES</variable_name>
-        <variable_type>JVM</variable_type>
-        <default_value/>
-        </field>
-      </fields>
-    <use_formatting>Y</use_formatting>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>360</xloc>
-      <yloc>380</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
     <name>skip &apos;multi&apos;</name>
     <type>Dummy</type>
     <description/>
@@ -420,7 +420,7 @@
     </step>
 
   <step>
-    <name>skip one-offs</name>
+    <name>skip &apos;undefined&apos;</name>
     <type>Dummy</type>
     <description/>
     <distribute>Y</distribute>
@@ -438,25 +438,7 @@
     </step>
 
   <step>
-    <name>skip &apos;undefined=&apos;</name>
-    <type>Dummy</type>
-    <description/>
-    <distribute>Y</distribute>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>260</xloc>
-      <yloc>220</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Filter &apos;undefined&apos;</name>
+    <name>Filter &apos;=undefined&apos;</name>
     <type>FilterRows</type>
     <description/>
     <distribute>Y</distribute>
@@ -465,15 +447,15 @@
            <method>none</method>
            <schema_name/>
            </partitioning>
-<send_true_to>skip &apos;undefined=&apos;</send_true_to>
+<send_true_to>skip &apos;undefined&apos;</send_true_to>
 <send_false_to>Concatenate aliases</send_false_to>
     <compare>
 <condition>
  <negated>N</negated>
  <leftvalue>alias</leftvalue>
- <function>STARTS WITH</function>
+ <function>ENDS WITH</function>
  <rightvalue/>
- <value><name>constant</name><type>String</type><text>undefined=</text><length>-1</length><precision>-1</precision><isnull>N</isnull><mask/></value> </condition>
+ <value><name>constant</name><type>String</type><text>=undefined</text><length>-1</length><precision>-1</precision><isnull>N</isnull><mask/></value> </condition>
     </compare>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
