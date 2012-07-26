@@ -40,6 +40,7 @@ const DATE_PATTERN = /^[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}/;
 // Fields that could have been truncated per bug 55161
 const TRUNC_FIELDS = ["cc", "blocked", "dependson", "keywords"];
 
+var bzAliases = null;
 var currBugID;
 var prevBugID;
 var bugVersions;
@@ -55,6 +56,10 @@ var END_TIME = parseInt(getVariable("END_TIME", 0));
 
 function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in, field_value_removed, attach_id, _merge_order) {
     currBugID = bug_id;
+
+    if (!bzAliases) {
+      initializeAliases();
+    }
 
     writeToLog("d", "bug_id={" + bug_id + "}, modified_ts={" + modified_ts + "}, modified_by={" + modified_by
           + "}, field_name={" + field_name + "}, field_value={" + field_value_in + "}, field_value_removed={"
@@ -459,6 +464,21 @@ function populateIntermediateVersionObjects() {
     }
 }
 
+function findFlag(aFlagList, aFlag) {
+  var existingFlag = findByKey(aFlagList, "value", aFlag.value);
+  if (!existingFlag) {
+    for each (var eFlag in aFlagList) {
+      if (eFlag.request_type == aFlag.request_type 
+          && eFlag.request_status == aFlag.request_status 
+          && bzAliases[aFlag.requestee + "=" + eFlag.requestee]) {
+        writeToLog("d", "Using bzAliases to match change '" + aFlag.value + "' to '" + eFlag.value + "'");
+        anArray.splice(i, 1);
+        break;
+      }
+    }
+  }
+}
+
 function processFlagChange(aTarget, aChange, aTimestamp, aModifiedBy) {
    var addedFlags = getMultiFieldValue("flags", aChange.field_value);
    var removedFlags = getMultiFieldValue("flags", aChange.field_value_removed);
@@ -469,7 +489,7 @@ function processFlagChange(aTarget, aChange, aTimestamp, aModifiedBy) {
          continue;
       }
       var flag = makeFlag(flagStr, aTimestamp, aModifiedBy);
-      var existingFlag = findByKey(aTarget["flags"], "value", flagStr);
+      var existingFlag = findFlag(aTarget["flags"], flag); //findByKey(aTarget["flags"], "value", flagStr);
 
       if (existingFlag) {
          // Carry forward some previous values:
@@ -663,33 +683,50 @@ function addValues(anArray, someValues, valueType, fieldName, anObj) {
 }
 
 function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anObj) {
-    if (fieldName == "flags") {
-        for each (var v in someValues) {
-            var len = anArray.length;
-            for (var i = 0; i < len; i++) {
-                // Match on flag name (incl. status) and flag value
-                if (anArray[i].value == v) {
-                     anArray.splice(i, 1);
-                     break;
-                }
-            }
+  if (fieldName == "flags") {
+    for each (var v in someValues) {
+      var len = anArray.length;
+      var flag = makeFlag(v, 0, 0);
+      for (var i = 0; i < len; i++) {
+        // Match on complete flag (incl. status) and flag value
+        if (anArray[i].value == v) {
+          anArray.splice(i, 1);
+          break;
+        } else if (flag.requestee) {
+          // Match on flag type and status, then use Aliases to match
+          // TODO: Should we try exact matches all the way to the end first?
+          if (anArray[i].request_type == flag.request_type 
+              && anArray[i].request_status == flag.request_status 
+              && bzAliases[flag.requestee + "=" + anArray[i].requestee]) {
+            writeToLog("d", "Using bzAliases to match '" + v + "' to '" + anArray[i].value + "'");
+            anArray.splice(i, 1);
+            break;
+          }
+        }
+      }
 
-            if (len == anArray.length) {
-                writeToLog("e", "Unable to find " + valueType + " flag " + fieldName + ":" + v
-                        + " in " + arrayDesc + ": " + JSON.stringify(anObj));
-            }
-        }
-    } else {
-        for each (var v in someValues) {
-            var foundAt = anArray.indexOf(v);
-            if (foundAt >= 0) {
-                anArray.splice(foundAt, 1);
-            } else {
-                writeToLog("e", "Unable to find " + valueType + " value " + fieldName + ":" + v
-                        + " in " + arrayDesc + ": " + JSON.stringify(anObj));
-            }
-        }
+      if (len == anArray.length) {
+        writeToLog("e", "Unable to find " + valueType + " flag " + fieldName + ":" + v
+                 + " in " + arrayDesc + ": " + JSON.stringify(anObj));
+
+      }
     }
+  } else {
+    for each (var v in someValues) {
+      var foundAt = anArray.indexOf(v);
+      if (foundAt >= 0) {
+        anArray.splice(foundAt, 1);
+      } else {
+        var logLevel = "e";
+        if (fieldName == "cc") {
+          // Don't make too much noise about mismatched cc items.
+          logLevel = "d";
+        }
+        writeToLog(logLevel, "Unable to find " + valueType + " value " + fieldName + ":" + v
+                 + " in " + arrayDesc + ": " + JSON.stringify(anObj));
+      }
+    }
+  }
 }
 
 function isMultiField(aFieldName) {
@@ -704,4 +741,18 @@ function getMultiFieldValue(aFieldName, aFieldValue) {
     }
 
     return [aFieldValue];
+}
+
+function initializeAliases() {
+  var BZ_ALIASES = getVariable("BZ_ALIASES", 0);
+  bzAliases = {};
+  if (BZ_ALIASES) {
+    writeToLog("d", "Initializing aliases");
+    for each (var alias in BZ_ALIASES.split(/, */)) {
+      writeToLog("d", "Adding alias '" + alias + "'");
+      bzAliases[alias] = true;
+    }
+  } else {
+    writeToLog("d", "Not initializing aliases");
+  }
 }
