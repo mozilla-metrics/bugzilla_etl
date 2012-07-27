@@ -68,7 +68,7 @@
   <notepads>
   </notepads>
   <order>
-  <hop> <from>Read aliases file</from><to>Filter &apos;single&apos; rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;single&apos; rows</from><to>Sort by alias</to><enabled>Y</enabled> </hop>  <hop> <from>Sort by alias</from><to>Get total alias count</to><enabled>Y</enabled> </hop>  <hop> <from>Concatenate aliases</from><to>Set Variables</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;undefined=&apos;</from><to>skip &apos;undefined&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Get total alias count</from><to>Filter &apos;undefined=&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;undefined=&apos;</from><to>Filter &apos;=undefined&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;undefined=&apos;</from><to>Filter &apos;=undefined&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;=undefined&apos;</from><to>Concatenate aliases</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;single&apos; rows</from><to>skip &apos;multi&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;=undefined&apos;</from><to>skip &apos;undefined&apos;</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Read aliases file</from><to>Filter out &apos;multi&apos; rows</to><enabled>Y</enabled> </hop>  <hop> <from>Filter out &apos;multi&apos; rows</from><to>Sort by alias</to><enabled>Y</enabled> </hop>  <hop> <from>Sort by alias</from><to>Get total alias count</to><enabled>Y</enabled> </hop>  <hop> <from>Concatenate aliases</from><to>Set Variables</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;undefined=&apos;</from><to>skip &apos;undefined&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Get total alias count</from><to>Filter &apos;undefined=&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;undefined=&apos;</from><to>Filter &apos;=undefined&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;undefined=&apos;</from><to>Filter &apos;=undefined&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;=undefined&apos;</from><to>Concatenate aliases</to><enabled>Y</enabled> </hop>  <hop> <from>Filter out &apos;multi&apos; rows</from><to>skip &apos;multi&apos;</to><enabled>Y</enabled> </hop>  <hop> <from>Filter &apos;=undefined&apos;</from><to>skip &apos;undefined&apos;</to><enabled>Y</enabled> </hop>  </order>
   <step>
     <name>Concatenate aliases</name>
     <type>GroupBy</type>
@@ -106,7 +106,7 @@
     </step>
 
   <step>
-    <name>Filter &apos;single&apos; rows</name>
+    <name>Filter out &apos;multi&apos; rows</name>
     <type>FilterRows</type>
     <description/>
     <distribute>Y</distribute>
@@ -121,9 +121,9 @@
 <condition>
  <negated>N</negated>
  <leftvalue>alias_type</leftvalue>
- <function>=</function>
+ <function>&lt;&gt;</function>
  <rightvalue/>
- <value><name>constant</name><type>String</type><text>single</text><length>-1</length><precision>-1</precision><isnull>N</isnull><mask/></value> </condition>
+ <value><name>constant</name><type>String</type><text>multi</text><length>-1</length><precision>-1</precision><isnull>N</isnull><mask/></value> </condition>
     </compare>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
