@@ -471,7 +471,8 @@ function findFlag(aFlagList, aFlag) {
     for each (var eFlag in aFlagList) {
       if (eFlag.request_type == aFlag.request_type
           && eFlag.request_status == aFlag.request_status
-          && bzAliases[aFlag.requestee + "=" + eFlag.requestee]) {
+          && (bzAliases[aFlag.requestee + "=" + eFlag.requestee] // Try both directions.
+           || bzAliases[eFlag.requestee + "=" + aFlag.requestee])) {
         writeToLog("d", "Using bzAliases to match change '" + aFlag.value + "' to '" + eFlag.value + "'");
         existingFlag = eFlag;
         break;
