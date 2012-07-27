@@ -670,8 +670,8 @@ function addValues(anArray, someValues, valueType, fieldName, anObj) {
         if (dupes && dupes.length > 0) {
           writeToLog("d", "Skipping duplicated added flag '" + added + "' since info is already in " + JSON.stringify(dupes[0]));
         } else {
-          var addedFlag = makeFlag(added, anObj.modified_ts, anObj.modified_by);
         */
+          var addedFlag = makeFlag(added, anObj.modified_ts, anObj.modified_by);
           anArray.push(addedFlag);
         //}
       }
