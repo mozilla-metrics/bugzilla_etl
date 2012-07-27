@@ -473,11 +473,12 @@ function findFlag(aFlagList, aFlag) {
           && eFlag.request_status == aFlag.request_status
           && bzAliases[aFlag.requestee + "=" + eFlag.requestee]) {
         writeToLog("d", "Using bzAliases to match change '" + aFlag.value + "' to '" + eFlag.value + "'");
-        anArray.splice(i, 1);
+        existingFlag = eFlag;
         break;
       }
     }
   }
+  return existingFlag;
 }
 
 function processFlagChange(aTarget, aChange, aTimestamp, aModifiedBy) {
