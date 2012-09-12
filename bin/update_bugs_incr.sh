@@ -6,10 +6,20 @@ KETTLE_JOB=$BASE_DIR/jobs/run_incremental_update.kjb
 cd $BASE_DIR/kettle/
 
 # Last Run timestamp can be found in the "bugs_lastrun_file" var in kettle.properties
-# As of 2012/07/05, currently set to /home/mreid/BZ_LAST_RUN
+# As of 2012/08/01, currently set to /opt/pentaho/kettle/etl/bugzilla_etl/BZ_LAST_RUN
 LOG_LEVEL=Basic
 TS=$(date +%s000)
-LOG=/var/log/etl/bugzilla_etl_incr.log
+
+# Use a temp log just for this run
+LOG=/var/log/etl/bugzilla_etl_incr.$TS.log
 echo "*** Processing incremental updates.  Current OS Time is $TS" >> $LOG
 
-./kitchen.sh -file $KETTLE_JOB -level $LOG_LEVEL >> $LOG
+./kitchen.sh -file $KETTLE_JOB -level $LOG_LEVEL 2>&1 >> $LOG
+
+grep -i exception $LOG
+
+# Append the temp log to the full log
+cat $LOG >> /var/log/etl/bugzilla_etl_incr.log
+
+# Clean up
+rm $LOG
