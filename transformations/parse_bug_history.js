@@ -432,12 +432,17 @@ function populateIntermediateVersionObjects() {
     stabilize(currBugState);
 
     // Empty string breaks ES date parsing, remove it from bug state.
-    for each (var dateField in ["deadline", "cf_due_date"]) {
+    for each (var dateField in ["deadline", "cf_due_date", "cf_last_resolved"]) {
       // Special case to handle values that can't be parsed by ES:
       if (currBugState[dateField] == "") {
         // Skip empty strings
         currBugState[dateField] = undefined;
-      } else if (currBugState[dateField] && currBugState[dateField].match(DATE_PATTERN)) {
+      }
+    }
+
+    // Also reformat some date fields
+    for each (var dateField in ["deadline", "cf_due_date"]) {
+      if (currBugState[dateField] && currBugState[dateField].match(DATE_PATTERN)) {
         // Convert "2012/01/01 00:00:00.000" to "2012-01-01"
         // Example: bug 643420 (deadline)
         currBugState[dateField] = currBugState[dateField].substring(0,10).replace(/\//g, '-');
