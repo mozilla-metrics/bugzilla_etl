@@ -223,7 +223,8 @@
                     "null_value": 9999999999000
                 }, 
                 "cf_last_resolved": {
-                    "type": "date"
+                    "type": "date",
+                    "format": "yyyy-MM-dd HH:mm:ss"
                 },
                 "flags": {
                     "properties": {
