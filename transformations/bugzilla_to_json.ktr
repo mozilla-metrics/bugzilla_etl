@@ -1265,6 +1265,9 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
 </usage_parameter><usage_parameter><parameter_tag>ES_CLUSTER</parameter_tag>
 <parameter_value>${ES_CLUSTER}</parameter_value>
 <parameter_description/>
+</usage_parameter><usage_parameter><parameter_tag>ES_INDEX</parameter_tag>
+<parameter_value>${ES_INDEX}</parameter_value>
+<parameter_description/>
 </usage_parameter></usage_parameters>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>1052</xloc>

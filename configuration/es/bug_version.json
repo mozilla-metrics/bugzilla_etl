@@ -222,6 +222,9 @@
                     "type": "date",
                     "null_value": 9999999999000
                 }, 
+                "cf_last_resolved": {
+                    "type": "date"
+                },
                 "flags": {
                     "properties": {
                         "modified_by": {
@@ -270,6 +273,9 @@
                     "type": "nested",
                     "dynamic": "strict"
                 }, 
+                "previous_values": {
+                    "type": "object"
+                },
                 "keywords": {
                     "index": "not_analyzed", 
                     "index_name": "keyword", 
