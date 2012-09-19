@@ -1137,7 +1137,7 @@ private static int BULK_TIMEOUT = 30000;
 public String paramOrDefault(String parameterName, String defaultValue)
 {
     String paramValue = getParameter(parameterName);
-    if (paramValue != null && paramValue.length() > 0)
+    if (paramValue != null && paramValue.length() > 0 && !paramValue.equals("${" + parameterName + "}"))
     {
         return paramValue;
     }
