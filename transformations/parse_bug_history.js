@@ -339,6 +339,16 @@ function populateIntermediateVersionObjects() {
     }
     writeToLog("d", "Populating JSON for version " + currVersion._id);
 
+    // Decide whether to merge this bug activity into the current state (without emitting
+    // a separate JSON document). This addresses the case where an attachment is created
+    // at exactly the same time as the bug itself.
+    // Effectively, we combine all the changes for a given timestamp into the last one.
+    var mergeBugVersion = false;
+    if (nextVersion && currVersion._id == nextVersion._id) {
+      writeToLog("d", "Merge mode: activated " + currBugState._id);
+      mergeBugVersion = true;
+    }
+
     // Link this version to the next one (if there is a next one)
     if (nextVersion) {
       writeToLog("d", "We have a nextVersion:" + nextVersion.modified_ts
@@ -449,24 +459,33 @@ function populateIntermediateVersionObjects() {
       }
     }
 
-    currBugState.bug_version_num = currBugVersion++;
+    currBugState.bug_version_num = currBugVersion;
 
-    // Output this version if either it was modified after START_TIME, or if it
-    // expired after START_TIME (the latter will update the last known version of the bug
-    // that did not have a value for "expires_on").
-    if (currBugState.modified_ts >= START_TIME || currBugState.expires_on >= START_TIME) {
-      // Emit this version as a JSON string
-      var newRow = createRowCopy(outputRowSize);
-      var rowIndex = inputRowSize;
-      newRow[rowIndex++] = currBugState.bug_id;
-      newRow[rowIndex++] = currBugState._id;
-      newRow[rowIndex++] = JSON.stringify(currBugState,null,2); // DEBUGGING, expanded output
-      //newRow[rowIndex++] = JSON.stringify(currBugState); // condensed output
-      putRow(newRow);
+    if (!mergeBugVersion) {
+      currBugVersion++;
+      // Output this version if either it was modified after START_TIME, or if it
+      // expired after START_TIME (the latter will update the last known version of the bug
+      // that did not have a value for "expires_on").
+      if (currBugState.modified_ts >= START_TIME || currBugState.expires_on >= START_TIME) {
+        // Emit this version as a JSON string
+        var bugJSON = JSON.stringify(currBugState,null,2); // DEBUGGING, expanded output
+        //var bugJSON = JSON.stringify(currBugState); // condensed output
+
+        writeToLog("d", "Bug " + currBugState.bug_id + " v" + currBugState.bug_version_num + " (_id = " + currBugState._id + "): " + bugJSON);
+        var newRow = createRowCopy(outputRowSize);
+        var rowIndex = inputRowSize;
+        newRow[rowIndex++] = currBugState.bug_id;
+        newRow[rowIndex++] = currBugState._id;
+        newRow[rowIndex++] = bugJSON;
+        putRow(newRow);
+      } else {
+        writeToLog("d", "Not outputting " + currBugState._id
+            + " - it is before START_TIME (" + START_TIME + ")");
+      }
     } else {
-      writeToLog("d", "Not outputting " + currBugState._id
-          + " - it is before START_TIME (" + START_TIME + ")");
+      writeToLog("d", "Merging a change with the same timestamp = " + currBugState._id + ": " + JSON.stringify(currVersion));
     }
+
   }
 }
 
