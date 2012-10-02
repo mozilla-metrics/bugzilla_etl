@@ -462,6 +462,7 @@ function populateIntermediateVersionObjects() {
     currBugState.bug_version_num = currBugVersion;
 
     if (!mergeBugVersion) {
+      // This is not a "merge", so output a row for this bug version.
       currBugVersion++;
       // Output this version if either it was modified after START_TIME, or if it
       // expired after START_TIME (the latter will update the last known version of the bug
@@ -760,7 +761,7 @@ function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anOb
 function isMultiField(aFieldName) {
   return (aFieldName == "flags" || aFieldName == "cc" || aFieldName == "keywords"
    || aFieldName == "dependson" || aFieldName == "blocked" || aFieldName == "dupe_by"
-   || aFieldName == "dupe_of" || aFieldName == "bug_group");
+   || aFieldName == "dupe_of" || aFieldName == "bug_group" || aFieldName == "see_also");
 }
 
 function getMultiFieldValue(aFieldName, aFieldValue) {
