@@ -750,7 +750,7 @@ ORDER BY bug_id;</sql>
 	, CAST(`value` AS char(255)) AS field_value
 	, CAST(null AS char(255)) AS field_value_removed
 	, CAST(null AS signed) AS attach_id
-	, 1 AS _merge_order
+	, 2 AS _merge_order
 FROM bug_see_also
 WHERE bug_id IN (
 	SELECT bug_id FROM bugs WHERE 
