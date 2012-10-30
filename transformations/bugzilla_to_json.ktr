@@ -659,9 +659,9 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
            </partitioning>
     <connection>bugs</connection>
     <sql>SELECT bug_id
-	, UNIX_TIMESTAMP(a.creation_ts)*1000 AS modified_ts
+	, UNIX_TIMESTAMP(CONVERT_TZ(a.creation_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 AS modified_ts
 	, login_name AS modified_by
-	, UNIX_TIMESTAMP(a.creation_ts)*1000 AS created_ts
+	, UNIX_TIMESTAMP(CONVERT_TZ(a.creation_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 AS created_ts
 	, login_name AS created_by
 	, ispatch AS &apos;attachments.ispatch&apos;
 	, isobsolete AS &apos;attachments.isobsolete&apos;
@@ -672,7 +672,7 @@ FROM
 	JOIN profiles p ON a.submitter_id = p.userid
 WHERE bug_id IN (
 	SELECT bug_id FROM bugs WHERE 
-    UNIX_TIMESTAMP(delta_ts)*1000 &gt; ${START_TIME}
+    UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
 	)
 ORDER BY
@@ -715,7 +715,7 @@ FROM bug_group_map bg
 JOIN groups g ON bg.group_id = g.id
 WHERE bug_id IN (
 	SELECT bug_id FROM bugs WHERE 
-    UNIX_TIMESTAMP(delta_ts)*1000 &gt; ${START_TIME}
+    UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
 	)
 ORDER BY bug_id;</sql>
@@ -754,7 +754,7 @@ ORDER BY bug_id;</sql>
 FROM bug_see_also
 WHERE bug_id IN (
 	SELECT bug_id FROM bugs WHERE 
-    UNIX_TIMESTAMP(delta_ts)*1000 &gt; ${START_TIME}
+    UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
 	)
 ORDER BY bug_id;</sql>
@@ -783,9 +783,9 @@ ORDER BY bug_id;</sql>
            </partitioning>
     <connection>bugs</connection>
     <sql>SELECT bug_id
-	, UNIX_TIMESTAMP(b.creation_ts)*1000 AS modified_ts
+	, UNIX_TIMESTAMP(CONVERT_TZ(b.creation_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 AS modified_ts
 	, pr.login_name AS modified_by
-	, UNIX_TIMESTAMP(b.creation_ts)*1000 AS created_ts
+	, UNIX_TIMESTAMP(CONVERT_TZ(b.creation_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 AS created_ts
 	, pr.login_name AS created_by
 	, pa.login_name AS assigned_to
 	, pq.login_name AS qa_contact
@@ -799,7 +799,7 @@ FROM bugs b
     LEFT JOIN products prod ON prod.id = product_id
     LEFT JOIN components comp ON comp.id = component_id
 WHERE
-    UNIX_TIMESTAMP(delta_ts)*1000 &gt; ${START_TIME}
+    UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
 </sql>
     <limit>0</limit>
@@ -838,7 +838,7 @@ FROM cc
 JOIN profiles p ON cc.who = p.userid
 WHERE bug_id IN (
 	SELECT bug_id FROM bugs WHERE 
-    UNIX_TIMESTAMP(delta_ts)*1000 &gt; ${START_TIME}
+    UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
 	)
 ORDER BY bug_id;</sql>
@@ -877,7 +877,7 @@ ORDER BY bug_id;</sql>
 FROM dependencies d
 WHERE blocked IN (
 	SELECT bug_id FROM bugs WHERE 
-    UNIX_TIMESTAMP(delta_ts)*1000 &gt; ${START_TIME}
+    UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
 	)
 UNION
@@ -892,7 +892,7 @@ SELECT dependson
 FROM dependencies d
 WHERE dependson IN (
 	SELECT bug_id FROM bugs WHERE 
-    UNIX_TIMESTAMP(delta_ts)*1000 &gt; ${START_TIME}
+    UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
 	)
 ORDER BY bug_id;</sql>
@@ -931,7 +931,7 @@ ORDER BY bug_id;</sql>
 FROM duplicates d
 WHERE dupe IN (
 	SELECT bug_id FROM bugs WHERE 
-    UNIX_TIMESTAMP(delta_ts)*1000 &gt; ${START_TIME}
+    UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
 	)
 UNION
@@ -946,7 +946,7 @@ SELECT dupe_of
 FROM duplicates d
 WHERE dupe_of IN (
 	SELECT bug_id FROM bugs WHERE 
-    UNIX_TIMESTAMP(delta_ts)*1000 &gt; ${START_TIME}
+    UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
 	)
 ORDER BY bug_id;</sql>
@@ -975,7 +975,7 @@ ORDER BY bug_id;</sql>
            </partitioning>
     <connection>bugs</connection>
     <sql>SELECT bug_id
-	, UNIX_TIMESTAMP(f.creation_date)*1000 AS modified_ts
+	, UNIX_TIMESTAMP(CONVERT_TZ(f.creation_date, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 AS modified_ts
 	, ps.login_name AS modified_by
 	, &apos;flagtypes.name&apos; AS field_name
 	, CONCAT(ft.`name`,status,IF(requestee_id IS NULL,&apos;&apos;,CONCAT(&apos;(&apos;,pr.login_name,&apos;)&apos;))) AS field_value
@@ -989,7 +989,7 @@ JOIN profiles ps ON f.setter_id = ps.userid
 LEFT JOIN profiles pr ON f.requestee_id = pr.userid
 WHERE bug_id IN (
 	SELECT bug_id FROM bugs WHERE 
-    UNIX_TIMESTAMP(delta_ts)*1000 &gt; ${START_TIME}
+    UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
 	)
 ORDER BY
@@ -1030,7 +1030,7 @@ FROM keywords k
 JOIN keyworddefs kd ON k.keywordid = kd.id
 WHERE bug_id IN (
 	SELECT bug_id FROM bugs WHERE 
-    UNIX_TIMESTAMP(delta_ts)*1000 &gt; ${START_TIME}
+    UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
 	)
 ORDER BY bug_id;</sql>
@@ -1059,7 +1059,7 @@ ORDER BY bug_id;</sql>
            </partitioning>
     <connection>bugs</connection>
     <sql>SELECT a.bug_id
-	, UNIX_TIMESTAMP(bug_when)*1000 AS modified_ts
+	, UNIX_TIMESTAMP(CONVERT_TZ(bug_when, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 AS modified_ts
 	, login_name AS modified_by
 	, field.`name` AS field_name
 	, added AS field_value
@@ -1069,7 +1069,7 @@ ORDER BY bug_id;</sql>
 FROM
     sanitized_bugs_activity a
     INNER JOIN (SELECT bug_id FROM bugs WHERE 
-    UNIX_TIMESTAMP(delta_ts)*1000 &gt; ${START_TIME}
+    UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
 	) b ON a.bug_id = b.bug_id
     JOIN fielddefs field ON a.fieldid = field.`id`
