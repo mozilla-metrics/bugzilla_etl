@@ -1,2 +1,2 @@
-MAILTO=mreid@mozilla.com
+MAILTO=metrics-alerts@mozilla.org
  */10      *    * * * export KETTLE_HOME=/opt/pentaho/kettle; /opt/pentaho/kettle/etl/bugzilla_etl/bin/update_bugs_incr.sh
