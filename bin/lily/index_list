@@ -1,7 +1,0 @@
-#! /bin/bash
-source settings.shinclude
-source bin/lily/management.shinclude
-
-cd "${LILY_HOME}"
-
-./bin/lily-list-indexes --zookeeper "${ZOOKEEPER_HOST}"

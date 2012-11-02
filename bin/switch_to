@@ -1,9 +1,0 @@
-#! /bin/bash
-source settings.shinclude
-
-usage="usage: ${0} CONFIGURATION
-Select the kettle configuration (kettle.properties) to be used, where
-CONFIGURATION is the suffix of one of the alternative kettle.properties."
-
-config="${1}"
-cp "${KETTLE_HOME}/.kettle/kettle.properties.${config}" "${KETTLE_HOME}/.kettle/kettle.properties"
