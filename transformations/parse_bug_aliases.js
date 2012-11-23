@@ -1,31 +1,15 @@
 /* vim: set filetype=javascript ts=2 et sw=2: */
 /* Workflow:
-Create the current state object
+Follow the same procedure as when parsing bug history, but take note of
+cases where a change relating to a user has no direct match in the bug's
+history.  This can indicate a case where a user's bugzilla id changed.
 
-For each row containing latest state data (fields from bugs table record, fields from other tables (i.e. attachments, dependencies)
-    Update the current state object with the latest field values
-
-Walk backward through activity records from bugs_activity (and other activity type tables). For each set of activities:
-    Create a new bug version object with the meta data about this activity
-        Set id based on modification time
-*       Set valid_from field as modification time
-*       Set valid_to field as the modification time of the later version - 1 second
-        Add modification data (who, when, what)
-    For single value fields (i.e. assigned_to, status):
-        Update the original state object by replacing the field value with the contents of the activities "removed" column
-    For multi-value fields (i.e. blocks, CC, attachments):
-        If a deletion, update the original state object by adding the value from the "removed" column to the field values array.
-        If an addition, find and remove the added item from the original state object
-
-When finished with all activities, the current state object should reflect the original state of the bug when created.
-Now, build the full state of each intermediate version of the bug.
-
-For each bug version object that was created above:
-    Merge the current state object into this version object
-    Update fields according to the modification data
-
-When doing an incremental update (ie. with START_TIME specified), Look at any bug that has been modified since the cutoff time, and build all versions.  Only index versions after START_TIME in ElasticSearch.
-
+TODO: One possible enhancement from deinspanjer (paraphrased by mreid):
+To verify an alias, we could try the following
+- query bugs table with newer name, "assigned_to"
+- Match the id up to get the current name, look at the bugs history to
+  check the "assigned_to" in activities (since it's stored as text)
+- If we get a "hit", that would guarantee that it is an alias.
 */
 
 // Used to split a flag into (type, status [,requestee])
@@ -40,7 +24,10 @@ const DATE_PATTERN = /^[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}/;
 // Fields that could have been truncated per bug 55161
 const TRUNC_FIELDS = ["cc", "blocked", "dependson", "keywords"];
 
+// Keep track of potential aliases (dupes)
+// Singles are where we have only one possible match left over (high confidence)
 var dupeSingles = {};
+// Multis are where we have more than one possible match left over (uncertain)
 var dupeMultis = {};
 
 var currBugID;
@@ -141,29 +128,6 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
                 writeToLog("e", "Unhandled merge_order: '" + _merge_order + "'");
                 break;
         }
-    } else {
-      /*
-      // Output our wicked-sweet dupe lists:
-      for (var dupe in dupeSingles) {
-        writeToLog("d", "Found single dupe '" + dupe + "' " + dupeSingles[dupe] + " times.");
-        var newRow = createRowCopy(outputRowSize);
-        var rowIndex = inputRowSize;
-        newRow[rowIndex++] = "single"
-        newRow[rowIndex++] = dupe
-        newRow[rowIndex++] = dupeSingles[dupe];
-        putRow(newRow);
-      }
-      for (var dupe in dupeMultis) {
-        writeToLog("d", "Found multi dupe '" + dupe + "' " + dupeMultis[dupe] + " times.");
-        var newRow = createRowCopy(outputRowSize);
-        var rowIndex = inputRowSize;
-        newRow[rowIndex++] = "multi"
-        newRow[rowIndex++] = dupe
-        newRow[rowIndex++] = dupeMultis[dupe];
-        putRow(newRow);
-      }
-      */
-
     }
 }
 
