@@ -12,7 +12,7 @@ TS=$(date +%s000)
 
 # Use a temp log just for this run
 LOG=/var/log/etl/bugzilla_etl_incr.$TS.log
-echo "*** Processing incremental updates.  Current OS Time is $TS" >> $LOG
+echo "*** Processing incremental updates.  Current OS Time is $TS / $(date)" >> $LOG
 
 ./kitchen.sh -file $KETTLE_JOB -level $LOG_LEVEL 2>&1 >> $LOG
 
