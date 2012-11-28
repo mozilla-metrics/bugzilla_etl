@@ -37,5 +37,5 @@ A set of [Pentaho DI](http://www.pentaho.com/products/data_integration/) jobs to
 
 ## Known issues
 
-* Some cases where a user's bugzilla ID changes mid-history for a bug can't be handled automatically, and should be added to `configuration/kettle/bugzilla_aliases.txt`
+* Some cases where a user's bugzilla ID changes mid-history for a bug can't be handled automatically, and should be added to `configuration/kettle/bugzilla_aliases.txt`. There are several alias-related scripts and transformations that help to detect these types of changes.  See `bin/find_aliases.sh`, `bin/find_all_aliases.sh`, `transformations/find_aliases.ktr`, and `transformations/detect_new_aliases.ktr`.
 * Mozilla Bug 804946 causes some trouble with the ETL.  See [Bug 804961](https://bugzilla.mozilla.org/show_bug.cgi?id=804961) for details.
