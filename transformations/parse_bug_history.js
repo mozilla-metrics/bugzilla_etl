@@ -298,7 +298,9 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
       // field must currently be missing, otherwise it would
       // be an instanceof Array above.  This handles multi-valued
       // fields that are not first processed by processMultiValueTableItem().
-      currBugState[field_name] = multi_field_value_removed;
+      if (multi_field_value_removed[0] != '') {
+        currBugState[field_name] = multi_field_value_removed;
+      }
     } else {
       // Replace current value
       currBugState[field_name] = field_value_removed;
