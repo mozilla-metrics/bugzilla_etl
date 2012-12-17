@@ -140,6 +140,10 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
       case 9:
         processBugsActivitiesTableItem(modified_ts, modified_by, field_name, field_value, field_value_removed, attach_id);
         break;
+      case 11:
+        // TODO: implement me.
+        processComment(modified_ts, modified_by, field_name, field_value);
+        break;
       default:
         writeToLog("e", "Unhandled merge_order: '" + _merge_order + "'");
         break;
