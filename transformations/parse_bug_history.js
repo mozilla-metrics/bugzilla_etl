@@ -138,12 +138,13 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
         processFlagsTableItem(modified_ts, modified_by, field_name, field_value, field_value_removed, attach_id);
         break;
       case 9:
+      case 11: // Treat comments the same as activities.
         processBugsActivitiesTableItem(modified_ts, modified_by, field_name, field_value, field_value_removed, attach_id);
         break;
-      case 11:
-        // TODO: implement me.
-        processComment(modified_ts, modified_by, field_name, field_value);
-        break;
+//      case 11:
+//        // TODO: implement me.
+//        processComment(modified_ts, modified_by, field_name, field_value);
+//        break;
       default:
         writeToLog("e", "Unhandled merge_order: '" + _merge_order + "'");
         break;
@@ -165,7 +166,8 @@ function startNewBug(bug_id, modified_ts, modified_by, merge_order) {
     modified_by: modified_by,
     reported_by: modified_by,
     attachments: [],
-    flags: []
+    flags: [],
+//    comments: []
   };
   currBugState._id = bug_id + "." + modified_ts;
 
@@ -303,6 +305,10 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
     }
   }
 }
+
+//function processComment(modified_ts, modified_by, field_name, field_value) {
+//
+//}
 
 function sortAscByField(a, b, aField) {
   if (a[aField] > b[aField])
@@ -765,7 +771,8 @@ function removeValues(anArray, someValues, valueType, fieldName, arrayDesc, anOb
 function isMultiField(aFieldName) {
   return (aFieldName == "flags" || aFieldName == "cc" || aFieldName == "keywords"
    || aFieldName == "dependson" || aFieldName == "blocked" || aFieldName == "dupe_by"
-   || aFieldName == "dupe_of" || aFieldName == "bug_group" || aFieldName == "see_also");
+   || aFieldName == "dupe_of" || aFieldName == "bug_group" || aFieldName == "see_also"
+   || aFieldName == "comment_id");
 }
 
 function getMultiFieldValue(aFieldName, aFieldValue) {
