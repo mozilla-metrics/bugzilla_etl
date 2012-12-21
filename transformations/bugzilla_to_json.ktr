@@ -193,7 +193,7 @@ open file per bug.</note>
     </attributes>
   </connection>
   <order>
-  <hop> <from>Get bugs</from><to>Flatten bugs record</to><enabled>Y</enabled> </hop>  <hop> <from>Flatten bugs record</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get dependencies</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get new activities</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get attachments</from><to>Flatten attachments record</to><enabled>Y</enabled> </hop>  <hop> <from>Flatten attachments record</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get duplicates</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get bug_groups</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get bug_see_also</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get cc</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get keywords</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get flags</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Calculator</from><to>Text file output</to><enabled>N</enabled> </hop>  <hop> <from>Sorted Merge</from><to>Lower Case</to><enabled>Y</enabled> </hop>  <hop> <from>Lower Case</from><to>Parse Bug History</to><enabled>Y</enabled> </hop>  <hop> <from>Delete unneeded fields</from><to>Calculator</to><enabled>Y</enabled> </hop>  <hop> <from>Parse Bug History</from><to>Rownum</to><enabled>Y</enabled> </hop>  <hop> <from>Rownum</from><to>Delete unneeded fields</to><enabled>Y</enabled> </hop>  <hop> <from>Calculator</from><to>Index with ElasticSearch</to><enabled>Y</enabled> </hop>  <hop> <from>Get comments</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  </order>
+  <hop> <from>Get bugs</from><to>Flatten bugs record</to><enabled>Y</enabled> </hop>  <hop> <from>Flatten bugs record</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get dependencies</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get new activities</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get attachments</from><to>Flatten attachments record</to><enabled>Y</enabled> </hop>  <hop> <from>Flatten attachments record</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get duplicates</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get bug_groups</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get bug_see_also</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get cc</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get keywords</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Get flags</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  <hop> <from>Calculator</from><to>Text file output</to><enabled>N</enabled> </hop>  <hop> <from>Sorted Merge</from><to>Lower Case</to><enabled>Y</enabled> </hop>  <hop> <from>Lower Case</from><to>Parse Bug History</to><enabled>Y</enabled> </hop>  <hop> <from>Delete unneeded fields</from><to>Calculator</to><enabled>Y</enabled> </hop>  <hop> <from>Parse Bug History</from><to>Rownum</to><enabled>Y</enabled> </hop>  <hop> <from>Rownum</from><to>Delete unneeded fields</to><enabled>Y</enabled> </hop>  <hop> <from>Calculator</from><to>Index with ElasticSearch</to><enabled>Y</enabled> </hop>  <hop> <from>Get comments</from><to>Sorted Merge</to><enabled>N</enabled> </hop>  <hop> <from>Get comments 2</from><to>Flatten comments record</to><enabled>Y</enabled> </hop>  <hop> <from>Flatten comments record</from><to>Sorted Merge</to><enabled>Y</enabled> </hop>  </order>
   <step>
     <name>Calculator</name>
     <type>Calculator</type>
@@ -892,7 +892,7 @@ ORDER BY
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>949</xloc>
-      <yloc>263</yloc>
+      <yloc>293</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -1519,6 +1519,194 @@ startNewBug(Number(bug_id), Number(modified_ts), String(modified_by), Number(_me
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>1050</xloc>
       <yloc>350</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Get comments 2</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>bugs</connection>
+    <sql>SELECT a.bug_id
+	, UNIX_TIMESTAMP(CONVERT_TZ(bug_when, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 AS modified_ts
+	, login_name AS modified_by
+	, comment_id
+	, type
+	, isprivate
+	, extra_data
+FROM
+    longdescs a
+    INNER JOIN (SELECT bug_id FROM bugs WHERE 
+    UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
+    AND ${BUG_IDS_PARTITION}
+	) b ON a.bug_id = b.bug_id
+	JOIN profiles p ON a.who = p.userid
+ORDER BY
+    bug_id,
+    bug_when DESC,
+    comment_id</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>Y</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>1032</xloc>
+      <yloc>171</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Flatten comments record</name>
+    <type>UserDefinedJavaClass</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+
+    <definitions>
+        <definition>
+        <class_type>TRANSFORM_CLASS</class_type>
+
+        <class_name>Main</class_name>
+
+        <class_source><![CDATA[private int outputRowSize = 0;
+private String[] comments_fields = new String[] {"type", "isprivate", "extra_data"};
+public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException
+{
+	Object[] newRow;
+	Object[] r = getRow();
+
+	if (r == null) {
+		setOutputDone();
+		return false;
+	}
+
+    if (first)
+    {
+        first = false;
+		outputRowSize = data.outputRowMeta.size();
+    }
+
+	for (int i = 0; i < comments_fields.length; i++) {
+		String value = get(Fields.In, comments_fields[i]).getString(r);
+		newRow = createOutputRow(null, outputRowSize);
+		get(Fields.Out, "bug_id").setValue(newRow, get(Fields.In, "bug_id").getInteger(r));
+		get(Fields.Out, "modified_ts").setValue(newRow, get(Fields.In, "modified_ts").getInteger(r));
+		get(Fields.Out, "modified_by").setValue(newRow, get(Fields.In, "modified_by").getString(r));
+		get(Fields.Out, "field_name").setValue(newRow, comments_fields[i]);
+		get(Fields.Out, "field_value").setValue(newRow, value);
+		get(Fields.Out, "attach_id").setValue(newRow, get(Fields.In, "comment_id").getInteger(r));
+		get(Fields.Out, "_merge_order").setValue(newRow, 11L);
+	    putRow(data.outputRowMeta, newRow);
+	}
+
+	return true;
+}
+]]></class_source>
+        </definition>
+    </definitions>
+    <fields>
+        <field>
+        <field_name>bug_id</field_name>
+
+        <field_type>Integer</field_type>
+
+        <field_length>9</field_length>
+
+        <field_precision>-1</field_precision>
+
+        </field>
+        <field>
+        <field_name>modified_ts</field_name>
+
+        <field_type>Integer</field_type>
+
+        <field_length>12</field_length>
+
+        <field_precision>-1</field_precision>
+
+        </field>
+        <field>
+        <field_name>modified_by</field_name>
+
+        <field_type>String</field_type>
+
+        <field_length>255</field_length>
+
+        <field_precision>-1</field_precision>
+
+        </field>
+        <field>
+        <field_name>field_name</field_name>
+
+        <field_type>String</field_type>
+
+        <field_length>64</field_length>
+
+        <field_precision>-1</field_precision>
+
+        </field>
+        <field>
+        <field_name>field_value</field_name>
+
+        <field_type>String</field_type>
+
+        <field_length>255</field_length>
+
+        <field_precision>-1</field_precision>
+
+        </field>
+        <field>
+        <field_name>field_value_removed</field_name>
+
+        <field_type>String</field_type>
+
+        <field_length>255</field_length>
+
+        <field_precision>-1</field_precision>
+
+        </field>
+        <field>
+        <field_name>attach_id</field_name>
+
+        <field_type>Integer</field_type>
+
+        <field_length>9</field_length>
+
+        <field_precision>-1</field_precision>
+
+        </field>
+        <field>
+        <field_name>_merge_order</field_name>
+
+        <field_type>Integer</field_type>
+
+        <field_length>15</field_length>
+
+        <field_precision>-1</field_precision>
+
+        </field>
+    </fields><clear_result_fields>Y</clear_result_fields>
+<info_steps></info_steps><target_steps></target_steps><usage_parameters><usage_parameter><parameter_tag>BUGS_TABLE_COLUMNS</parameter_tag>
+<parameter_value>${BUGS_TABLE_COLUMNS}</parameter_value>
+<parameter_description/>
+</usage_parameter></usage_parameters>     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>1029</xloc>
+      <yloc>236</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

@@ -48,6 +48,7 @@ var bugVersions;
 var bugVersionsMap;
 var currBugState;
 var currBugAttachmentsMap;
+var currBugCommentsMap;
 var prevActivityID;
 var currActivity;
 var inputRowSize = getInputRowMeta().size();
@@ -138,13 +139,12 @@ function processRow(bug_id, modified_ts, modified_by, field_name, field_value_in
         processFlagsTableItem(modified_ts, modified_by, field_name, field_value, field_value_removed, attach_id);
         break;
       case 9:
-      case 11: // Treat comments the same as activities.
         processBugsActivitiesTableItem(modified_ts, modified_by, field_name, field_value, field_value_removed, attach_id);
         break;
-//      case 11:
-//        // TODO: implement me.
-//        processComment(modified_ts, modified_by, field_name, field_value);
-//        break;
+      case 11:
+        // TODO: implement me.
+        processComment(modified_ts, modified_by, field_name, field_value, attach_id);
+        break;
       default:
         writeToLog("e", "Unhandled merge_order: '" + _merge_order + "'");
         break;
@@ -160,14 +160,15 @@ function startNewBug(bug_id, modified_ts, modified_by, merge_order) {
   bugVersionsMap = {};
   currActivity = {};
   currBugAttachmentsMap = {};
+  currBugCommentsMap = {};
   currBugState = {
     bug_id: bug_id,
     modified_ts: modified_ts,
     modified_by: modified_by,
     reported_by: modified_by,
     attachments: [],
-    flags: [],
-//    comments: []
+    comments: [],
+    flags: []
   };
   currBugState._id = bug_id + "." + modified_ts;
 
@@ -222,6 +223,34 @@ function processAttachmentsTableItem(modified_ts, modified_by, field_name, field
   }
   currBugAttachmentsMap[attach_id][field_name] = field_value;
 }
+
+function processComment(modified_ts, modified_by, field_name, field_value, comment_id) {
+  currActivityID = currBugID+"."+modified_ts;
+  if (currActivityID != prevActivityID) {
+    currActivity = {
+      _id: currActivityID,
+      modified_ts: modified_ts,
+      modified_by: modified_by,
+      changes: []
+    };
+    bugVersions.push(currActivity);
+    bugVersionsMap[currActivityID] = currActivity;
+    prevActivityID = currActivityID;
+    currActivity.changes.push({
+      field_name: "comment_added",
+      attach_id: comment_id // TODO: this is to preserve the same structure for 'changes', but do we care?  Should we just use 'comment_id: comment_id'?
+    });
+  }
+  if (!currBugCommentsMap[comment_id]) {
+    currBugCommentsMap[comment_id] = {
+      comment_id: comment_id,
+      created_ts: modified_ts,
+      created_by: modified_by
+    };
+  }
+  currBugCommentsMap[comment_id][field_name] = field_value;
+}
+
 
 function processFlagsTableItem(modified_ts, modified_by, field_name, field_value, field_value_removed, attach_id) {
   var flag = makeFlag(field_value, modified_ts, modified_by);
@@ -308,10 +337,6 @@ function processBugsActivitiesTableItem(modified_ts, modified_by, field_name, fi
   }
 }
 
-//function processComment(modified_ts, modified_by, field_name, field_value) {
-//
-//}
-
 function sortAscByField(a, b, aField) {
   if (a[aField] > b[aField])
     return 1;
@@ -392,6 +417,8 @@ function populateIntermediateVersionObjects() {
           // This change only exists when the attachment has been added to the map, so no missing case needed.
           currBugState.attachments.push(currBugAttachmentsMap[attachID]);
           continue;
+        } else if (change.field_name == "comment_added") {
+          currBugState.comments.push(currBugCommentsMap[attachID]);
         } else {
           // Attachment change
           target = currBugAttachmentsMap[attachID];
