@@ -669,13 +669,12 @@ public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws K
 	, isprivate AS &apos;attachments.isprivate&apos;
 	, attach_id
 FROM
-    attachments a
-	JOIN profiles p ON a.submitter_id = p.userid
-WHERE bug_id IN (
-	SELECT bug_id FROM bugs WHERE 
+    attachments a INNER JOIN (
+	SELECT bug_id AS crit_id FROM bugs WHERE 
     UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
-	)
+	) criteria ON a.bug_id = criteria.crit_id
+	JOIN profiles p ON a.submitter_id = p.userid
 ORDER BY
     bug_id,
 	attach_id,
@@ -835,13 +834,12 @@ WHERE
 	, CAST(null AS char(255)) AS field_value_removed
 	, CAST(null AS signed) AS attach_id
 	, 2 AS _merge_order
-FROM cc
-JOIN profiles p ON cc.who = p.userid
-WHERE bug_id IN (
-	SELECT bug_id FROM bugs WHERE 
+FROM cc INNER JOIN (
+	SELECT bug_id AS crit_id FROM bugs WHERE 
     UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
-	)
+	) criteria ON cc.bug_id = criteria.crit_id
+JOIN profiles p ON cc.who = p.userid
 ORDER BY bug_id;</sql>
     <limit>0</limit>
     <lookup/>
@@ -918,12 +916,11 @@ ORDER BY
 	, CAST(null AS char(255)) AS field_value_removed
 	, CAST(null AS signed) AS attach_id
 	, 2 AS _merge_order
-FROM dependencies d
-WHERE blocked IN (
-	SELECT bug_id FROM bugs WHERE 
+FROM dependencies d INNER JOIN (
+	SELECT bug_id AS crit_id FROM bugs WHERE 
     UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
-	)
+	) criteria ON d.blocked = criteria.crit_id
 UNION
 SELECT dependson
 	, null
@@ -933,12 +930,11 @@ SELECT dependson
 	, null
 	, null
 	, 2
-FROM dependencies d
-WHERE dependson IN (
-	SELECT bug_id FROM bugs WHERE 
+FROM dependencies d INNER JOIN (
+	SELECT bug_id AS crit_id FROM bugs WHERE 
     UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
-	)
+	) criteria ON d.dependson = criteria.crit_id
 ORDER BY bug_id;</sql>
     <limit>0</limit>
     <lookup/>
@@ -972,12 +968,11 @@ ORDER BY bug_id;</sql>
 	, CAST(null AS char(255)) AS field_value_removed
 	, CAST(null AS signed) AS attach_id
 	, 2 AS _merge_order
-FROM duplicates d
-WHERE dupe IN (
-	SELECT bug_id FROM bugs WHERE 
+FROM duplicates d INNER JOIN (
+	SELECT bug_id AS crit_id FROM bugs WHERE 
     UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
-	)
+	) criteria ON d.dupe = criteria.crit_id
 UNION
 SELECT dupe_of
 	, null
@@ -987,12 +982,11 @@ SELECT dupe_of
 	, null
 	, null
 	, 2
-FROM duplicates d
-WHERE dupe_of IN (
-	SELECT bug_id FROM bugs WHERE 
+FROM duplicates d INNER JOIN (
+	SELECT bug_id AS crit_id FROM bugs WHERE 
     UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
-	)
+	) criteria ON d.dupe_of = criteria.crit_id
 ORDER BY bug_id;</sql>
     <limit>0</limit>
     <lookup/>
@@ -1027,15 +1021,10 @@ ORDER BY bug_id;</sql>
 	, attach_id
 	, 8 AS _merge_order
 FROM
-    flags f
+    flags f INNER JOIN (SELECT bug_id AS crit_id FROM bugs WHERE UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME} AND ${BUG_IDS_PARTITION}) criteria ON f.bug_id = criteria.crit_id
 JOIN `flagtypes` ft ON f.type_id = ft.id
 JOIN profiles ps ON f.setter_id = ps.userid
 LEFT JOIN profiles pr ON f.requestee_id = pr.userid
-WHERE bug_id IN (
-	SELECT bug_id FROM bugs WHERE 
-    UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
-    AND ${BUG_IDS_PARTITION}
-	)
 ORDER BY
     bug_id</sql>
     <limit>0</limit>
@@ -1070,13 +1059,12 @@ ORDER BY
 	, CAST(null AS char(255)) AS field_value_removed
 	, CAST(null AS signed) AS attach_id
 	, 2 AS _merge_order
-FROM keywords k
-JOIN keyworddefs kd ON k.keywordid = kd.id
-WHERE bug_id IN (
-	SELECT bug_id FROM bugs WHERE 
+FROM keywords k INNER JOIN (
+	SELECT bug_id AS crit_id FROM bugs WHERE 
     UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, &apos;US&#47;Pacific&apos;,&apos;UTC&apos;))*1000 &gt; ${START_TIME}
     AND ${BUG_IDS_PARTITION}
-	)
+) criteria ON k.bug_id = criteria.crit_id
+JOIN keyworddefs kd ON k.keywordid = kd.id
 ORDER BY bug_id;</sql>
     <limit>0</limit>
     <lookup/>
