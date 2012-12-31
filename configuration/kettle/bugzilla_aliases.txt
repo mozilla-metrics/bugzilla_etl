@@ -850,6 +850,7 @@ glob@glob.com.au=glob@mozilla.com;single;1;629326
 gordon=gordon@netscape.com;single;1;170548
 gordon@netscape.com=gordon@formerly-netscape.com.tld;single;1;205077
 gordon@netscape.com=gordon@formerly-netscape.com.tld;single;1;210481
+gour@gour-nitai.com=gour@atmarama.net;single;1;507789
 gozer@mozillamessaging.com=gozer@mozilla.com;single;1;643789
 halbersa@gmail.com=ahalberstadt@mozilla.com;curated;1;586792
 hannes@helma.at=hannesw@gmail.com;single;1;494665
