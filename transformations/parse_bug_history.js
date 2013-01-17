@@ -36,7 +36,8 @@ const FLAG_PATTERN = /^(.*)([?+-])(\([^)]*\))?$/;
 
 // Used to reformat incoming dates into the expected form.
 // Example match: "2012/01/01 00:00:00.000"
-const DATE_PATTERN = /^[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}/;
+// Example match: "2012-08-08 0:00"
+const DATE_PATTERN = /^[0-9]{4}[\/-][0-9]{2}[\/-][0-9]{2} /;
 
 // Fields that could have been truncated per bug 55161
 const TRUNC_FIELDS = ["cc", "blocked", "dependson", "keywords"];
@@ -494,6 +495,7 @@ function populateIntermediateVersionObjects() {
       if (currBugState[dateField] && currBugState[dateField].match(DATE_PATTERN)) {
         // Convert "2012/01/01 00:00:00.000" to "2012-01-01"
         // Example: bug 643420 (deadline)
+        //          bug 726635 (cf_due_date)
         currBugState[dateField] = currBugState[dateField].substring(0,10).replace(/\//g, '-');
       }
     }
@@ -508,8 +510,8 @@ function populateIntermediateVersionObjects() {
       // that did not have a value for "expires_on").
       if (currBugState.modified_ts >= START_TIME || currBugState.expires_on >= START_TIME) {
         // Emit this version as a JSON string
-        var bugJSON = JSON.stringify(currBugState,null,2); // DEBUGGING, expanded output
-        //var bugJSON = JSON.stringify(currBugState); // condensed output
+        //var bugJSON = JSON.stringify(currBugState,null,2); // DEBUGGING, expanded output
+        var bugJSON = JSON.stringify(currBugState); // condensed output
 
         writeToLog("d", "Bug " + currBugState.bug_id + " v" + currBugState.bug_version_num + " (_id = " + currBugState._id + "): " + bugJSON);
         var newRow = createRowCopy(outputRowSize);

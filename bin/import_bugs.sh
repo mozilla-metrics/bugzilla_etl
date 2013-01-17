@@ -34,7 +34,7 @@ cd $BASE_DIR/kettle/
 export KETTLE_HOME=/opt/pentaho/kettle/etl/bugzilla_etl/repull$IMPORT_DAY/
 
 INCREMENT=10000
-for bug_id in $(seq 0 $INCREMENT 820000); do
+for bug_id in $(seq 0 $INCREMENT 850000); do
    echo "Processing batch ${bug_id}"
    time ./kitchen.sh -file $KETTLE_JOB -param:BUG_IDS_PARTITION="(bug_id >= ${bug_id} and bug_id < (${bug_id} + $INCREMENT))" > /var/log/etl/bugzilla_etl_import_${bug_id}.log
 done
