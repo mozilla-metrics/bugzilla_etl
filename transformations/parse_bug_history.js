@@ -471,8 +471,8 @@ function populateIntermediateVersionObjects() {
       // that did not have a value for "expires_on").
       if (currBugState.modified_ts >= START_TIME || currBugState.expires_on >= START_TIME) {
         // Emit this version as a JSON string
-        var bugJSON = JSON.stringify(currBugState,null,2); // DEBUGGING, expanded output
-        //var bugJSON = JSON.stringify(currBugState); // condensed output
+        //var bugJSON = JSON.stringify(currBugState,null,2); // DEBUGGING, expanded output
+        var bugJSON = JSON.stringify(currBugState); // condensed output
 
         writeToLog("d", "Bug " + currBugState.bug_id + " v" + currBugState.bug_version_num + " (_id = " + currBugState._id + "): " + bugJSON);
         var newRow = createRowCopy(outputRowSize);
