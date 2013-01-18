@@ -214,6 +214,32 @@
                     }, 
                     "type": "object"
                 }, 
+                "comments": {
+                    "properties": {
+                        "comment_id": {
+                            "type": "integer"
+                        },
+                        "created_by": {
+                            "index": "not_analyzed",
+                            "type": "string"
+                        },
+                        "created_ts": {
+                            "type": "date"
+                        },
+                        "type": {
+                            "type": "integer"
+                        },
+                        "isprivate": {
+                            "type": "boolean"
+                        },
+                        "extra_data": {
+                            "index": "not_analyzed",
+                            "type": "string"
+                        }
+                    },
+                    "type": "nested",
+                    "dynamic": "strict"
+                },
                 "dependson": {
                     "index_name": "depends_on", 
                     "type": "integer"
