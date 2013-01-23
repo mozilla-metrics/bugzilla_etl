@@ -1,2 +1,3 @@
 MAILTO=metrics-alerts@mozilla.org
- */10      0,3-23    * * * export KETTLE_HOME=/opt/pentaho/kettle; /opt/pentaho/kettle/etl/bugzilla_etl/bin/update_bugs_incr.sh
+ */10      0,3-23    * * *   export KETTLE_HOME=/opt/pentaho/kettle; /opt/pentaho/kettle/etl/bugzilla_etl/bin/update_bugs_incr.sh
+  0          23      * * SUN export KETTLE_HOME=/opt/pentaho/kettle; /opt/pentaho/kettle/etl/bugzilla_etl/bin/find_all_aliases.sh
