@@ -468,6 +468,7 @@ function populateIntermediateVersionObjects() {
         // Example: bug 856732 (cf_last_resolved)
         var dateString = currBugState[dateField].substring(0,10).replace(/\//g, '-') + "T" + currBugState[dateField].substring(11) + "Z";
         currBugState[dateField] = new Date(dateString).getTime();
+      }
     }
 
     currBugState.bug_version_num = currBugVersion;
