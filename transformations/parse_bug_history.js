@@ -467,7 +467,7 @@ function populateIntermediateVersionObjects() {
         // Convert "2012/01/01 00:00:00.000" to "2012-01-01T00:00:00.000Z", then to a timestamp.
         // Example: bug 856732 (cf_last_resolved)
         var dateString = currBugState[dateField].substring(0,10).replace(/\//g, '-') + "T" + currBugState[dateField].substring(11) + "Z";
-        currBugState[dateField] = new Date(dateString).getTime();
+        currBugState[dateField] = "" + new Date(dateString).getTime();
       }
     }
 
