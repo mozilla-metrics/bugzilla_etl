@@ -452,11 +452,12 @@ function populateIntermediateVersionObjects() {
     }
 
     // Also reformat some date fields
-    for each (var dateField in ["deadline", "cf_due_date"]) {
+    for each (var dateField in ["deadline", "cf_due_date", "cf_last_resolved"]) {
       if (currBugState[dateField] && currBugState[dateField].match(DATE_PATTERN)) {
         // Convert "2012/01/01 00:00:00.000" to "2012-01-01"
         // Example: bug 643420 (deadline)
         //          bug 726635 (cf_due_date)
+        //          bug 856732 (cf_last_resolved)
         currBugState[dateField] = currBugState[dateField].substring(0,10).replace(/\//g, '-');
       }
     }
