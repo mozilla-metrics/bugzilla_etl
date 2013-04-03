@@ -36,8 +36,9 @@ const FLAG_PATTERN = /^(.*)([?+-])(\([^)]*\))?$/;
 
 // Used to reformat incoming dates into the expected form.
 // Example match: "2012/01/01 00:00:00.000"
+const DATE_PATTERN_STRICT = /^[0-9]{4}[\/-][0-9]{2}[\/-][0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}/;
 // Example match: "2012-08-08 0:00"
-const DATE_PATTERN = /^[0-9]{4}[\/-][0-9]{2}[\/-][0-9]{2} /;
+const DATE_PATTERN_RELAXED = /^[0-9]{4}[\/-][0-9]{2}[\/-][0-9]{2} /;
 
 // Fields that could have been truncated per bug 55161
 const TRUNC_FIELDS = ["cc", "blocked", "dependson", "keywords"];
@@ -452,14 +453,21 @@ function populateIntermediateVersionObjects() {
     }
 
     // Also reformat some date fields
-    for each (var dateField in ["deadline", "cf_due_date", "cf_last_resolved"]) {
-      if (currBugState[dateField] && currBugState[dateField].match(DATE_PATTERN)) {
+    for each (var dateField in ["deadline", "cf_due_date"]) {
+      if (currBugState[dateField] && currBugState[dateField].match(DATE_PATTERN_RELAXED)) {
         // Convert "2012/01/01 00:00:00.000" to "2012-01-01"
         // Example: bug 643420 (deadline)
         //          bug 726635 (cf_due_date)
-        //          bug 856732 (cf_last_resolved)
         currBugState[dateField] = currBugState[dateField].substring(0,10).replace(/\//g, '-');
       }
+    }
+
+    for each (var dateField in ["cf_last_resolved"]) {
+      if (currBugState[dateField] && currBugState[dateField].match(DATE_PATTERN_STRICT)) {
+        // Convert "2012/01/01 00:00:00.000" to "2012-01-01T00:00:00.000Z", then to a timestamp.
+        // Example: bug 856732 (cf_last_resolved)
+        var dateString = currBugState[dateField].substring(0,10).replace(/\//g, '-') + "T" + currBugState[dateField].substring(11) + "Z";
+        currBugState[dateField] = new Date(dateString).getTime();
     }
 
     currBugState.bug_version_num = currBugVersion;
