@@ -8,8 +8,8 @@ KETTLE_JOB=$KETTLE_BASE/jobs/run_full_update.kjb
 cd $KETTLE_BASE/kettle
 LOG_LEVEL=Minimal
 
-START_DATE=$(date -d "$1" +%s)000
-END_DATE=$(date -d "$2" +%s)000
+START_DATE=$(date -d "$1" +%s)
+END_DATE=$(date -d "$2" +%s)
 
 if [ -z "$START_DATE" -o -z "$END_DATE" ]; then
    echo "Usage: $0 start_date end_date"
@@ -20,7 +20,7 @@ if [ -z "$START_DATE" -o -z "$END_DATE" ]; then
 fi
 
 LOG=bz_range_$START_DATE.$END_DATE.log
-TS="UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, 'US/Pacific','UTC'))*1000"
-echo "Processing range from '$1' ($START_DATE) to '$2' ($END_DATE)."
+TS="UNIX_TIMESTAMP(CONVERT_TZ(delta_ts, 'US/Pacific','UTC'))"
+echo "Processing range from '$1' (${START_DATE}000) to '$2' (${END_DATE}000)."
 
 time ./kitchen.sh -level $LOG_LEVEL -file $KETTLE_JOB -param:BUG_IDS_PARTITION="($TS >= $START_DATE AND $TS <= $END_DATE)" | tee $LOG
