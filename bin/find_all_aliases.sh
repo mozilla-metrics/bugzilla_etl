@@ -14,7 +14,7 @@ INCREMENT=5000
 
 # Extract potential aliases
 #echo "Looking for possible aliases on $(date)"
-for bug_id in $(seq 0 $INCREMENT 820000); do
+for bug_id in $(seq 0 $INCREMENT 900000); do
    ./pan.sh -level $LOG_LEVEL -file $FIND_ALIASES_JOB -param:BUG_IDS_PARTITION="(bug_id >= ${bug_id} and bug_id < (${bug_id} + $INCREMENT))" > $ETL_BASE/all_aliases_${bug_id}.log
 done
 
