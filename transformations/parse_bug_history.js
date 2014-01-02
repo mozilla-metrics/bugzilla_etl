@@ -224,8 +224,9 @@ function processFlagsTableItem(modified_ts, modified_by, field_name, field_value
   if (attach_id != '') {
     if (!currBugAttachmentsMap[attach_id]) {
       writeToLog("e", "Unable to find attachment " + attach_id + " for bug_id " + currBugID);
+    } else {
+    	currBugAttachmentsMap[attach_id].flags.push(flag);
     }
-    currBugAttachmentsMap[attach_id].flags.push(flag);
   } else {
     currBugState.flags.push(flag);
   }
