@@ -1,12 +1,12 @@
 #!/bin/bash
 
-BZ_BASE=/home/mark/mozilla/github/bugzilla_etl
+BZ_BASE=/opt/pentaho/kettle/etl/bugzilla_etl
 ETL_BASE=$BZ_BASE/transformations
 CFG_BASE=$BZ_BASE/configuration/kettle
 
 FIND_ALIASES_JOB=$ETL_BASE/find_aliases.ktr
 COMPARE_ALIASES_JOB=$ETL_BASE/detect_new_aliases.ktr
-cd ~/mozilla/kettle/data-integration4.3/
+cd $BZ_BASE/kettle
 
 LOG_LEVEL=Minimal
 
@@ -27,7 +27,7 @@ time ./pan.sh -level $LOG_LEVEL -file $COMPARE_ALIASES_JOB \
 if [ -s "$CFG_BASE/bugzilla_alias_updates.txt" ]; then
    echo "New aliases were found.  Check $(hostname):$CFG_BASE/bugzilla_alias_updates.txt and log files in $ETL_BASE for details."
    # if we want to include the new aliases in the output:
-   # cat $CFG_BASE/bugzilla_alias_updates.txt
+   cat $CFG_BASE/bugzilla_alias_updates.txt
 else
    echo "No new aliases found on $(date)"
 fi

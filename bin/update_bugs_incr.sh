@@ -14,9 +14,22 @@ TS=$(date +%s000)
 LOG=/var/log/etl/bugzilla_etl_incr.$TS.log
 echo "*** Processing incremental updates.  Current OS Time is $TS / $(date)" >> $LOG
 
-./kitchen.sh -file $KETTLE_JOB -level $LOG_LEVEL 2>&1 >> $LOG
+# Kill previous processes
+RUNNING_PROCESSES=`pgrep -f etljob=run_incremental_update.kjb`
+if [ ! -z "$RUNNING_PROCESSES" ]; then
+   echo "Killing the following stalled processes: $RUNNING_PROCESSES" | tee -a $LOG
+   pkill -9 -f etljob=run_incremental_update.kjb
+fi
 
-grep -i exception $LOG
+# define a marker so that we can find this job using ps
+export PENTAHO_DI_JAVA_OPTIONS="-Xmx1g -Detljob=run_incremental_update.kjb"
+
+./kitchen.sh -file $KETTLE_JOB -level $LOG_LEVEL 2>&1 >> $LOG
+if [ $? != 0 ]; then
+   # grep -i exception $LOG
+   cat $LOG
+fi
+
 
 # Append the temp log to the full log
 cat $LOG >> /var/log/etl/bugzilla_etl_incr.log
